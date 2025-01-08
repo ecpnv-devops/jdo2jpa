@@ -60,26 +60,28 @@ class ReplacePersistenceCapableWithTableAnnotationTest implements RewriteTest {
 		rewriteRun(//language=java
 				//language=java
 				java(
-						"import java.util.List;\n" +
-								"\n" +
-								"import javax.jdo.annotations.PersistenceCapable;\n" +
-								"\n" +
-								"@PersistenceCapable(schema = \"schemaName\")\n" +
-								"public class SomeEntity {\n" +
-								"    private int id;\n" +
-								"    private List<String> listofStrings;\n" +
-								"}",
-						"import java.util.List;\n" +
-								"\n" +
-								"import javax.jdo.annotations.PersistenceCapable;\n" +
-								"import javax.persistence.Table;\n" +
-								"\n" +
-								"@PersistenceCapable(schema = \"schemaName\")\n" +
-								"@Table(schema = \"schemaName\")\n" +
-								"public class SomeEntity {\n" +
-								"    private int id;\n" +
-								"    private List<String> listofStrings;\n" +
-								"}"
+						"""
+								import java.util.List;
+								import javax.jdo.annotations.PersistenceCapable;
+								
+								@PersistenceCapable(schema = "schemaName")
+								public class SomeEntity {
+										private int id;
+										private List<String> listofStrings;
+								}
+								""",
+						"""
+								import java.util.List;
+								import javax.jdo.annotations.PersistenceCapable;
+								import javax.persistence.Table;
+								
+								@PersistenceCapable(schema = "schemaName")
+								@Table(schema = "schemaName")
+								public class SomeEntity {
+										private int id;
+										private List<String> listofStrings;
+								}
+								"""
 				)
 		);
 	}

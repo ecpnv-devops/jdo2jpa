@@ -60,26 +60,28 @@ class AddEntityAnnotationTest implements RewriteTest {
 		rewriteRun(//language=java
 				//language=java
 				java(
-						"import java.util.List;\n" +
-								"\n" +
-								"import javax.jdo.annotations.PersistenceCapable;\n" +
-								"\n" +
-								"@PersistenceCapable\n" +
-								"public class SomeEntity {\n" +
-								"    private int id;\n" +
-								"    private List<String> listofStrings;\n" +
-								"}",
-						"import java.util.List;\n" +
-								"\n" +
-								"import javax.jdo.annotations.PersistenceCapable;\n" +
-								"import javax.persistence.Entity;\n" +
-								"\n" +
-								"@Entity\n" +
-								"@PersistenceCapable\n" +
-								"public class SomeEntity {\n" +
-								"    private int id;\n" +
-								"    private List<String> listofStrings;\n" +
-								"}"
+						"""
+								import java.util.List;
+								import javax.jdo.annotations.PersistenceCapable;
+								
+								@PersistenceCapable
+								public class SomeEntity {
+										private int id;
+										private List<String> listofStrings;
+								}
+								""",
+						"""
+								import java.util.List;
+								import javax.jdo.annotations.PersistenceCapable;
+								import javax.persistence.Entity;
+								
+								@Entity
+								@PersistenceCapable
+								public class SomeEntity {
+										private int id;
+										private List<String> listofStrings;
+								}
+								"""
 				)
 		);
 	}
