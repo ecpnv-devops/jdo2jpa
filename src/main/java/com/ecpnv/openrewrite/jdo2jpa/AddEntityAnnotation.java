@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -50,26 +49,24 @@ public class AddEntityAnnotation extends Recipe {
 	@Override
 	public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-		return Preconditions.check(
-				true,
-				new JavaIsoVisitor<ExecutionContext>() {
+		return new JavaIsoVisitor<ExecutionContext>() {
 
-					@Override
-					public @NotNull J.ClassDeclaration visitClassDeclaration(
-							@NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
-						if (!FindAnnotations.find(classDecl, "@javax.jdo.annotations.PersistenceCapable").isEmpty()
-								&& FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
-							// Add @Entity
-							maybeAddImport("javax.persistence.Entity");
-							return JavaTemplate.builder("@Entity")
-									.javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, CLASS_PATH))
-									.imports("javax.persistence.Entity")
-									.build()
-									.apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+			@Override
+			public @NotNull J.ClassDeclaration visitClassDeclaration(
+					@NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
+				if (!FindAnnotations.find(classDecl, "@javax.jdo.annotations.PersistenceCapable").isEmpty()
+						&& FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
+					// Add @Entity
+					maybeAddImport("javax.persistence.Entity");
+					return JavaTemplate.builder("@Entity")
+							.javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, CLASS_PATH))
+							.imports("javax.persistence.Entity")
+							.build()
+							.apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
 
-						}
-						return super.visitClassDeclaration(classDecl, ctx);
-					}
-				});
+				}
+				return super.visitClassDeclaration(classDecl, ctx);
+			}
+		};
 	}
 }

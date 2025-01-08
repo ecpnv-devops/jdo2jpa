@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.StringUtils;
@@ -67,34 +66,32 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 	@Override
 	public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-		return Preconditions.check(
-				true,
-				new JavaIsoVisitor<ExecutionContext>() {
+		return new JavaIsoVisitor<ExecutionContext>() {
 
-					@Override
-					public @NotNull J.ClassDeclaration visitClassDeclaration(
-							@NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
-						Set<J.Annotation> sourceAnnotations = FindAnnotations.find(classDecl, SOURCE_ANNOTATION_TYPE);
-						if (!sourceAnnotations.isEmpty()
-								&& FindAnnotations.find(classDecl, TARGET_ANNOTATION_TYPE).isEmpty()) {
-							// Get schema
-							String template = "@" + TARGET_TYPE_NAME +
-									findArguments(sourceAnnotations, ARGUMENT_NAME)
-											.map(J.Assignment::toString)
-											.map(t -> "(" + t + ")")
-											.orElse("");
-							// Add @Entity
-							maybeAddImport(TARGET_TYPE);
-							return JavaTemplate.builder(template)
-									.javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, CLASS_PATH))
-									.imports(TARGET_TYPE)
-									.build()
-									.apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+			@Override
+			public @NotNull J.ClassDeclaration visitClassDeclaration(
+					@NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
+				Set<J.Annotation> sourceAnnotations = FindAnnotations.find(classDecl, SOURCE_ANNOTATION_TYPE);
+				if (!sourceAnnotations.isEmpty()
+						&& FindAnnotations.find(classDecl, TARGET_ANNOTATION_TYPE).isEmpty()) {
+					// Get schema
+					String template = "@" + TARGET_TYPE_NAME +
+							findArguments(sourceAnnotations, ARGUMENT_NAME)
+									.map(J.Assignment::toString)
+									.map(t -> "(" + t + ")")
+									.orElse("");
+					// Add @Entity
+					maybeAddImport(TARGET_TYPE);
+					return JavaTemplate.builder(template)
+							.javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, CLASS_PATH))
+							.imports(TARGET_TYPE)
+							.build()
+							.apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
 
-						}
-						return super.visitClassDeclaration(classDecl, ctx);
-					}
-				});
+				}
+				return super.visitClassDeclaration(classDecl, ctx);
+			}
+		};
 	}
 
 	public static Optional<J.Assignment> findArguments(Set<J.Annotation> sourceAnnotations, String varName) {
