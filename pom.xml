@@ -152,4 +152,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/ecpnv-devops/jdo2jpa</url>
+        </repository>
+    </distributionManagement>
+
 </project>
