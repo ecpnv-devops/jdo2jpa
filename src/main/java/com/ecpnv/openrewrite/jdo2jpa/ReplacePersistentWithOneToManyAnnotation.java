@@ -19,28 +19,29 @@ import com.ecpnv.openrewrite.util.RewriteUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+
 /**
- * This class defines a migration recipe for replacing occurrences of the `@javax.jdo.annotations.Persistent`
- * annotation with the equivalent JPA `@OneToMany` annotation in Java code.
+ * This class defines a migration recipe for replacing occurrences of the <code>@javax.jdo.annotations.Persistent</code>
+ * annotation with the equivalent JPA <code>@OneToMany</code> annotation in Java code.
  * <p>
  * The transformation ensures compatibility with JPA by locating fields annotated with
- * `@javax.jdo.annotations.Persistent`, analyzing the attributes of the annotation (e.g., `mappedBy`),
- * and it replaces the annotation with the corresponding JPA compliant `@OneToMany` annotation.
+ * <code>@javax.jdo.annotations.Persistent</code>, analyzing the attributes of the annotation (e.g., `mappedBy`),
+ * and it replaces the annotation with the corresponding JPA compliant <code>@OneToMany</code> annotation.
  * <p>
  * The migration adheres to the following rules:
- * - Fields must be assignable from `java.util.Collection`.
- * - If a field already has a `@OneToMany` annotation, it will be skipped.
- * - If the `@javax.jdo.annotations.Persistent` annotation does not exist, no transformation occurs.
- * - When the JDO `mappedBy` attribute is provided, it is correctly mapped to the equivalent `mappedBy`
- * attribute in JPA's `@OneToMany` annotation.
- * - Ensures that relevant imports (`javax.persistence.OneToMany`) are updated or added when necessary.
+ * <ul>
+ * <li> Fields must be assignable from {@link java.util.Collection}.
+ * <li> If a field already has a <code>@OneToMany</code> annotation, it will be skipped.
+ * <li> If the <code>@javax.jdo.annotations.Persistent</code> annotation does not exist, no transformation occurs.
+ * <li> When the JDO `mappedBy` attribute is provided, it is correctly mapped to the equivalent `mappedBy` attribute in JPA's <code>@OneToMany</code> annotation.
+ * <li> Ensures that relevant imports (<code>javax.persistence.OneToMany</code>) are updated or added when necessary.
+ * </ul>
  * <p>
  * The class uses a `JavaIsoVisitor` to traverse the Abstract Syntax Tree (AST) of the Java source code and
  * apply the required transformations to the target variable declarations.
  *
  * @author Patrick Deenen @ Open Circle Solutions
  */
-@Value
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 

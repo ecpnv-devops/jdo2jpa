@@ -16,22 +16,23 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
- * The `AddEntityAnnotation` class represents a recipe for adding a `@javax.persistence.Entity` annotation
- * to a Java class when it is already annotated with `@javax.jdo.annotations.PersistenceCapable`.
+ * The <code>AddEntityAnnotation</code> class represents a recipe for adding a <code>@javax.persistence.Entity</code> annotation
+ * to a Java class when it is already annotated with <code>@javax.jdo.annotations.PersistenceCapable</code>.
  * This ensures that JPA entities are defined correctly when using JDO persistence annotations.
  * <p>
- * This recipe identifies Java class declarations that are annotated with `@PersistenceCapable`
- * but do not have the `@Entity` annotation. It automatically adds the `@Entity` annotation and imports
- * the required `javax.persistence.Entity` package if necessary.
+ * This recipe identifies Java class declarations that are annotated with <code>@PersistenceCapable</code>
+ * but do not have the <code>@Entity</code> annotation. It automatically adds the <code>@Entity</code> annotation and imports
+ * the required <code>javax.persistence.Entity</code> package if necessary.
  * <p>
  * Features:
- * - Searches for class declarations containing `@javax.jdo.annotations.PersistenceCapable`.
- * - Ensures that the `@Entity` annotation is added if missing.
- * - Automatically handles the required imports for `javax.persistence.Entity`.
- *
- * @author Patrick Deenen @ Open Circle Solutions
+ * <ul>
+ *   <li>Searches for class declarations containing <code>@javax.jdo.annotations.PersistenceCapable</code>.</li>
+ *   <li>Ensures that the <code>@Entity</code> annotation is added if missing.</li>
+ *   <li>Automatically handles the required imports for <code>javax.persistence.Entity</code>.</li>
+ * </ul>
+ * <p>
+ * Author: Patrick Deenen @ Open Circle Solutions
  */
-@Value
 @EqualsAndHashCode(callSuper = false)
 public class AddEntityAnnotation extends Recipe {
 

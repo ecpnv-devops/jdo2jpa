@@ -19,23 +19,24 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
- * The `ReplacePersistenceCapableWithTableAnnotation` class represents a recipe for replacing
- * the `@javax.jdo.annotations.PersistenceCapable` annotation with the corresponding
- * `@javax.persistence.Table` annotation in Java classes.
+ * The <code>ReplacePersistenceCapableWithTableAnnotation</code> class represents a recipe for replacing
+ * the <code>@javax.jdo.annotations.PersistenceCapable</code> annotation with the corresponding
+ * <code>@javax.persistence.Table</code> annotation in Java classes.
  * <p>
  * This recipe ensures compatibility with JPA by transforming JDO entity classes that
- * utilize the `@PersistenceCapable` annotation to use the JPA equivalent `@Table` annotation.
+ * utilize the <code>@PersistenceCapable</code> annotation to use the JPA equivalent <code>@Table</code> annotation.
  * <p>
  * Features:
- * - Searches for class declarations containing the `@javax.jdo.annotations.PersistenceCapable` annotation.
- * - Adds the `@javax.persistence.Table` annotation if not already present.
- * - Automatically handles the required imports for `javax.persistence.Table`.
- * - Copies the `schema` argument from the original `@PersistenceCapable` annotation, if present,
- * to the newly added `@Table` annotation.
+ * <ul>
+ * <li>Searches for class declarations containing the <code>@javax.jdo.annotations.PersistenceCapable</code> annotation.</li>
+ * <li>Adds the <code>@javax.persistence.Table</code> annotation if not already present.</li>
+ * <li>Automatically handles the required imports for <code>javax.persistence.Table</code>.</li>
+ * <li>Copies the <code>schema</code> argument from the original <code>@PersistenceCapable</code> annotation, if present, to the newly added <code>@Table</code> annotation.</li>
+ * </ul>
  * <p>
  * Implementation:
- * - Uses a `TreeVisitor` to identify classes that fulfill the criteria for transformation.
- * - Applies a Java template to add the `@Table` annotation and update imports as needed.
+ * - Uses a <code>TreeVisitor</code> to identify classes that fulfill the criteria for transformation.
+ * - Applies a Java template to add the <code>@Table</code> annotation and update imports as needed.
  * - Maintains the semantic integrity of the annotated class during transformation.
  *
  * @author Patrick Deenen @ Open Circle Solutions
