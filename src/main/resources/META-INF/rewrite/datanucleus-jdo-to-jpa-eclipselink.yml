@@ -28,4 +28,6 @@ recipeList:
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
+  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
+  - org.openrewrite.java.RemoveUnusedImports

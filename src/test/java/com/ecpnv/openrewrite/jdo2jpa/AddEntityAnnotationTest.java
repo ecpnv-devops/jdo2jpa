@@ -17,10 +17,7 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -41,48 +38,47 @@ import static org.openrewrite.java.Assertions.java;
  *
  * @author Patrick Deenen @ Open Circle Solutions
  */
-class AddEntityAnnotationTest implements RewriteTest {
-	@Override
-	public void defaults(RecipeSpec spec) {
-		spec.parser(JavaParser.fromJavaVersion()
-						.classpathFromResources(new InMemoryExecutionContext(), AddEntityAnnotation.CLASS_PATH, "jdo-api"))
-				.recipe(new AddEntityAnnotation());
-	}
+class AddEntityAnnotationTest extends BaseRewriteTest {
 
-	/**
-	 * `addEntityAnnotationAlongPersistanceCapable()`: Verifies that the recipe successfully identifies
-	 * classes with the `@PersistenceCapable` annotation and adds the `@Entity` annotation with the required
-	 * import statements. Contains assertions to ensure the correctness of the transformation.
-	 */
-	@DocumentExample
-	@Test
-	void addEntityAnnotationAlongPersistanceCapable() {
-		rewriteRun(//language=java
-				//language=java
-				java(
-						"""
-								import java.util.List;
-								import javax.jdo.annotations.PersistenceCapable;
-								
-								@PersistenceCapable
-								public class SomeEntity {
-										private int id;
-										private List<String> listofStrings;
-								}
-								""",
-						"""
-								import java.util.List;
-								import javax.jdo.annotations.PersistenceCapable;
-								import javax.persistence.Entity;
-								
-								@Entity
-								@PersistenceCapable
-								public class SomeEntity {
-										private int id;
-										private List<String> listofStrings;
-								}
-								"""
-				)
-		);
-	}
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.parser(PARSER).recipe(new AddEntityAnnotation());
+    }
+
+    /**
+     * `addEntityAnnotationAlongPersistanceCapable()`: Verifies that the recipe successfully identifies
+     * classes with the `@PersistenceCapable` annotation and adds the `@Entity` annotation with the required
+     * import statements. Contains assertions to ensure the correctness of the transformation.
+     */
+    @DocumentExample
+    @Test
+    void addEntityAnnotationAlongPersistanceCapable() {
+        rewriteRun(//language=java
+            //language=java
+            java(
+        """
+                import java.util.List;
+                import javax.jdo.annotations.PersistenceCapable;
+                
+                @PersistenceCapable
+                public class SomeEntity {
+                        private int id;
+                        private List<String> listofStrings;
+                }
+                """,
+        """
+                import java.util.List;
+                import javax.jdo.annotations.PersistenceCapable;
+                import javax.persistence.Entity;
+                
+                @Entity
+                @PersistenceCapable
+                public class SomeEntity {
+                        private int id;
+                        private List<String> listofStrings;
+                }
+                """
+            )
+        );
+    }
 }

@@ -17,10 +17,7 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -41,48 +38,46 @@ import static org.openrewrite.java.Assertions.java;
  *
  * @author Patrick Deenen @ Open Circle Solutions
  */
-class ReplacePersistenceCapableWithTableAnnotationTest implements RewriteTest {
-	@Override
-	public void defaults(RecipeSpec spec) {
-		spec.parser(JavaParser.fromJavaVersion()
-						.classpathFromResources(new InMemoryExecutionContext(), AddEntityAnnotation.CLASS_PATH, "jdo-api"))
-				.recipe(new ReplacePersistenceCapableWithTableAnnotation());
-	}
+class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
 
-	/**
-	 * `replaceWithTableAnnotation()`: Tests the transformation of a Java class annotated with
-	 * `@PersistenceCapable` into a class annotated with both `@PersistenceCapable` and `@Table`,
-	 * ensuring schema information is correctly applied.
-	 */
-	@DocumentExample
-	@Test
-	void replaceWithTableAnnotation() {
-		rewriteRun(//language=java
-				//language=java
-				java(
-						"""
-								import java.util.List;
-								import javax.jdo.annotations.PersistenceCapable;
-								
-								@PersistenceCapable(schema = "schemaName")
-								public class SomeEntity {
-										private int id;
-										private List<String> listofStrings;
-								}
-								""",
-						"""
-								import java.util.List;
-								import javax.jdo.annotations.PersistenceCapable;
-								import javax.persistence.Table;
-								
-								@PersistenceCapable(schema = "schemaName")
-								@Table(schema = "schemaName")
-								public class SomeEntity {
-										private int id;
-										private List<String> listofStrings;
-								}
-								"""
-				)
-		);
-	}
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.parser(PARSER).recipe(new ReplacePersistenceCapableWithTableAnnotation());
+    }
+
+    /**
+     * `replaceWithTableAnnotation()`: Tests the transformation of a Java class annotated with
+     * `@PersistenceCapable` into a class annotated with both `@PersistenceCapable` and `@Table`,
+     * ensuring schema information is correctly applied.
+     */
+    @DocumentExample
+    @Test
+    void replaceWithTableAnnotation() {
+        rewriteRun(//language=java
+            //language=java
+            java(
+        """
+                import java.util.List;
+                import javax.jdo.annotations.PersistenceCapable;
+                
+                @PersistenceCapable(schema = "schemaName")
+                public class SomeEntity {
+                        private int id;
+                        private List<String> listofStrings;
+                }
+                """,
+        """
+                import java.util.List;
+                import javax.jdo.annotations.PersistenceCapable;
+                import javax.persistence.Table;
+                
+                @Table(schema = "schemaName")
+                public class SomeEntity {
+                        private int id;
+                        private List<String> listofStrings;
+                }
+                """
+            )
+        );
+    }
 }
