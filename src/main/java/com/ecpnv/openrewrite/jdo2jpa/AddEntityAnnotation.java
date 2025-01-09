@@ -1,7 +1,7 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import java.util.Comparator;
+
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -12,7 +12,8 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 
-import java.util.Comparator;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 /**
  * The `AddEntityAnnotation` class represents a recipe for adding a `@javax.persistence.Entity` annotation
@@ -34,39 +35,44 @@ import java.util.Comparator;
 @EqualsAndHashCode(callSuper = false)
 public class AddEntityAnnotation extends Recipe {
 
-	public final static String CLASS_PATH = "jakarta.persistence-api";
+    public final static String SOURCE_ANNOTATION_TYPE = "@javax.jdo.annotations.PersistenceCapable";
+    public final static String TARGET_TYPE_NAME = "Entity";
+    public final static String TARGET_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + TARGET_TYPE_NAME;
+    public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
 
-	@Override
-	public @NotNull String getDisplayName() {
-		return "When there is an `@javax.jdo.annotations.PersistenceCapable` annotation it must be accompanied by a defined `@javax.persistence.Entity` annotation";
-	}
+    @Override
+    public @NotNull String getDisplayName() {
+        return "When there is an `" + SOURCE_ANNOTATION_TYPE + "` annotation it must be accompanied by " +
+                "a defined `" + TARGET_ANNOTATION_TYPE + "` annotation";
+    }
 
-	@Override
-	public @NotNull String getDescription() {
-		return "When an JDO entity is annotated with `@PersistenceCapable`, JPA must have a @Entity annotation.";
-	}
+    @Override
+    public @NotNull String getDescription() {
+        return "When an JDO entity is annotated with `" + SOURCE_ANNOTATION_TYPE + "`, JPA must have a "
+                + TARGET_ANNOTATION_TYPE + " annotation.";
+    }
 
-	@Override
-	public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    @Override
+    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-		return new JavaIsoVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<ExecutionContext>() {
 
-			@Override
-			public @NotNull J.ClassDeclaration visitClassDeclaration(
-					@NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
-				if (!FindAnnotations.find(classDecl, "@javax.jdo.annotations.PersistenceCapable").isEmpty()
-						&& FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
-					// Add @Entity
-					maybeAddImport("javax.persistence.Entity");
-					return JavaTemplate.builder("@Entity")
-							.javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, CLASS_PATH))
-							.imports("javax.persistence.Entity")
-							.build()
-							.apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            @Override
+            public @NotNull J.ClassDeclaration visitClassDeclaration(
+                    @NotNull J.ClassDeclaration classDecl, @NotNull ExecutionContext ctx) {
+                if (!FindAnnotations.find(classDecl, SOURCE_ANNOTATION_TYPE).isEmpty()
+                        && FindAnnotations.find(classDecl, TARGET_ANNOTATION_TYPE).isEmpty()) {
+                    // Add @Entity
+                    maybeAddImport(TARGET_TYPE);
+                    return JavaTemplate.builder("@" + TARGET_TYPE_NAME)
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
+                            .imports(TARGET_TYPE)
+                            .build()
+                            .apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
 
-				}
-				return super.visitClassDeclaration(classDecl, ctx);
-			}
-		};
-	}
+                }
+                return super.visitClassDeclaration(classDecl, ctx);
+            }
+        };
+    }
 }
