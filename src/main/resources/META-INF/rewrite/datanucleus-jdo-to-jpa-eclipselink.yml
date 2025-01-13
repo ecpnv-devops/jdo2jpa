@@ -29,5 +29,7 @@ recipeList:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation
+  # TODO this argument should be recognized, but it is not...
+  #      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.RemoveUnusedImports
