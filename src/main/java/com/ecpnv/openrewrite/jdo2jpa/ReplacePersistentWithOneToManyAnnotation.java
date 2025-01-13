@@ -4,10 +4,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -18,7 +24,6 @@ import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
 
 /**
  * This class defines a migration recipe for replacing occurrences of the <code>@javax.jdo.annotations.Persistent</code>
@@ -42,6 +47,7 @@ import lombok.Value;
  *
  * @author Patrick Deenen @ Open Circle Solutions
  */
+@Value
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 
@@ -50,6 +56,20 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
     public final static String TARGET_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + TARGET_TYPE_NAME;
     public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
     public final static String ARGUMENT_MAPPEDBY = "mappedBy";
+    public final static String ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
+    public final static String CASCADE_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + "CascadeType";
+
+    @Option(displayName = "Default cascade types to apply",
+            description = "When the " + TARGET_ANNOTATION_TYPE +
+                    " is applied, then these optional cascade type default is applied.",
+            required = false,
+            example = "CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")
+    @Nullable String defaultCascade;
+
+    @JsonCreator
+    public ReplacePersistentWithOneToManyAnnotation(@JsonProperty("defaultCascade") String defaultCascade) {
+        this.defaultCascade = defaultCascade;
+    }
 
     @Override
     public @NotNull String getDisplayName() {
@@ -59,7 +79,8 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 
     @Override
     public @NotNull String getDescription() {
-        return "When an JDO entity is annotated with `@PersistenceCapable`, JPA must have a @Table annotation.";
+        return "When an JDO entity is annotated with `" + SOURCE_ANNOTATION_TYPE + "`, JPA must have a " +
+                TARGET_ANNOTATION_TYPE + " annotation.";
     }
 
     @Override
@@ -87,13 +108,34 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 Optional<J.Assignment> mappedBy = RewriteUtils.findArguments(annotation, ARGUMENT_MAPPEDBY);
                 if (mappedBy.isPresent()) {
                     // mappedBy argument found, hence oneToMany applies
-                    String template = "@" + TARGET_TYPE_NAME + "(" + mappedBy.get() + ")";
-                    // Add @Entity
-                    maybeAddImport(TARGET_TYPE);
+                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(").append(mappedBy.get());
 
-                    return JavaTemplate.builder(template)
+                    // Search for dependentElement
+                    RewriteUtils.findArguments(annotation, ARGUMENT_DEPENDENT_ELEMENT)
+                            .map(J.Assignment::getAssignment)
+                            .map(Object::toString)
+                            .map(Boolean::parseBoolean)
+                            .filter(isDependent -> isDependent)
+                            .ifPresentOrElse(isDependent -> template
+                                            .append(", cascade = {CascadeType.REMOVE")
+                                            .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                                            .append("}"),
+                                    () -> {
+                                        if (!StringUtils.isBlank(defaultCascade))
+                                            template
+                                                    .append(", cascade = {")
+                                                    .append(defaultCascade)
+                                                    .append("}");
+                                    });
+
+                    template.append(")");
+                    // Add @OneToMany and CascadeType
+                    maybeAddImport(TARGET_TYPE);
+                    maybeAddImport(CASCADE_TYPE);
+
+                    return JavaTemplate.builder(template.toString())
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
-                            .imports(TARGET_TYPE)
+                            .imports(TARGET_TYPE, CASCADE_TYPE)
                             .build()
                             .apply(getCursor(), annotation.getCoordinates().replace());
                 }

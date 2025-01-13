@@ -44,7 +44,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new ReplacePersistentWithOneToManyAnnotation());
+        spec.parser(PARSER).recipe(new ReplacePersistentWithOneToManyAnnotation(null));
     }
 
     /**
@@ -125,4 +125,120 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
             )
         );
     }
+
+    /**
+     * Validates the transformation of the `@Persistent` annotation to the JPA-compliant `@OneToMany` annotation
+     * when the dependentElement argument is defined. This should translate into the remove cascadeType when true.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAnnotationWithDependentElementArgument() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( mappedBy = "person", dependentElement = "true")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.OneToMany;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE})
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Validates the transformation of the `@Persistent` annotation to the JPA-compliant `@OneToMany` annotation
+     * when the dependentElement argument is defined with false. This should not translate into the remove cascadeType.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAnnotationWithDependentElementArgumentFalse() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( mappedBy = "person", dependentElement = "false")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.OneToMany;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "person")
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Validates the transformation of the `@Persistent` annotation to the JPA-compliant `@OneToMany` annotation
+     * when the dependentElement argument is defined. This should translate into the remove cascadeType when true.
+     * Additionally the default cascade should be defined.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAnnotationWithDependentElementArgumentAndDefault() {
+        rewriteRun(spec -> spec.recipe(new ReplacePersistentWithOneToManyAnnotation("CascadeType.MERGE, CascadeType.DETACH")),
+                //language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( mappedBy = "person", dependentElement = "true")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.OneToMany;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH})
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
 }
