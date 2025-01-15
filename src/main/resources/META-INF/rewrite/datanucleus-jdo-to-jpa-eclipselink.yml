@@ -23,6 +23,7 @@ tags:
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
