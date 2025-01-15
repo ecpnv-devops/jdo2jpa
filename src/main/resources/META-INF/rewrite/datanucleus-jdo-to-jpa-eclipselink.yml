@@ -41,6 +41,7 @@ tags:
   - java
   - javax
   - persistence
+  - PersistenceCapable
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
@@ -59,6 +60,7 @@ tags:
   - java
   - javax
   - persistence
+  - Persistent
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation:
       defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
@@ -68,3 +70,34 @@ recipeList:
       attributeName: defaultFetchGroup
   - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
       annotationType: '@javax.jdo.annotations.Persistent'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Column
+displayName: Migrate JDO > JPA-v2.x for @Column
+description: Migrate @Column.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - Persistent
+recipeList:
+  # replace @Column(..allowsNull..) with @Column(..nullable..)
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.jdo.annotations.Column
+      oldAttributeName: allowsNull
+      newAttributeName: nullable
+  # replace 'jdbcType = "CLOB", sqlType = "LONGVARCHAR"' with @Lob
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Column\(.*jdbcType\s*=\s*"CLOB".*\)'
+      annotationType: javax.persistence.Lob
+      attributeTemplate: @Lob
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: jdbcType
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: sqlType
