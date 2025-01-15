@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -67,7 +68,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
     @Nullable String defaultCascade;
 
     @JsonCreator
-    public ReplacePersistentWithOneToManyAnnotation(@JsonProperty("defaultCascade") String defaultCascade) {
+    public ReplacePersistentWithOneToManyAnnotation(@NonNull @JsonProperty("defaultCascade") String defaultCascade) {
         this.defaultCascade = defaultCascade;
     }
 

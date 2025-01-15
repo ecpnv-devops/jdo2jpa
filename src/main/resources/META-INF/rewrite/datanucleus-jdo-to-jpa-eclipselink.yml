@@ -21,15 +21,50 @@ tags:
   - javax
   - persistence
 recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
+      annotationTemplateToInsert: '@javax.persistence.Transient'
+  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
+  - org.openrewrite.java.RemoveUnusedImports
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
+displayName: Migrate JDO > JPA-v2.x for @PersistenceCapable
+description: Migrate @Persistence to @Entity and @Table.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.PersistenceCapable'
-  - org.openrewrite.java.ReplaceAnnotation:
-      annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
-      annotationTemplateToInsert: '@javax.persistence.Transient'
-  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation
-  # TODO this argument should be recognized, but it is not...
-  #      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.RemoveUnusedImports
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
+displayName: Migrate JDO > JPA-v2.x for @Persistent
+description: Migrate @Persistent to @OneToMany and @Column.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation:
+      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
+  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentFetchGroupWithColumnAnnotation
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Persistent
+      attributeName: defaultFetchGroup
+  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
+      annotationType: '@javax.jdo.annotations.Persistent'
