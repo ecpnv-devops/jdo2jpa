@@ -19,6 +19,40 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
+ * This class represents a recipe for replacing <code>@javax.jdo.annotations.Persistent</code> annotations
+ * with a JPA-compatible <code>@javax.persistence.Column</code> annotation when the <code>defaultFetchGroup</code> argument
+ * is present. If the <code>defaultFetchGroup</code> argument evaluates to <code>true</code>, the fetch type is set to <code>EAGER</code>;
+ * otherwise, it is set to <code>LAZY</code>. The recipe scans Java class fields annotated with the targeted type
+ * and applies the necessary transformation to conform to JPA standards.
+ * <p>
+ * Fields:
+ * <ul>
+ *   <li><code>SOURCE_ANNOTATION_TYPE</code>: Represents the fully qualified type of the source annotation,
+ * <code>@javax.jdo.annotations.Persistent</code>.</li>
+ * <li><code>TARGET_TYPE_NAME</code>: The name of the target annotation, <code>Column</code>.</li>
+ * <li><code>TARGET_TYPE</code>: The fully qualified type of the target annotation, <code>javax.persistence.Column</code>.</li>
+ * <li><code>TARGET_ANNOTATION_TYPE</code>: Represents the target annotation with the <code>@</code> prefix.</li>
+ * <li><code>ARGUMENT_DEFAULT_FETCH_GROUP</code>: The argument of the source annotation that triggers the replacement process.</li>
+ * <li><code>FETCH_TYPE</code>: Represents the fully qualified <code>FetchType</code> class from the <code>javax.persistence</code> package.</li>
+ * </ul><p>
+ * Methods:
+ * <ul>
+ * <li><code>getDisplayName()</code>: Returns a human-readable name for the recipe, describing its purpose.
+ * It specifically mentions the conversion of the source annotation to the target annotation with a fetch type.</li>
+ * <li><code>getDescription()</code>: Provides a detailed description of the recipe's functionality, emphasizing
+ * the transformation of a JDO <code>Persistent</code> annotation to a JPA <code>Column</code> annotation and the replacement
+ * of the fetch type.</li>
+ * <li><code>getVisitor()</code>: Defines the tree visitor that analyzes the Java source code structure and performs the
+ * annotation replacement. It handles:
+ * <ul>
+ * <li>Finding and verifying the presence of the source annotation.</li>
+ * <li>Determining whether the <code>defaultFetchGroup</code> argument in the source annotation exists.</li>
+ * <li>Generating the appropriate <code>@Column</code> annotation with the correct <code>FetchType</code> (<code>EAGER</code> or <code>LAZY</code>).</li>
+ * <li>Checking for pre-existing <code>@Column</code> annotations and preventing duplicate argument definitions.</li>
+ * <li>Managing the imports for the target annotation's dependencies during the transformation process.</li>
+ * </ul></li>
+ * </ul>
+ *
  * @author Patrick Deenen @ Open Circle Solutions
  */
 @Value
@@ -34,13 +68,13 @@ public class ReplacePersistentFetchGroupWithColumnAnnotation extends Recipe {
 
     @Override
     public @NotNull String getDisplayName() {
-        return "When there is an `" + SOURCE_ANNOTATION_TYPE + "` annotation with '" + ARGUMENT_DEFAULT_FETCH_GROUP +
+        return "When there is an '" + SOURCE_ANNOTATION_TYPE + "' annotation with '" + ARGUMENT_DEFAULT_FETCH_GROUP +
                 "' argument, it must be replaced by a " + TARGET_ANNOTATION_TYPE + " annotation";
     }
 
     @Override
     public @NotNull String getDescription() {
-        return "When an JDO entity is annotated with `" + SOURCE_ANNOTATION_TYPE + "` which has an argument '" +
+        return "When an JDO entity is annotated with '" + SOURCE_ANNOTATION_TYPE + "' which has an argument '" +
                 ARGUMENT_DEFAULT_FETCH_GROUP + "', JPA must have a " + TARGET_ANNOTATION_TYPE +
                 " annotation with a fetch lazy or eager argument.";
     }

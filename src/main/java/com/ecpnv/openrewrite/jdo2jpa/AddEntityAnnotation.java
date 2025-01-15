@@ -33,6 +33,7 @@ import lombok.Value;
  * <p>
  * Author: Patrick Deenen @ Open Circle Solutions
  */
+@Value
 @EqualsAndHashCode(callSuper = false)
 public class AddEntityAnnotation extends Recipe {
 
