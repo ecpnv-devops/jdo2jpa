@@ -19,6 +19,8 @@
         <maven.compiler.testTarget>17</maven.compiler.testTarget>
         <junit.version>5.11.4</junit.version>
         <assertj.version>3.27.2</assertj.version>
+        <rewrite-bom.version>3.0.1</rewrite-bom.version>
+        <rewrite-java.version>8.43.2</rewrite-java.version>
     </properties>
 
     <dependencyManagement>
@@ -26,9 +28,15 @@
             <dependency>
                 <groupId>org.openrewrite.recipe</groupId>
                 <artifactId>rewrite-recipe-bom</artifactId>
-                <version>3.0.1</version>
+                <version>${rewrite-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openrewrite</groupId>
+                <artifactId>rewrite-java</artifactId>
+                <version>${rewrite-java.version}</version>
+                <scope>compile</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
