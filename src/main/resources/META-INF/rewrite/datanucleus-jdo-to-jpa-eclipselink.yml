@@ -22,8 +22,8 @@ tags:
   - persistence
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
@@ -91,14 +91,42 @@ recipeList:
       annotationType: javax.jdo.annotations.Column
       oldAttributeName: allowsNull
       newAttributeName: nullable
+  # Remove nullable = "true" as this is the default in JPA
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@Column\(.*nullable\s*=\s*"true".*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: nullable
+  # Change nullable = "false" to nullable = false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: nullable
+      oldAttributeValue: "false"
+      attributeValue: false
+      operation: UPDATE
+      appendArray: false
   # replace 'jdbcType = "CLOB", sqlType = "LONGVARCHAR"' with @Lob
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Column\(.*jdbcType\s*=\s*"CLOB".*\)'
       annotationType: javax.persistence.Lob
-      attributeTemplate: @Lob
+      annotationTemplate: '@Lob'
+      declarationType: VAR
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Column\(.*jdbcType\s*=\s*"CLOB".*\)'
+      annotationType: javax.persistence.Lob
+      annotationTemplate: '@Lob'
+      declarationType: METHOD
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Column\(.*jdbcType\s*=\s*"CLOB".*\)'
+      annotationType: javax.persistence.Lob
+      annotationTemplate: '@Lob'
+      declarationType: CLASS
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: jdbcType
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: sqlType
+  # Change column type
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Column
+      newFullyQualifiedTypeName: javax.persistence.Column

@@ -1,6 +1,10 @@
 package com.ecpnv.openrewrite.java;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,6 +19,8 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaCoordinates;
+import org.openrewrite.java.tree.Statement;
 
 import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
@@ -34,14 +40,16 @@ import lombok.Value;
  * - Adds the new annotation only if it does not already exist.
  * - Ensures the required import is included for the new annotation type.
  * <p>
- * TODO Currently only supports matching of annotations on variable declarations, but should also support methods
- *      and class declarations
  *
  * @author Patrick Deenen @ Open Circle Solutions
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddAnnotationConditionally extends Recipe {
+
+    public enum DeclarationType {
+        VAR, CLASS, METHOD
+    }
 
     @Option(displayName = "Regular expression to match",
             description = "Only annotations that match the regular expression will be changed.",
@@ -58,14 +66,24 @@ public class AddAnnotationConditionally extends Recipe {
             example = "@Lob")
     String annotationTemplate;
 
+    @Option(displayName = "Declaration of var, class or method",
+            description = "Choice of [VAR, CLASS, METHOD] to define for which type of declaration this recipe has to act.",
+            example = "VAR")
+    DeclarationType declarationType;
+
     @JsonCreator
     public AddAnnotationConditionally(
             @NonNull @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("annotationType") String annotationType,
-            @NonNull @JsonProperty("annotationTemplate") String annotationTemplate) {
+            @NonNull @JsonProperty("annotationTemplate") String annotationTemplate,
+            @NonNull @JsonProperty("declarationType") String declarationType) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
+        if (declarationType == null)
+            this.declarationType = null;
+        else
+            this.declarationType = DeclarationType.valueOf(declarationType);
     }
 
     @Override
@@ -80,30 +98,69 @@ public class AddAnnotationConditionally extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<>() {
+        return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations vars = super.visitVariableDeclarations(multiVariable, ctx);
-                if (!FindAnnotations.find(vars, annotationType).isEmpty()) {
-                    // Do nothing when the annotation already is present
+                if (declarationType != DeclarationType.VAR) {
                     return vars;
                 }
-                return vars.getLeadingAnnotations().stream()
+                return (J.VariableDeclarations) addAnnotationConditionally(vars, vars.getLeadingAnnotations(), ctx,
+                        () -> vars.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            }
+
+            @Override
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                J.ClassDeclaration classD = super.visitClassDeclaration(classDecl, ctx);
+                if (declarationType != DeclarationType.CLASS) {
+                    return classD;
+                }
+                Pattern pattern = Pattern.compile(annotationType);
+                if (classD.getLeadingAnnotations().isEmpty() || classD.getLeadingAnnotations().stream()
+                        .anyMatch(a -> a.getAnnotationType().getType().isAssignableFrom(pattern))) {
+                    // Do nothing when the annotation already is present
+                    return classD;
+                }
+                return (J.ClassDeclaration) addAnnotationConditionally(classD.getLeadingAnnotations(), ctx,
+                        () -> classD.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)))
+                        .orElse(classD);
+            }
+
+            @Override
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+                if (declarationType != DeclarationType.METHOD) {
+                    return m;
+                }
+                return (J.MethodDeclaration) addAnnotationConditionally(m, m.getLeadingAnnotations(), ctx,
+                        () -> m.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            }
+
+            public Statement addAnnotationConditionally(Statement j, List<J.Annotation> annotations, ExecutionContext ctx,
+                                                        Supplier<JavaCoordinates> coordinates) {
+                if (!FindAnnotations.find(j, annotationType).isEmpty()) {
+                    // Do nothing when the annotation already is present
+                    return j;
+                }
+                return addAnnotationConditionally(annotations, ctx, coordinates).orElse(j);
+            }
+
+            public Optional<Statement> addAnnotationConditionally(List<J.Annotation> annotations, ExecutionContext ctx,
+                                                                  Supplier<JavaCoordinates> coordinates) {
+                return annotations.stream()
                         .filter(a -> a.toString().matches(matchByRegularExpression))
                         .findFirst()
                         .map(a -> {
                             // Add annotation to variable
                             maybeAddImport(annotationType);
-                            return (J.VariableDeclarations) JavaTemplate.builder(annotationTemplate)
+                            return (Statement) JavaTemplate.builder(annotationTemplate)
                                     .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
                                     .imports(annotationType)
                                     .build()
-                                    .apply(getCursor(), vars.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-                        })
-                        .orElse(vars);
+                                    .apply(getCursor(), coordinates.get());
+                        });
             }
         };
     }
-
 }
