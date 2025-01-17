@@ -21,6 +21,7 @@
         <assertj.version>3.27.2</assertj.version>
         <rewrite-bom.version>3.0.1</rewrite-bom.version>
         <rewrite-java.version>8.43.2</rewrite-java.version>
+        <slf4j.version>2.0.16</slf4j.version>
     </properties>
 
     <dependencyManagement>
@@ -135,6 +136,21 @@
             <version>3.2.1</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Test logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
