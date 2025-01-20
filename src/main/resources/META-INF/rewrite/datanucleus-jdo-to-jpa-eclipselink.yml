@@ -130,3 +130,25 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
       newFullyQualifiedTypeName: javax.persistence.Column
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
+displayName: Cleanup
+description: Run cleanup.
+tags:
+  - cleanup
+recipeList:
+  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
+  - org.openrewrite.java.RemoveUnusedImports
+# too soon
+#  - org.openrewrite.java.format.AutoFormat
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.test
+displayName: Test
+description: Run test.
+tags:
+  - test
+recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
+  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation
