@@ -154,3 +154,42 @@ tags:
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
+displayName: Migrate JDO > JPA-v2.x for @Unique
+description: Migrate @Unique and @Uniques.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - Persistent
+recipeList:
+  # replace @Unique(..members..) with @Column(..columnNames..)
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.jdo.annotations.Unique
+      oldAttributeName: members
+      newAttributeName: columnNames
+  # remove unsupported attributes
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: table
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: deferred
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: columns
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: extensions
+  # Change Unique type
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Unique
+      newFullyQualifiedTypeName: javax.persistence.UniqueConstraint
+  # Move annotation to other annotation
+

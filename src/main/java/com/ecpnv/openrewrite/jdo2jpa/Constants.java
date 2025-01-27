@@ -33,6 +33,9 @@ public final class Constants {
         public final static String TABLE_ANNOTATION_NAME = "Table";
         public final static String TABLE_ANNOTATION_FULL = BASE_PACKAGE + TABLE_ANNOTATION_NAME;
         public final static String TABLE_ARGUMENT_SCHEMA = "schema";
+        public final static String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
+        public final static String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
+        public final static String UNIQUE_CONSTRAINT_ANNOTATION_FULL = BASE_PACKAGE + UNIQUE_CONSTRAINT_ANNOTATION_NAME;
 
         public final static String CASCADE_TYPE_FULL = BASE_PACKAGE + "CascadeType";
         public final static String FETCH_TYPE_FULL = BASE_PACKAGE + "FetchType";
