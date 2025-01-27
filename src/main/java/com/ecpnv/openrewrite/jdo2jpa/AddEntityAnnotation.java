@@ -37,9 +37,9 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AddEntityAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@javax.jdo.annotations.PersistenceCapable";
-    public final static String TARGET_TYPE_NAME = "Entity";
-    public final static String TARGET_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + TARGET_TYPE_NAME;
+    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
+    public final static String TARGET_TYPE_NAME = Constants.Jpa.ENTITY_ANNOTATION_NAME;
+    public final static String TARGET_TYPE = Constants.Jpa.ENTITY_ANNOTATION_FULL;
     public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
 
     @Override
@@ -67,7 +67,7 @@ public class AddEntityAnnotation extends Recipe {
                     // Add @Entity
                     maybeAddImport(TARGET_TYPE);
                     return JavaTemplate.builder("@" + TARGET_TYPE_NAME)
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE)
                             .build()
                             .apply(getCursor(), classDecl.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
