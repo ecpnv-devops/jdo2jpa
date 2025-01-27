@@ -52,13 +52,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@javax.jdo.annotations.Persistent";
-    public final static String TARGET_TYPE_NAME = "OneToMany";
-    public final static String TARGET_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + TARGET_TYPE_NAME;
+    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
+    public final static String TARGET_TYPE_NAME = Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME;
+    public final static String TARGET_TYPE = Constants.Jpa.ONE_TO_MANY_ANNOTATION_FULL;
     public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
-    public final static String ARGUMENT_MAPPEDBY = "mappedBy";
-    public final static String ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
-    public final static String CASCADE_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + "CascadeType";
 
     @Option(displayName = "Default cascade types to apply",
             description = "When the " + TARGET_ANNOTATION_TYPE +
@@ -106,16 +103,13 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 }
                 // Find mappedby argument
                 J.Annotation annotation = annotations.iterator().next();
-                Optional<J.Assignment> mappedBy = RewriteUtils.findArguments(annotation, ARGUMENT_MAPPEDBY);
+                Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(annotation, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
                 if (mappedBy.isPresent()) {
                     // mappedBy argument found, hence oneToMany applies
                     StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(").append(mappedBy.get());
 
                     // Search for dependentElement
-                    RewriteUtils.findArguments(annotation, ARGUMENT_DEPENDENT_ELEMENT)
-                            .map(J.Assignment::getAssignment)
-                            .map(Object::toString)
-                            .map(Boolean::parseBoolean)
+                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                             .filter(isDependent -> isDependent)
                             .ifPresentOrElse(isDependent -> template
                                             .append(", cascade = {CascadeType.REMOVE")
@@ -129,14 +123,26 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                                                     .append("}");
                                     });
 
+                    // Search for defaultFetchGroup
+                    template.append(", fetch = FetchType.");
+                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                            .ifPresentOrElse(isDefault -> {
+                                        if (isDefault)
+                                            template.append("EAGER");
+                                        else
+                                            template.append("LAZY");
+                                    }, () -> template.append("LAZY")
+                            );
+
                     template.append(")");
                     // Add @OneToMany and CascadeType
                     maybeAddImport(TARGET_TYPE);
-                    maybeAddImport(CASCADE_TYPE);
+                    maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
+                    maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
 
                     return JavaTemplate.builder(template.toString())
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
-                            .imports(TARGET_TYPE, CASCADE_TYPE)
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
                             .build()
                             .apply(getCursor(), annotation.getCoordinates().replace());
                 }

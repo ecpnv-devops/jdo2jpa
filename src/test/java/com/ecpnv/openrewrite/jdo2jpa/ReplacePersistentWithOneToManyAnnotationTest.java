@@ -70,12 +70,13 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         """
                 import java.util.List;
                 import javax.jdo.annotations.Persistent;
+                import javax.persistence.FetchType;
                 import javax.persistence.OneToMany;
                 
                 public class Person {}
                 public class SomeEntity {
                     private int id;
-                    @OneToMany(mappedBy = "person")
+                    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
                     private List<Person> persons;
                 }
                 """
@@ -110,6 +111,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         """
                 import java.util.List;
                 import javax.jdo.annotations.Persistent;
+                import javax.persistence.FetchType;
                 import javax.persistence.OneToMany;
                 
                 import java.lang.Deprecated;
@@ -117,7 +119,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                 public class Person {}
                 public class SomeEntity {
                     private int id;
-                    @OneToMany(mappedBy = "person")
+                    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
                     @Deprecated
                     private List<Person> persons;
                 }
@@ -151,12 +153,13 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.jdo.annotations.Persistent;
                                 import javax.persistence.CascadeType;
+                                import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
                                 
                                 public class Person {}
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE})
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE}, fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -181,19 +184,20 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 public class Person {}
                                 public class SomeEntity {
                                     private int id;
-                                    @Persistent( mappedBy = "person", dependentElement = "false")
+                                    @Persistent( mappedBy = "person", dependentElement = "false", defaultFetchGroup = "false")
                                     private List<Person> persons;
                                 }
                                 """,
                         """
                                 import java.util.List;
                                 import javax.jdo.annotations.Persistent;
+                                import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
                                 
                                 public class Person {}
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person")
+                                    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -220,7 +224,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 public class Person {}
                                 public class SomeEntity {
                                     private int id;
-                                    @Persistent( mappedBy = "person", dependentElement = "true")
+                                    @Persistent( mappedBy = "person", dependentElement = "true", defaultFetchGroup = "true")
                                     private List<Person> persons;
                                 }
                                 """,
@@ -228,12 +232,13 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.jdo.annotations.Persistent;
                                 import javax.persistence.CascadeType;
+                                import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
                                 
                                 public class Person {}
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH})
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
                                     private List<Person> persons;
                                 }
                                 """

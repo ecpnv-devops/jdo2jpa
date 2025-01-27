@@ -1,0 +1,162 @@
+package com.ecpnv.openrewrite.jdo2jpa;
+
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.FindAnnotations;
+import org.openrewrite.java.tree.J;
+
+import com.ecpnv.openrewrite.util.RewriteUtils;
+
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
+/**
+ * This class defines a migration recipe for replacing occurrences of an entity field not contained in a collection
+ * with optionally the <code>@javax.jdo.annotations.Persistent</code> annotation with the equivalent JPA
+ * <code>@ManyToOne</code> annotation in Java code.
+ * <p>
+ * The transformation ensures compatibility with JPA by locating entity fields optionally annotated with
+ * <code>@javax.jdo.annotations.Persistent</code>, analyzing the attributes of the annotation (e.g., `dependentElement`),
+ * and it replaces the annotation with the corresponding JPA compliant <code>@ManyToOne</code> annotation.
+ * <p>
+ * The migration adheres to the following rules:
+ * <ul>
+ * <li> Fields must <b>not</b> be assignable from {@link java.util.Collection}.
+ * <li> If a field already has a <code>@ManyToOne</code> annotation, it will be skipped.
+ * <li> If the <code>@javax.jdo.annotations.Persistent</code> annotation exists, dependentElement and defaultFetchGroup
+ * are also transformed when applicable.
+ * <li> Ensures that relevant imports (<code>javax.persistence.ManyToOne</code>) are updated or added when necessary.
+ * </ul>
+ * <p>
+ * The class uses a `JavaIsoVisitor` to traverse the Abstract Syntax Tree (AST) of the Java source code and
+ * apply the required transformations to the target variable declarations.
+ *
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
+
+    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
+    public final static String TARGET_TYPE_NAME = Constants.Jpa.MANY_TO_ONE_ANNOTATION_NAME;
+    public final static String TARGET_TYPE = Constants.Jpa.MANY_TO_ONE_ANNOTATION_FULL;
+    public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
+
+    @Option(displayName = "Default cascade types to apply",
+            description = "When the " + TARGET_ANNOTATION_TYPE +
+                    " is applied, then these optional cascade type default is applied.",
+            required = false,
+            example = "CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")
+    @Nullable String defaultCascade;
+
+    @JsonCreator
+    public ReplacePersistentWithManyToOneAnnotation(@NonNull @JsonProperty("defaultCascade") String defaultCascade) {
+        this.defaultCascade = defaultCascade;
+    }
+
+    @Override
+    public @NotNull String getDisplayName() {
+        return "When there is an `" + SOURCE_ANNOTATION_TYPE + "` annotation it must be replaced by a " +
+                TARGET_ANNOTATION_TYPE + " annotation";
+    }
+
+    @Override
+    public @NotNull String getDescription() {
+        return "When an JDO entity is annotated with `" + SOURCE_ANNOTATION_TYPE + "`, JPA must have a " +
+                TARGET_ANNOTATION_TYPE + " annotation.";
+    }
+
+    @Override
+    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+
+        return new JavaIsoVisitor<ExecutionContext>() {
+
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                // Exit if Collection
+                if (multiVariable.getType() == null || multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
+                    return multiVariable;
+                }
+                // Exit if already has target annotation
+                if (!FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty()) {
+                    return multiVariable;
+                }
+                // Exit if var part of method
+                if (RewriteUtils.isMethodOwnerOfVar(multiVariable)) {
+                    return multiVariable;
+                }
+                // Verify that the field refers to an entity
+                if (RewriteUtils.hasAnnotation(multiVariable.getTypeAsFullyQualified(), Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)
+                        || RewriteUtils.hasAnnotation(multiVariable.getTypeAsFullyQualified(), Constants.Jpa.ENTITY_ANNOTATION_FULL)) {
+                    // Entity field found, hence ManyToOne applies
+                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
+
+                    // Find optional source annotation
+                    Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
+                    sourceAnnotationIfAny.ifPresent(annotation -> {
+                        // Search for dependentElement
+                        RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
+                                .filter(isDependent -> isDependent)
+                                .ifPresentOrElse(isDependent -> template
+                                                .append(" cascade = {CascadeType.REMOVE")
+                                                .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                                                .append("}"),
+                                        () -> {
+                                            if (!StringUtils.isBlank(defaultCascade))
+                                                template
+                                                        .append(" cascade = {")
+                                                        .append(defaultCascade)
+                                                        .append("}");
+                                        });
+
+                        // Search for defaultFetchGroup
+                        template.append(", fetch = FetchType.");
+                        RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                                .ifPresentOrElse(isDefault -> {
+                                            if (isDefault)
+                                                template.append("EAGER");
+                                            else
+                                                template.append("LAZY");
+                                        }, () -> template.append("LAZY")
+                                );
+                    });
+
+                    template.append(")");
+                    // Add @OneToMany and CascadeType
+                    maybeAddImport(TARGET_TYPE);
+                    maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
+                    maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+
+                    return JavaTemplate.builder(template.toString())
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                            .build()
+                            .apply(getCursor(), sourceAnnotationIfAny
+                                    // When @Persistence is found replace
+                                    .map(annotation -> annotation.getCoordinates().replace())
+                                    // Otherwise add annotation
+                                    .orElseGet(() -> multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)))
+                            );
+                }
+                return super.visitVariableDeclarations(multiVariable, ctx);
+            }
+
+        };
+    }
+}
