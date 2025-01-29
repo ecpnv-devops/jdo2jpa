@@ -27,6 +27,7 @@ recipeList:
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
   # Post code changes
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.RemoveUnusedImports
@@ -191,5 +192,11 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Unique
       newFullyQualifiedTypeName: javax.persistence.UniqueConstraint
-  # Move annotation to other annotation
-
+  # Move annotation to other annotation attribute
+  - com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute:
+      sourceAnnotationType: javax.persistence.UniqueConstraint
+      targetAnnotationType: javax.persistence.Table
+      targetAttributeName: uniqueConstraints
+  # Remove @uniques
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.Uniques'

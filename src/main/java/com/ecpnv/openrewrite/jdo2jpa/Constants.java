@@ -2,6 +2,8 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 public final class Constants {
 
+    public final static String REWRITE_ANNOTATION_PREFIX = "/*~~>*/";
+    
     public static class Jdo {
         public final static String CLASS_PATH = "jdo-api";
         public final static String BASE_PACKAGE = "javax.jdo.annotations.";
