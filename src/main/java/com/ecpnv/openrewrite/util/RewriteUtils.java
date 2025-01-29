@@ -1,12 +1,20 @@
 package com.ecpnv.openrewrite.util;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
+
+import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
 import lombok.experimental.UtilityClass;
 
@@ -90,5 +98,57 @@ public class RewriteUtils {
                 .map(namedVariable -> namedVariable.getVariableType().getOwner())
                 .filter(Objects::nonNull)
                 .anyMatch(owner -> owner instanceof JavaType.Method);
+    }
+
+
+    /**
+     * Finds and returns a list of leading annotations in the given class declaration that match the specified
+     * annotation type. The result will maintain order of the annotations as in the source code.
+     *
+     * @param classDecl      the class declaration to search for leading annotations. Must not be null.
+     * @param annotationType the type of annotation to match. Must not be blank.
+     * @return a list of matching leading annotations, or an empty list if no matching annotations are found.
+     */
+    public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
+        if (classDecl == null || StringUtils.isBlank(annotationType) || classDecl.getLeadingAnnotations() == null
+                || classDecl.getLeadingAnnotations().isEmpty()) {
+            return new ArrayList<>();
+        }
+        Pattern pattern = Pattern.compile(annotationType);
+        List<J.Annotation> annotations = classDecl.getLeadingAnnotations().stream()
+                .filter(annotation -> annotation.getType().isAssignableFrom(pattern))
+                .toList();
+        if (annotations.isEmpty()) {
+            annotations = FindAnnotations.find(classDecl, annotationType).stream()
+                    .filter(a -> TypeUtils.isOfClassType(a.getType(), annotationType))
+                    .sorted(Comparator.comparing(a -> getOrder(classDecl.getLeadingAnnotations(), a)))
+                    .toList();
+        }
+        return annotations;
+    }
+
+    /**
+     * Computes a unique order value for the specified annotation among a list of annotations.
+     * The order value is determined based on the annotation's index in the provided list and position in the
+     * optional owner annotation.
+     *
+     * @param annotations the list of annotations to search. Can be null or empty.
+     * @param annotation  the annotation whose order value needs to be determined. Must not be null.
+     * @return the computed order value as a Long. Returns 0 if the annotations list is null or empty.
+     */
+    public static Long getOrder(List<J.Annotation> annotations, J.Annotation annotation) {
+        Long order = 0l;
+        if (annotations == null || annotations.isEmpty()) {
+            return order;
+        }
+        var anno = annotation.toString().replace(Constants.REWRITE_ANNOTATION_PREFIX, "");
+        for (int i = 0; i < annotations.size(); i++) {
+            if (annotations.get(i).toString().contains(anno)) {
+                String index = "0000" + annotations.get(i).toString().indexOf(anno);
+                order = Long.valueOf(i + index.substring(index.length() - 4));
+                break;
+            }
+        }
+        return order;
     }
 }
