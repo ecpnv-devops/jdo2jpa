@@ -49,6 +49,9 @@ import lombok.Value;
  * This recipe will remove any imports for types that are not referenced within the compilation unit. This recipe
  * is aware of the import layout style and will correctly handle unfolding of wildcard imports if the import counts
  * drop below the configured values.
+ *
+ * Because unit testing requires full qualified names testing using simple class name in spring imports cannot be fully
+ * tested.
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
