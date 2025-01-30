@@ -10,6 +10,8 @@ public final class Constants {
 
         public final static String COLUMN_ANNOTATION_NAME = "Column";
         public final static String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
+        public final static String DISCRIMINATOR_ANNOTATION_NAME = "Discriminator";
+        public final static String DISCRIMINATOR_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_ANNOTATION_NAME;
         public final static String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
         public final static String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
         public final static String PERSISTENT_ANNOTATION_NAME = "Persistent";
@@ -25,6 +27,8 @@ public final class Constants {
 
         public final static String COLUMN_ANNOTATION_NAME = "Column";
         public final static String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
+        public final static String DISCRIMINATOR_VALUE_ANNOTATION_NAME = "DiscriminatorValue";
+        public final static String DISCRIMINATOR_VALUE_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_VALUE_ANNOTATION_NAME;
         public final static String ENTITY_ANNOTATION_NAME = "Entity";
         public final static String ENTITY_ANNOTATION_FULL = BASE_PACKAGE + ENTITY_ANNOTATION_NAME;
         public final static String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";

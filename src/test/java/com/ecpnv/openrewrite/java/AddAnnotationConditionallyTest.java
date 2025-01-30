@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ecpnv.openrewrite.jdo2jpa;
+package com.ecpnv.openrewrite.java;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -21,7 +21,7 @@ import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
-import com.ecpnv.openrewrite.java.AddAnnotationConditionally;
+import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
 
 /**
  * @author Patrick Deenen @ Open Circle Solutions
@@ -232,7 +232,6 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @Test
     void isLobAddedToAnnotationDeclaration() {
         rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Column"),
-                //language=java
                 //language=java
                 java(
                         """
