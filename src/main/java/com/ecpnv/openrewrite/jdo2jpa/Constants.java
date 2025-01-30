@@ -3,7 +3,7 @@ package com.ecpnv.openrewrite.jdo2jpa;
 public final class Constants {
 
     public final static String REWRITE_ANNOTATION_PREFIX = "/*~~>*/";
-    
+
     public static class Jdo {
         public final static String CLASS_PATH = "jdo-api";
         public final static String BASE_PACKAGE = "javax.jdo.annotations.";
@@ -43,4 +43,7 @@ public final class Constants {
         public final static String FETCH_TYPE_FULL = BASE_PACKAGE + "FetchType";
 
     }
+
+    public final static String LOMBOK_CLASS_PATH = "lombok";
+    public final static String SPRING_CLASS_PATH = "spring-context";
 }

@@ -28,9 +28,9 @@ recipeList:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
-  # Post code changes
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.RemoveUnusedImports
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
+  - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
@@ -135,28 +135,6 @@ recipeList:
       newFullyQualifiedTypeName: javax.persistence.Column
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
-displayName: Cleanup
-description: Run cleanup.
-tags:
-  - cleanup
-recipeList:
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.RemoveUnusedImports
-# too soon
-#  - org.openrewrite.java.format.AutoFormat
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.test
-displayName: Test
-description: Run test.
-tags:
-  - test
-recipeList:
-  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
-  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation
----
-type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
 displayName: Migrate JDO > JPA-v2.x for @Unique
 description: Migrate @Unique and @Uniques.
@@ -200,3 +178,28 @@ recipeList:
   # Remove @uniques
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.Uniques'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
+displayName: Cleanup
+description: Run cleanup.
+tags:
+  - cleanup
+recipeList:
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
+  - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
+# too soon
+#  - org.openrewrite.java.format.AutoFormat
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.test
+displayName: Test
+description: Run test.
+tags:
+  - test
+recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
+  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation:
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+      libraryOfAbstractClassName: jdo2jpa-abstract

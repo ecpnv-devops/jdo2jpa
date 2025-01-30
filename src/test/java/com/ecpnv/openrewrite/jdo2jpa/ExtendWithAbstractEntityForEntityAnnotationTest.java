@@ -12,7 +12,9 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
     void extendWithAbstractEntityAnnotationHappyPath() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
-                        .recipe(new ExtendWithAbstractEntityForEntityAnnotation()),
+                        .recipe(new ExtendWithAbstractEntityForEntityAnnotation(
+                                "org.estatio.base.prod.dom.EntityAbstract",
+                                "jdo2jpa-abstract")),
                 java(
                         """
                                 import java.util.List;
@@ -21,7 +23,7 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity implements Comparable<SomeEntity> {
                                     private List<String> listofStrings;
-
+                                
                                     @Override
                                     public int compareTo(SomeEntity o) {
                                         return 0;
@@ -38,7 +40,7 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity extends EntityAbstract {
                                     private List<String> listofStrings;
-
+                                
                                     @Override
                                     public int compareTo(SomeEntity o) {
                                         return 0;
@@ -48,12 +50,15 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
     @DocumentExample
     @Test
     void extendWithAbstractEntityAnnotationUnhappyPath() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
-                        .recipe(new ExtendWithAbstractEntityForEntityAnnotation()),
+                        .recipe(new ExtendWithAbstractEntityForEntityAnnotation(
+                                "org.estatio.base.prod.dom.EntityAbstract",
+                                "jdo2jpa-abstract")),
                 java(
                         """
                                 import javax.persistence.Entity;
