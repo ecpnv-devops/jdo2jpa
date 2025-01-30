@@ -5,6 +5,9 @@ import org.openrewrite.DocumentExample;
 
 import static org.openrewrite.java.Assertions.java;
 
+/**
+ * @author Wouter Veltmaat @ Open Circle Solutions
+ */
 class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
 
     @DocumentExample

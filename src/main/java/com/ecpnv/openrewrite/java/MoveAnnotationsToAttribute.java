@@ -53,6 +53,8 @@ import lombok.Value;
  * - The recipe also ensures that the source annotation type and target annotation type are properly managed
  * in terms of imports and syntax.
  * <p>
+ * @author Patrick Deenen @ Open Circle Solutions
+ * <p>
  * TODO Currently only supports annotations on a class; should be extended for annotations on fields and methods.
  */
 @Value

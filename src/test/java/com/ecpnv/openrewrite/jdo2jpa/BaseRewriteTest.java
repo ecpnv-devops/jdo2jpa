@@ -4,6 +4,9 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RewriteTest;
 
+/**
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 public class BaseRewriteTest implements RewriteTest {
 
     public final static JavaParser.Builder<?, ?> PARSER = JavaParser.fromJavaVersion()
