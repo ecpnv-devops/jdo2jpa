@@ -27,8 +27,9 @@ recipeList:
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.RemoveUnusedImports
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
+  - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
@@ -138,8 +139,9 @@ description: Run cleanup.
 tags:
   - cleanup
 recipeList:
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.RemoveUnusedImports
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
+  - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
 ---
@@ -151,4 +153,6 @@ tags:
   - test
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
-  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation
+  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation:
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+      libraryOfAbstractClassName: jdo2jpa-abstract

@@ -92,12 +92,17 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- lombok is optional, but recommended for authoring recipes -->
+        <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.34</version>
-            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.17.0</version>
         </dependency>
 
         <!-- For authoring tests for any kind of Recipe -->
