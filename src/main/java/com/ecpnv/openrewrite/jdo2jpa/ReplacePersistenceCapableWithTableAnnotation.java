@@ -1,6 +1,5 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import java.util.Comparator;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -45,11 +44,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@javax.jdo.annotations.PersistenceCapable";
-    public final static String TARGET_TYPE_NAME = "Table";
-    public final static String TARGET_TYPE = Constants.PERSISTENCE_BASE_PACKAGE + "." + TARGET_TYPE_NAME;
+    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
+    public final static String TARGET_TYPE_NAME = Constants.Jpa.TABLE_ANNOTATION_NAME;
+    public final static String TARGET_TYPE = Constants.Jpa.TABLE_ANNOTATION_FULL;
     public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
-    public final static String ARGUMENT_NAME = "schema";
 
     @Override
     public @NotNull String getDisplayName() {
@@ -77,14 +75,14 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 
                     // Get schema
                     String template = "@" + TARGET_TYPE_NAME +
-                            RewriteUtils.findArguments(sourceAnnotation, ARGUMENT_NAME)
+                            RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
                                     .map(J.Assignment::toString)
                                     .map(t -> "(" + t + ")")
                                     .orElse("");
                     // Add @Entity
                     maybeAddImport(TARGET_TYPE);
                     return JavaTemplate.builder(template)
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE)
                             .build()
                             .apply(getCursor(), sourceAnnotation.getCoordinates().replace());

@@ -8,8 +8,8 @@ public class BaseRewriteTest implements RewriteTest {
 
     public final static JavaParser.Builder<?, ?> PARSER = JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(),
-                    Constants.JPA_CLASS_PATH,
-                    Constants.JDO_CLASS_PATH,
+                    Constants.Jpa.CLASS_PATH,
+                    Constants.Jdo.CLASS_PATH,
                     Constants.SPRING_CLASS_PATH,
                     Constants.LOMBOK_CLASS_PATH);//lombok seems to be a special edge-case
 }

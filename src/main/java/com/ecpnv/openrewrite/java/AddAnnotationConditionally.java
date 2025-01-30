@@ -155,7 +155,7 @@ public class AddAnnotationConditionally extends Recipe {
                             // Add annotation to variable
                             maybeAddImport(annotationType);
                             return (Statement) JavaTemplate.builder(annotationTemplate)
-                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.JPA_CLASS_PATH))
+                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                                     .imports(annotationType)
                                     .build()
                                     .apply(getCursor(), coordinates.get());
