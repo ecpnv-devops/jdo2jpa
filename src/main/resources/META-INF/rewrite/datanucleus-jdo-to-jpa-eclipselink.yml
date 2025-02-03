@@ -4,7 +4,7 @@
 #
 # This is the main recipe to execute all recipes nessecary to migrate from JDO to JPA.
 #
-# author patrick.deenen@opencirclesolutions.nl
+# @author Patrick Deenen @ Open Circle Solutions
 #
 
 ---
@@ -28,6 +28,8 @@ recipeList:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
+  # Post code changes
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
       excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
   - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
@@ -203,3 +205,49 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
       libraryOfAbstractClassName: jdo2jpa-abstract
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
+displayName: Migrate JDO > JPA-v2.x for @Discriminator
+description: Migrate @Discriminator and @DiscriminatorStrategy.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - Persistent
+recipeList:
+  # Translate discriminator strategy of class name to discriminator values with the names of the classes
+  # by copying @Discriminator from parent class to subclasses when omitted and use the subclass name
+  - com.ecpnv.openrewrite.jdo2jpa.CopyDiscriminatorFromParent
+  # Add @DiscriminatorColumn for every @Discriminator
+  # Set discriminator column name: discriminator
+  # Set discriminator column length: 255
+  # Note that from v5.0.2 DataNucleus will use a discriminator by default for inheritance strategy single table
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Discriminator.*'
+      annotationType: javax.persistence.DiscriminatorColumn
+      annotationTemplate: '@DiscriminatorColumn( name = "discriminator", length = 255)'
+      declarationType: CLASS
+  # Change type of @Discriminator to @DiscriminatorValue
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Discriminator
+      newFullyQualifiedTypeName: javax.persistence.DiscriminatorValue
+  # Remove attributes which are not applicable
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.DiscriminatorValue
+      attributeName: strategy
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.DiscriminatorValue
+      attributeName: column
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.DiscriminatorValue
+      attributeName: columns
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.DiscriminatorValue
+      attributeName: indexed
+# Remove @Inheritance from subclasses when strategy is the same
+# Set inheritance strategy to the causeway default: table_per_class == new table for each class

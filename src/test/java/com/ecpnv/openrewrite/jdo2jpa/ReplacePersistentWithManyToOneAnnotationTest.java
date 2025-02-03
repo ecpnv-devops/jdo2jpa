@@ -21,6 +21,9 @@ import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
+/**
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
 
     @Override
@@ -219,6 +222,21 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Validates that specific scenarios involving the `@Persistent` annotation
+     * within the provided source code do not trigger any replacement or transformation
+     * during the execution of the associated recipe.
+     * <p>
+     * This test ensures that:
+     * - Code containing the `@Persistent` annotation alongside a method parameter
+     * remains unchanged.
+     * - No annotations are replaced or modified when the recipe is run.
+     * - The structure and logic of the Java source code are preserved exactly
+     * as in the input.
+     * <p>
+     * Utilizes the Rewrite testing framework to confirm that the input Java code
+     * remains unaffected after applying the recipe.
+     */
     @DocumentExample
     @Test
     void noReplacePersistentWhenParameter() {

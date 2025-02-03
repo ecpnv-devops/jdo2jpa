@@ -18,6 +18,12 @@ import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * Utility class providing helper methods for handling and analyzing Java annotation metadata,
+ * variable declarations, and related structures.
+ *
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 @UtilityClass
 public class RewriteUtils {
 
