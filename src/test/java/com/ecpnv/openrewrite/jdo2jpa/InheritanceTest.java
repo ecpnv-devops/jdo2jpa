@@ -28,7 +28,8 @@ class InheritanceTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance");
+        spec.parser(PARSER).
+                recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance");
     }
 
     @DocumentExample
@@ -50,6 +51,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
+                                
                                 @Inheritance
                                 public class Manager extends Person {
                                         @Persistent( mappedBy = "person")
@@ -69,7 +71,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private String name;
                                 }
                                 
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                
                                 @DiscriminatorValue("Manager")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
@@ -112,7 +114,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -145,7 +147,6 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.Inheritance;
                                 import javax.persistence.MappedSuperclass;
                                 
                                 @MappedSuperclass
@@ -153,7 +154,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -193,7 +194,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -233,7 +234,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }

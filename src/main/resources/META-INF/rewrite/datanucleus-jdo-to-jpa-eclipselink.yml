@@ -265,12 +265,6 @@ tags:
   - persistence
   - Persistent
 recipeList:
-  # Change type of @Inheritance
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.jdo.annotations.Inheritance
-      newFullyQualifiedTypeName: javax.persistence.Inheritance
-  # Remove @Inheritance from subclasses when strategy is the same
-  # TODO Remove @Inheritance from subclasses when strategy is the same
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Inheritance\(.*strategy\s*=\s*InheritanceStrategy.SUBCLASS_TABLE.*\)'
@@ -278,7 +272,15 @@ recipeList:
       annotationTemplate: '@MappedSuperclass'
       declarationType: CLASS
   - org.openrewrite.java.RemoveAnnotation:
-      annotationPattern: '@javax.persistence.Inheritance(strategy=javax.jdo.annotations.InheritanceStrategy.SUBCLASS_TABLE)'
+      annotationPattern: '@javax.jdo.annotations.Inheritance(strategy=javax.jdo.annotations.InheritanceStrategy.SUBCLASS_TABLE)'
+  # Remove @Inheritance from subclasses
+  - com.ecpnv.openrewrite.java.RemoveInheritedAnnotations:
+      nonInheritedAnnotationTypes:
+        - javax.jdo.annotations.Inheritance
+  # Change type of @Inheritance
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Inheritance
+      newFullyQualifiedTypeName: javax.persistence.Inheritance
   # Set inheritance strategy to the causeway default: table_per_class(==new table) translates into JOINED
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       annotationType: javax.persistence.Inheritance
