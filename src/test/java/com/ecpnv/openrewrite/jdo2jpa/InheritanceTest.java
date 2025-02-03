@@ -34,19 +34,23 @@ class InheritanceTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void testAllSubRecipes() {
-        rewriteRun(
+        rewriteRun(spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
                 //language=java
                 java(
                         """
                                 import java.util.List;
                                 import javax.jdo.annotations.Discriminator;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.jdo.annotations.InheritanceStrategy;
                                 import javax.jdo.annotations.Persistent;
                                 
                                 @Discriminator("Person", strategy = "special", column = "col", columns = {"cols"}, indexed = "true")
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 public class Person {
                                         private int id;
                                         private String name;
                                 }
+                                @Inheritance
                                 public class Manager extends Person {
                                         @Persistent( mappedBy = "person")
                                         private List<Person> managedPersons;
@@ -54,10 +58,10 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.Persistent;
-                                import javax.persistence.DiscriminatorColumn;
-                                import javax.persistence.DiscriminatorValue;
+                                import javax.persistence.*;
                                 
+                                
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Person")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Person {
@@ -65,10 +69,11 @@ class InheritanceTest extends BaseRewriteTest {
                                         private String name;
                                 }
                                 
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Manager")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
-                                        @Persistent( mappedBy = "person")
+                                        @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                         private List<Person> managedPersons;
                                 }
                                 """
@@ -76,4 +81,164 @@ class InheritanceTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void replaceJoined() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                import javax.persistence.Inheritance;
+                                
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+
+    @DocumentExample
+    @Test
+    void replaceSubclassTable() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                
+                                @Inheritance(strategy = InheritanceStrategy.SUBCLASS_TABLE)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.Inheritance;
+                                import javax.persistence.MappedSuperclass;
+                                
+                                @MappedSuperclass
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void replaceSuperclassTable() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                
+                                @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                import javax.persistence.Inheritance;
+                                
+                                @Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void replaceCompleteTable() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                
+                                @Inheritance(strategy = InheritanceStrategy.COMPLETE_TABLE)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance(customStrategy = "custom")
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.InheritanceStrategy;
+                                import javax.persistence.Inheritance;
+                                
+                                @Inheritance(strategy = javax.persistence.InheritanceType.TABLE_PER_CLASS)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
 }
