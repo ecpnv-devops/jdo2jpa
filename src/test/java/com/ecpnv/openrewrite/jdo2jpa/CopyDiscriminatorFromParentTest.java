@@ -116,13 +116,13 @@ class CopyDiscriminatorFromParentTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Discriminator;
                                 import javax.jdo.annotations.Persistent;
                                 
-                                @Discriminator("Person", strategy = DiscriminatorStrategy.CLASS_NAME)
+                                @Discriminator(value = "Person", strategy = DiscriminatorStrategy.CLASS_NAME)
                                 public class Person {
                                         private int id;
                                         private String name;
                                 }
                                 
-                                @Discriminator("Manager", strategy = DiscriminatorStrategy.CLASS_NAME)
+                                @Discriminator(value = "Manager", strategy = DiscriminatorStrategy.CLASS_NAME)
                                 public class Manager extends Person {
                                         @Persistent( mappedBy = "person")
                                         private List<Person> managedPersons;

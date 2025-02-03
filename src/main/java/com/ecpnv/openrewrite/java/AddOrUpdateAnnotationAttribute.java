@@ -411,7 +411,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                     a = a.withArguments(ListUtils.concat(as, a.getArguments()));
                 }
             }
-            if (getCursor().getParent() != null) {
+            if (getCursor().getParentTreeCursor().getParent() != null) {
                 a = maybeAutoFormat(original, a, ctx);
             }
             return a;

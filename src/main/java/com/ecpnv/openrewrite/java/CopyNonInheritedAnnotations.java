@@ -121,7 +121,7 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
     }
 
     public static class CopyAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final Map<String, List<J.Annotation>> parentAnnotationsByType;
+        protected final Map<String, List<J.Annotation>> parentAnnotationsByType;
 
         public CopyAnnoVisitor(Map<String, List<J.Annotation>> parentAnnotationsByType) {
             this.parentAnnotationsByType = parentAnnotationsByType;
@@ -163,9 +163,10 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
                         JavaType.FullyQualified annotationName = TypeUtils.asFullyQualified(annotation.getType());
                         if (annotationName != null && !existingAnnotations.contains(annotationName.getFullyQualifiedName())) {
                             //If the annotation does not exist on the current class, add it.
-                            annotation = processAddedAnnotation(cd, annotation, ctx);
                             annotationsFromParentClass.add(annotation);
                             existingAnnotations.add(annotationName.getFullyQualifiedName());
+                        } else {
+                            processExistingAnnotation(cd, annotation, ctx);
                         }
                     }
                 }
@@ -176,6 +177,7 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
                 cd = cd.withLeadingAnnotations(afterAnnotationList);
                 cd = autoFormat(cd, cd.getName(), ctx, getCursor().getParentTreeCursor());
                 for (J.Annotation annotation : annotationsFromParentClass) {
+                    annotation = processAddedAnnotation(cd, annotation, ctx);
                     JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(annotation.getType());
                     if (fullyQualified != null) {
                         maybeAddImport(fullyQualified.getFullyQualifiedName());
@@ -183,6 +185,13 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
                 }
             }
             return cd;
+        }
+
+        protected J.Annotation processExistingAnnotation(
+                J.ClassDeclaration classDeclaration,
+                J.Annotation annotation,
+                ExecutionContext ctx) {
+            return annotation;
         }
 
         protected J.Annotation processAddedAnnotation(
