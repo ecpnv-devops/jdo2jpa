@@ -96,6 +96,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     @Option(displayName = "Old Attribute value",
             description = "The current value of the attribute, this can be used to filter where the change is applied. " +
                     "Set to `null` for wildcard behavior.",
+            required = false,
             example = "400")
     String oldAttributeValue;
 
@@ -120,7 +121,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             @NonNull @JsonProperty("appendArray") Boolean appendArray,
             @Nullable @JsonProperty("attributeName") String attributeName,
             @NonNull @JsonProperty("attributeValue") String attributeValue,
-            @NonNull @JsonProperty("oldAttributeValue") String oldAttributeValue,
+            @Nullable @JsonProperty("oldAttributeValue") String oldAttributeValue,
             @NonNull @JsonProperty("operation") Operation operation) {
         this.annotationType = annotationType;
         this.appendArray = appendArray;
@@ -255,6 +256,21 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                             }
 
                             return as.withAssignment(((J.NewArray) as.getAssignment()).withInitializer(jLiteralList));
+                        } else if (as.getAssignment() instanceof J.FieldAccess) {
+                            String fullQn = as.getAssignment().getType() + "." + ((J.FieldAccess) as.getAssignment()).getName();
+                            if (newAttributeValue.equals(fullQn) || newAttributeValue.equals(as.getAssignment().toString())
+                                    || (operation.isAdd() && !operation.isUpdate())) {
+                                return it;
+                            }
+                            if (!valueMatches(as.getAssignment(), oldAttributeValue)) {
+                                return it;
+                            }
+                            return ((J.Annotation) JavaTemplate.builder("#{} = #{}")
+                                    .contextSensitive()
+                                    .build()
+                                    .apply(getCursor(), finalA.getCoordinates().replaceArguments(),
+                                            ((J.Identifier) as.getVariable()).getSimpleName(), newAttributeValue)
+                            ).getArguments().get(0);
                         } else {
                             J.Literal value = (J.Literal) as.getAssignment();
                             if (newAttributeValue.equals(value.getValueSource()) || (operation.isAdd() && !operation.isUpdate())) {
@@ -428,7 +444,10 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             return oldAttributeValue.equals(((J.Literal) expression).getValue());
         } else if (expression instanceof J.FieldAccess) {
             J.FieldAccess fa = (J.FieldAccess) expression;
-            String currentValue = ((J.Identifier) fa.getTarget()).getSimpleName() + "." + fa.getSimpleName();
+            String currentValue = fa.toString();
+            if (fa.getTarget() instanceof J.Identifier) {
+                currentValue = ((J.Identifier) fa.getTarget()).getSimpleName() + "." + fa.getSimpleName();
+            }
             return oldAttributeValue.equals(currentValue);
         } else if (expression instanceof J.Identifier) { // class names, static variables ..
             if (oldAttributeValue.endsWith(".class")) {
