@@ -28,6 +28,7 @@ recipeList:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Index
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   # Post code changes
@@ -151,7 +152,7 @@ tags:
   - persistence
   - Persistent
 recipeList:
-  # replace @Unique(..members..) with @Column(..columnNames..)
+  # replace @Unique(..members..) with @Unique(..columnNames..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
       annotationType: javax.jdo.annotations.Unique
       oldAttributeName: members
@@ -181,6 +182,53 @@ recipeList:
   # Remove @uniques
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.Uniques'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Index
+displayName: Migrate JDO > JPA-v2.x for @Index
+description: Migrate @Index.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - Persistent
+recipeList:
+  # replace @Index(..members..) with @Index(..columnList..)
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.jdo.annotations.Index
+      oldAttributeName: members
+      newAttributeName: columnList
+  # remove unsupported attributes
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: table
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: unique
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: columns
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: extensions
+  # Change Index type
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Index
+      newFullyQualifiedTypeName: javax.persistence.Index
+  # Join the column names in the array to comma separated string
+  - com.ecpnv.openrewrite.java.JoinStringArrayAnnotationAttribute:
+      annotationType: javax.persistence.Index
+      attributeName: columnList
+      delimiter: ", "
+  # Move Index annotation to Table annotation attribute
+  - com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute:
+      sourceAnnotationType: javax.persistence.Index
+      targetAnnotationType: javax.persistence.Table
+      targetAttributeName: indexes
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
