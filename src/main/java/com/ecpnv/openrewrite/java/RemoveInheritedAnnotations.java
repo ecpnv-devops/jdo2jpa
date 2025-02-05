@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -141,26 +142,24 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
                 }
             }
 
-            //Collect the annotation names already applied to the class.
-            Set<String> existingAnnotations = new HashSet<>();
-            for (J.Annotation leadingAnnotation : cd.getLeadingAnnotations()) {
-                JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(leadingAnnotation.getType());
-                if (fullyQualified != null) {
-                    existingAnnotations.add(fullyQualified.getFullyQualifiedName());
-                }
-            }
-
+            // Collect the annotations to remove
             List<J.Annotation> annotationsToRemove = cd.getLeadingAnnotations().stream()
+                    // Is there any parent type
                     .filter(ca -> parentTypes.stream()
+                            // That has candidate annotations
                             .map(parentAnnotationsByType::get)
+                            .filter(Objects::nonNull)
                             .flatMap(List::stream)
-                            .anyMatch(pa -> ca.getType().equals(pa.getType())))
+                            // Matching annotations in the current class?
+                            .anyMatch(pa -> ca.getType() != null && ca.getType().equals(pa.getType())))
                     .toList();
 
             if (!annotationsToRemove.isEmpty()) {
                 List<J.Annotation> leadingAnnotations = new ArrayList<>(cd.getLeadingAnnotations());
                 leadingAnnotations.removeAll(annotationsToRemove);
                 cd = cd.withLeadingAnnotations(leadingAnnotations);
+                annotationsToRemove.forEach(annotation ->
+                        maybeRemoveImport(TypeUtils.asFullyQualified(annotation.getType())));
             }
 
             return cd;
