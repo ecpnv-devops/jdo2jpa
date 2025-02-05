@@ -38,6 +38,14 @@ class RemoveInheritedAnnotationsTest extends BaseRewriteTest {
                 .recipe(new RemoveInheritedAnnotations(Set.of(Constants.Jpa.INHERITANCE_ANNOTATION_FULL)));
     }
 
+    /**
+     * Tests the removal of inherited annotations from subclasses while retaining them in the parent class.
+     * <p>
+     * This method asserts that when an annotation, specifically {@code @Inheritance}, is present on a parent
+     * class and also applied redundantly to a subclass, the annotation is removed from the subclass while
+     * remaining on the parent class. The method validates this transformation by comparing the original source
+     * code against the expected modified output.
+     */
     @DocumentExample
     @Test
     void removeInheritedAnnotations() {
