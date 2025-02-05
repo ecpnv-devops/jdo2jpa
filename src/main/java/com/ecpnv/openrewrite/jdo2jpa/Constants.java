@@ -33,6 +33,9 @@ public final class Constants {
         public final static String DISCRIMINATOR_VALUE_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_VALUE_ANNOTATION_NAME;
         public final static String ENTITY_ANNOTATION_NAME = "Entity";
         public final static String ENTITY_ANNOTATION_FULL = BASE_PACKAGE + ENTITY_ANNOTATION_NAME;
+        public final static String INDEX_ANNOTATION_NAME = "Index";
+        public final static String INDEX_ANNOTATION_FULL = BASE_PACKAGE + INDEX_ANNOTATION_NAME;
+        public final static String INDEX_ANNOTATION_COLUMN_LIST_ATTRIBUTE = "columnList";
         public final static String INHERITANCE_ANNOTATION_NAME = "Inheritance";
         public final static String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
         public final static String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
@@ -44,6 +47,7 @@ public final class Constants {
         public final static String TABLE_ANNOTATION_FULL = BASE_PACKAGE + TABLE_ANNOTATION_NAME;
         public final static String TABLE_ARGUMENT_SCHEMA = "schema";
         public final static String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
+        public final static String TABLE_ARGUMENT_INDEXES = "indexes";
         public final static String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
         public final static String UNIQUE_CONSTRAINT_ANNOTATION_FULL = BASE_PACKAGE + UNIQUE_CONSTRAINT_ANNOTATION_NAME;
 
