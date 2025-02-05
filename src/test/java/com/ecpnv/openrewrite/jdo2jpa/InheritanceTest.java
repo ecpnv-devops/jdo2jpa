@@ -60,7 +60,9 @@ class InheritanceTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Inheritance;
                                 import javax.jdo.annotations.InheritanceStrategy;
                                 import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.PersistenceCapable;
                                 
+                                @PersistenceCapable(schema = "schemaname", table = "tablename")
                                 @Discriminator("Person", strategy = "special", column = "col", columns = {"cols"}, indexed = "true")
                                 @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 public class Person {
@@ -78,7 +80,8 @@ class InheritanceTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.persistence.*;
                                 
-                                
+                                @Table(schema = "schemaname")
+                                @Entity
                                 @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Person")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
