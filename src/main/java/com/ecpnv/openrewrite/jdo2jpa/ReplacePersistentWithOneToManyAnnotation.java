@@ -102,14 +102,22 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                     return multiVariable;
                 }
                 // Find mappedby argument
-                J.Annotation annotation = annotations.iterator().next();
-                Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(annotation, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
-                if (mappedBy.isPresent()) {
-                    // mappedBy argument found, hence oneToMany applies
-                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(").append(mappedBy.get());
+                J.Annotation persistentAnno = annotations.iterator().next();
+                Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(persistentAnno, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
+                // Find Table argument
+                Optional<J.Assignment> table = RewriteUtils.findArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_TABLE);
+                // Find @Join annotation
+                FindAnnotations.find(multiVariable, )
+                if (mappedBy.isPresent() || table.isPresent()) {
+                    // mappedBy or table argument found, hence oneToMany applies
+                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
+                    mappedBy.ifPresent(template::append);
+                    table.ifPresent(ta -> {
+                        // Add @JoinTable to var with table name
+                    });
 
                     // Search for dependentElement
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
+                    RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                             .filter(isDependent -> isDependent)
                             .ifPresentOrElse(isDependent -> template
                                             .append(", cascade = {CascadeType.REMOVE")
@@ -125,7 +133,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 
                     // Search for defaultFetchGroup
                     template.append(", fetch = FetchType.");
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                    RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
                                         if (isDefault)
                                             template.append("EAGER");
@@ -144,7 +152,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
                             .build()
-                            .apply(getCursor(), annotation.getCoordinates().replace());
+                            .apply(getCursor(), persistentAnno.getCoordinates().replace());
                 }
                 return super.visitVariableDeclarations(multiVariable, ctx);
             }

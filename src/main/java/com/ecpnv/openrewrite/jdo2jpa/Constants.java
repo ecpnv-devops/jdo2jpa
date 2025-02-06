@@ -20,7 +20,7 @@ public final class Constants {
         public final static String PERSISTENT_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENT_ANNOTATION_NAME;
         public final static String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
         public final static String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
-
+        public final static String PERSISTENT_ARGUMENT_TABLE = "table";
     }
 
     public static class Jpa {
