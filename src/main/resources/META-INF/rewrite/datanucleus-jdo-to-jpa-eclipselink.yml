@@ -2,7 +2,10 @@
 # This YAML defines a structured, step-by-step guide to migrate classes and code from JDO-specific annotations
 # to their JPA equivalents.
 #
-# This is the main recipe to execute all recipes nessecary to migrate from JDO to JPA.
+# The main recipe executes all recipes necessary to migrate from JDO to JPA.
+#
+# NOTE: The main recipe doesn't cover all possible JDO ORM mapping variations possible, but is restricted to most
+#       common cases. Please feel free to extend the recipes with additional JDO mapping coverage.
 #
 # @author Patrick Deenen @ Open Circle Solutions
 #
@@ -11,7 +14,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x
 displayName: Migrate from JDO to JPA v2.x
-description: These recipes help migrate JDO applications using Datanucleus JDO to Java Persistence using JPA version v2.x (pre Jakarta persistence).
+description: This main recipe migrates JDO applications using (Datanucleus) JDO to Java Persistence using JPA version v2.x (pre Jakarta persistence).
 tags:
   - jdo
   - jpa
