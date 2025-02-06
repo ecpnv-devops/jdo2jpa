@@ -202,6 +202,9 @@ tags:
   - persistence
   - Persistent
 recipeList:
+  # Move @Index from field to class
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: javax.jdo.annotations.Index
   # replace @Index(..members..) with @Index(..columnList..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
       annotationType: javax.jdo.annotations.Index

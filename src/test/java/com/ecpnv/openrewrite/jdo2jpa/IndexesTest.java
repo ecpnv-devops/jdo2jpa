@@ -360,4 +360,40 @@ class IndexesTest extends BaseRewriteTest {
                 )
         );
     }
+
+
+    @DocumentExample
+    @Test
+    void moveIndexFromFieldToClass() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import javax.persistence.Table;
+                                import javax.jdo.annotations.Index;
+                                
+                                @Index(name = "SomeEntityNameIndex", members = {"name"}, table = "table", 
+                                unique = "false", columns = {"col1", "col2"}, extensions = "")
+                                @Table(schema = "schemaName")
+                                public class SomeEntity {
+                                        @Index(name = "SomeEntityIdIndex", unique = "true")
+                                        private int id;
+                                        private String name;
+                                }
+                                """,
+                        """
+                                import javax.persistence.Index;
+                                import javax.persistence.Table;
+                                
+                                
+                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityNameIndex",
+                                columnList = "name")})
+                                public class SomeEntity {
+                                        private int id;
+                                        private String name;
+                                }
+                                """
+                )
+        );
+    }
 }
