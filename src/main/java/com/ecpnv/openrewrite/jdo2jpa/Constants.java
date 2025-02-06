@@ -12,15 +12,20 @@ public final class Constants {
         public final static String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
         public final static String DISCRIMINATOR_ANNOTATION_NAME = "Discriminator";
         public final static String DISCRIMINATOR_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_ANNOTATION_NAME;
+        public final static String ELEMENT_ANNOTATION_NAME = "Element";
+        public final static String ELEMENT_ANNOTATION_FULL = BASE_PACKAGE + ELEMENT_ANNOTATION_NAME;
         public final static String INHERITANCE_ANNOTATION_NAME = "Inheritance";
         public final static String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
+        public final static String JOIN_ANNOTATION_NAME = "Join";
+        public final static String JOIN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_ANNOTATION_NAME;
+        public final static String JOIN_ARGUMENT_COLUMN = "column";
         public final static String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
         public final static String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
         public final static String PERSISTENT_ANNOTATION_NAME = "Persistent";
         public final static String PERSISTENT_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENT_ANNOTATION_NAME;
         public final static String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
         public final static String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
-
+        public final static String PERSISTENT_ARGUMENT_TABLE = "table";
     }
 
     public static class Jpa {
@@ -38,6 +43,10 @@ public final class Constants {
         public final static String INDEX_ANNOTATION_COLUMN_LIST_ATTRIBUTE = "columnList";
         public final static String INHERITANCE_ANNOTATION_NAME = "Inheritance";
         public final static String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
+        public final static String JOIN_COLUMN_ANNOTATION_NAME = "JoinColumn";
+        public final static String JOIN_COLUMN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_COLUMN_ANNOTATION_NAME;
+        public final static String JOIN_TABLE_ANNOTATION_NAME = "JoinTable";
+        public final static String JOIN_TABLE_ANNOTATION_FULL = BASE_PACKAGE + JOIN_TABLE_ANNOTATION_NAME;
         public final static String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
         public final static String ONE_TO_MANY_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_MANY_ANNOTATION_NAME;
         public final static String ONE_TO_MANY_ARGUMENT_MAPPED_BY = "mappedBy";

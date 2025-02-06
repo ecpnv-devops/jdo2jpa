@@ -2,6 +2,7 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,9 +19,11 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 
+import com.ecpnv.openrewrite.java.AddAnnotationConditionally;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
@@ -102,30 +105,45 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                     return multiVariable;
                 }
                 // Find mappedby argument
-                J.Annotation annotation = annotations.iterator().next();
-                Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(annotation, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
-                if (mappedBy.isPresent()) {
-                    // mappedBy argument found, hence oneToMany applies
-                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(").append(mappedBy.get());
+                J.Annotation persistentAnno = annotations.iterator().next();
+                Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(persistentAnno, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
+                // Find Table argument
+                Optional<J.Assignment> table = RewriteUtils.findArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_TABLE);
+                // Find @Join annotation
+                Optional<J.Annotation> joinAnno = FindAnnotations.find(multiVariable, Constants.Jdo.JOIN_ANNOTATION_FULL).stream().findFirst();
+                if (mappedBy.isPresent() || table.isPresent() || joinAnno.isPresent()) {
+                    // oneToMany applies
+                    StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
+                    mappedBy.ifPresent(template::append);
 
                     // Search for dependentElement
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
+                    AtomicBoolean added = new AtomicBoolean(false);
+                    RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                             .filter(isDependent -> isDependent)
-                            .ifPresentOrElse(isDependent -> template
-                                            .append(", cascade = {CascadeType.REMOVE")
-                                            .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
-                                            .append("}"),
-                                    () -> {
-                                        if (!StringUtils.isBlank(defaultCascade))
-                                            template
-                                                    .append(", cascade = {")
-                                                    .append(defaultCascade)
-                                                    .append("}");
-                                    });
+                            .ifPresentOrElse(isDependent -> {
+                                mappedBy.ifPresent(ma -> template.append(", "));
+                                template
+                                        .append("cascade = {CascadeType.REMOVE")
+                                        .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                                        .append("}");
+                                added.set(true);
+                            }, () -> {
+                                if (!StringUtils.isBlank(defaultCascade)) {
+                                    mappedBy.ifPresent(ma -> template.append(", "));
+                                    template
+                                            .append("cascade = {")
+                                            .append(defaultCascade)
+                                            .append("}");
+                                    added.set(true);
+                                }
+                            });
 
                     // Search for defaultFetchGroup
-                    template.append(", fetch = FetchType.");
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                    if (mappedBy.isPresent() || added.get()) {
+                        template.append(", ");
+                    }
+                    template.append("fetch = FetchType.");
+                    RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
                                         if (isDefault)
                                             template.append("EAGER");
@@ -139,16 +157,66 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                     maybeAddImport(TARGET_TYPE);
                     maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                     maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+                    maybeAddImport(Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL);
+                    maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
+                    maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
 
-                    return JavaTemplate.builder(template.toString())
+                    // Add @OneToMany
+                    multiVariable = JavaTemplate.builder(template.toString())
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
                             .build()
-                            .apply(getCursor(), annotation.getCoordinates().replace());
+                            .apply(getCursor(), persistentAnno.getCoordinates().replace());
+
+                    if (table.isPresent() || joinAnno.isPresent()) {
+                        // Add @JoinTable to var with table name
+                        StringBuilder joinTableTemplate = new StringBuilder("@")
+                                .append(Constants.Jpa.JOIN_TABLE_ANNOTATION_NAME)
+                                .append("( ");
+                        table.ifPresent(t -> joinTableTemplate.append("name = \"")
+                                .append(t.getAssignment())
+                                .append("\""));
+                        // Add join column
+                        addJoinColumns(joinAnno, joinTableTemplate, "joinColumns", table.isPresent());
+                        // Find @Element annotation
+                        Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
+                        // Add inverse join column
+                        addJoinColumns(elemAnno, joinTableTemplate, "inverseJoinColumns", true);
+                        joinTableTemplate.append(")");
+                        // Add @JoinTable
+                        multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
+                                ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
+                                Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL, joinTableTemplate.toString(), "VAR")
+                                .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
+                        // Remove @Join
+                        multiVariable = (J.VariableDeclarations) new RemoveAnnotation(Constants.Jdo.JOIN_ANNOTATION_FULL).getVisitor().visit(multiVariable, ctx);
+                        // Remove @Element
+                        multiVariable = (J.VariableDeclarations) new RemoveAnnotation(Constants.Jdo.ELEMENT_ANNOTATION_FULL).getVisitor().visit(multiVariable, ctx);
+                    }
+                    return multiVariable;
                 }
                 return super.visitVariableDeclarations(multiVariable, ctx);
             }
 
+            private void addJoinColumns(
+                    Optional<J.Annotation> joinAnno, StringBuilder joinTableTemplate,
+                    String joinColumnsName, boolean hasPreviousArg) {
+                joinAnno.ifPresent(ja -> {
+                    if (hasPreviousArg) {
+                        joinTableTemplate.append(",\n");
+                    }
+                    Optional<J.Assignment> colArg = RewriteUtils.findArgument(ja, Constants.Jdo.JOIN_ARGUMENT_COLUMN);
+                    joinTableTemplate
+                            .append(joinColumnsName)
+                            .append(" = {@")
+                            .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL)
+                            .append("(");
+                    colArg.ifPresent(c -> joinTableTemplate
+                            .append("name = \"")
+                            .append(c.getAssignment())
+                            .append("\")}"));
+                });
+            }
         };
     }
 }

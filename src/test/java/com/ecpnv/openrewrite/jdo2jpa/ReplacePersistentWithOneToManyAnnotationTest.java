@@ -53,7 +53,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void replacePersistentWithOneToManyAnnotation() {
-        rewriteRun(//language=java
+        rewriteRun(
             //language=java
             java(
         """
@@ -92,7 +92,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void replacePersistentWithOneToManyAnnotationWithMultipleAnnotations() {
-        rewriteRun(//language=java
+        rewriteRun(
             //language=java
             java(
         """
@@ -135,7 +135,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void replacePersistentWithOneToManyAnnotationWithDependentElementArgument() {
-        rewriteRun(//language=java
+        rewriteRun(
                 //language=java
                 java(
                         """
@@ -174,7 +174,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void replacePersistentWithOneToManyAnnotationWithDependentElementArgumentFalse() {
-        rewriteRun(//language=java
+        rewriteRun(
                 //language=java
                 java(
                         """
@@ -215,7 +215,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
     void replacePersistentWithOneToManyAnnotationWithDependentElementArgumentAndDefault() {
         rewriteRun(spec -> spec.recipe(new ReplacePersistentWithOneToManyAnnotation("CascadeType.MERGE, CascadeType.DETACH")),
                 //language=java
-                //language=java
                 java(
                         """
                                 import java.util.List;
@@ -246,4 +245,45 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyUnidirectionalJoinTableAnnotation() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Join;
+                                import javax.jdo.annotations.Element;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( table = "some_entity_person")
+                                    @Join(column="some_entity_id")
+                                    @Element(column="person_id")                                
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.JoinTable;
+                                import javax.persistence.OneToMany;
+                                
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(fetch = FetchType.LAZY)
+                                    @JoinTable(name = "some_entity_person",
+                                            joinColumns = {@javax.persistence.JoinColumn(name = "some_entity_id")},
+                                            inverseJoinColumns = {@javax.persistence.JoinColumn(name = "person_id")})
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
 }
