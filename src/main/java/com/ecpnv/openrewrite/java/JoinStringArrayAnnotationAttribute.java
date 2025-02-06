@@ -24,6 +24,26 @@ import org.openrewrite.java.tree.TypeUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+/**
+ * A recipe designed for modifying annotations in Java source code by converting
+ * attributes that are string arrays into a single delimited string value within the
+ * annotation. This recipe targets a specific annotation type and attribute name
+ * and uses a user-defined delimiter for concatenation.
+ * <p>
+ * This class provides mechanisms for transforming Java annotations at the source
+ * code level where the attribute's values (if specified as an array of strings)
+ * are joined into a single concatenated string.
+ * <p>
+ * Features include:
+ * - Targeting a specific annotation type using its fully qualified name.
+ * - Specifying the attribute name to process.
+ * - Customizable delimiters for joining the string array elements.
+ * <p>
+ * The recipe utilizes internal visitors to inspect and modify the Abstract Syntax
+ * Tree (AST) of the Java source.
+ *
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class JoinStringArrayAnnotationAttribute extends Recipe {
