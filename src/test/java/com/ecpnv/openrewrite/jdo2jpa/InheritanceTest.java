@@ -78,6 +78,8 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
                                 @Table(schema = "schemaname")
@@ -85,7 +87,7 @@ class InheritanceTest extends BaseRewriteTest {
                                 @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Person")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
-                                public class Person {
+                                public class Person extends EntityAbstract {
                                         private int id;
                                         private String name;
                                 }

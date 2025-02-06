@@ -41,7 +41,7 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                public class SomeEntity extends EntityAbstract {
+                                public class SomeEntity extends EntityAbstract implements Comparable<SomeEntity> {
                                     private List<String> listofStrings;
                                 
                                     @Override
@@ -73,4 +73,5 @@ class ExtendWithAbstractEntityForEntityAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
 }

@@ -31,7 +31,15 @@ import org.openrewrite.java.tree.Space;
 import static org.openrewrite.java.tree.TypeUtils.isWellFormedType;
 
 /**
- * Based on {@link org.openrewrite.java.ShortenFullyQualifiedTypeReferences} and added condition for package names to exclude.
+ * A recipe that shortens fully qualified type references.
+ * Based on {@link org.openrewrite.java.ShortenFullyQualifiedTypeReferences} and
+ * added condition for package names to exclude.
+ * <p>
+ * The parameter 'excludePackages' is a comma-delimited string of the package names
+ * that will not be processed when the package name of the class starts with any of the
+ * excluded package names.
+ *
+ * @author Wouter Veltmaat @ Open Circle Solutions
  */
 public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
 
