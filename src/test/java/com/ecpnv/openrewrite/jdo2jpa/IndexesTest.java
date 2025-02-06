@@ -34,6 +34,37 @@ class IndexesTest extends BaseRewriteTest {
         spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Index");
     }
 
+    /**
+     * The `moveIndexConstraintAnnotation` method is a test case validating the transformation and migration of
+     * `javax.persistence.Index` annotations into an `indexes` attribute of the `javax.persistence.Table` annotation
+     * within an annotated class declaration.
+     * <p>
+     * This method utilizes the `MoveAnnotationsToAttribute` recipe to achieve the following:
+     * <p>
+     * - Locates the `@Index` annotation applied to a class.
+     * - Integrates the `@Index` definitions into the `indexes` attribute of the `@Table` annotation,
+     * ensuring adherence to proper syntax and imports.
+     * - Retains other existing attributes of the `@Table` annotation and consolidates the changes.
+     * - Removes the standalone `@Index` annotation from the class after its values are successfully migrated.
+     * <p>
+     * Key Features:
+     * - Verifies the correct transformation of annotations by asserting the resulting structure of the class.
+     * - Ensures that the `@Table` annotation is accurately augmented with the `indexes` attribute, incorporating
+     * all existing `@Index` instances.
+     * - Confirms clean and syntactically valid code by removing unnecessary annotations and maintaining appropriate imports.
+     * <p>
+     * Preconditions:
+     * - The target class contains one or more `@Index` annotations and an existing `@Table` annotation.
+     * <p>
+     * Postconditions:
+     * - The `@Index` annotations are embedded within the `indexes` attribute of the `@Table` annotation.
+     * - The original `@Index` annotations are removed from the class.
+     * <p>
+     * Dependencies:
+     * - The `MoveAnnotationsToAttribute` recipe is used to perform the migration.
+     * - Constants for fully qualified annotation names (`Constants.Jpa.INDEX_ANNOTATION_FULL` and `Constants.Jpa.TABLE_ANNOTATION_FULL`)
+     * and the `indexes` attribute name (`Constants.Jpa.TABLE_ARGUMENT_INDEXES`) are leveraged to guide the transformation.
+     */
     @DocumentExample
     @Test
     void moveIndexConstraintAnnotation() {
@@ -69,6 +100,38 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * The `moveIndexConstraintAnnotationWithNoPreexistingTableAnnotation` method is a test case designed
+     * to validate the behavior of moving `@Index` annotations into the `indexes` attribute of the
+     * `@javax.persistence.Table` annotation when there is no preexisting `@Table` annotation in the
+     * class being processed.
+     *
+     * This method performs the following:
+     *
+     * - Applies the `MoveAnnotationsToAttribute` recipe, which facilitates the migration of
+     *   `@Index` annotations into the `indexes` attribute of the `@Table` annotation in classes.
+     * - Ensures that a `@Table` annotation is added to the class if it does not already exist.
+     * - Validates the transformation process by comparing the input and expected output class declarations.
+     * - Verifies that the `indexes` attribute of the newly added `@Table` annotation is populated with
+     *   the corresponding `@Index` annotations, and that the standalone `@Index` annotations are removed.
+     * - Ensures the proper imports are added for the `javax.persistence.Table` and `javax.persistence.Index`
+     *   annotations.
+     *
+     * Preconditions:
+     * - The target class contains one or more `@Index` annotations and does not have an existing
+     *   `@Table` annotation.
+     *
+     * Postconditions:
+     * - A new `@Table` annotation is added to the class.
+     * - The `@Index` annotations are embedded within the `indexes` attribute of the `@Table` annotation.
+     * - The standalone `@Index` annotations are removed.
+     *
+     * Dependencies:
+     * - The `MoveAnnotationsToAttribute` recipe is used for the transformation.
+     * - Constants such as `Constants.Jpa.INDEX_ANNOTATION_FULL`, `Constants.Jpa.TABLE_ANNOTATION_FULL`,
+     *   and `Constants.Jpa.TABLE_ARGUMENT_INDEXES` are utilized to define the fully qualified names
+     *   and attribute name during the migration process.
+     */
     @DocumentExample
     @Test
     void moveIndexConstraintAnnotationWithNoPreexistingTableAnnotation() {
@@ -102,6 +165,34 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * The `moveMultipleIndexConstraintAnnotation` method is a test case aimed at validating the transformation
+     * of multiple `@Index` annotations into the `indexes` attribute of the `@javax.persistence.Table` annotation
+     * within a class declaration.
+     *
+     * This method performs the following tasks:
+     *
+     * - Utilizes the `MoveAnnotationsToAttribute` recipe to migrate multiple `@Index` annotations into the
+     *   `indexes` attribute of the existing `@Table` annotation.
+     * - Ensures that all `@Index` annotations are properly grouped under a singular `indexes` attribute of the
+     *   `@Table` annotation while preserving correct syntax and semantics.
+     * - Verifies that the standalone `@Index` annotations are removed from the class after their migration.
+     * - Asserts the correctness of the transformation by comparing the generated code structure with
+     *   expected outcomes.
+     *
+     * Preconditions:
+     * - The target class contains two or more `@Index` annotations and an existing `@Table` annotation.
+     *
+     * Postconditions:
+     * - The `@Index` annotations are embedded within the `indexes` attribute of the `@Table` annotation.
+     * - All standalone `@Index` annotations are removed.
+     * - The integrity of the class structure, including imports and other annotations, is maintained.
+     *
+     * Dependencies:
+     * - The `MoveAnnotationsToAttribute` recipe is used for executing the migration process.
+     * - Fully qualified constants, including `Constants.Jpa.INDEX_ANNOTATION_FULL`, `Constants.Jpa.TABLE_ANNOTATION_FULL`,
+     *   and `Constants.Jpa.TABLE_ARGUMENT_INDEXES`, are referenced to guide the transformation accurately.
+     */
     @DocumentExample
     @Test
     void moveMultipleIndexConstraintAnnotation() {
@@ -139,6 +230,33 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Validates the transformation of a `@Index` annotation into the `indexes` attribute
+     * of a `@Table` annotation in a class declaration.
+     *
+     * This method ensures migration of the `@Index` annotation to be part of the `indexes`
+     * attribute inside the `@Table` annotation while maintaining the integrity of other
+     * existing annotations and imports. The standalone `@Index` annotation is removed after
+     * its transformation.
+     *
+     * Key Features:
+     * - Converts `@Index` to an inline definition within the `indexes` attribute of the `@Table` annotation.
+     * - Ensures proper syntax and semantically valid annotation structure.
+     * - Removes redundant `@Index` annotations after they are migrated.
+     * - Validates the accuracy of the updated structure by comparing it to the expected output.
+     *
+     * Preconditions:
+     * - A `@Index` annotation exists within the class body, alongside a `@Table` annotation where it will be incorporated.
+     *
+     * Postconditions:
+     * - The `@Index` definition is moved into the `indexes` attribute of the `@Table` annotation.
+     * - The `@Index` annotation is removed from its previous standalone position.
+     * - Proper imports for the modified annotations are retained or introduced.
+     *
+     * Dependencies:
+     * - Relies on the `MoveAnnotationsToAttribute` recipe for modifying and relocating annotations.
+     * - Utilizes constants for annotation names and attributes to guide the transformation process.
+     */
     @DocumentExample
     @Test
     void moveIndexAnnotation() {
@@ -173,6 +291,37 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * The `moveIndexAnnotationFromIndexes` method is a test case designed to validate the migration
+     * of `@javax.jdo.annotations.Index` annotations in a JDO entity class to the `indexes` attribute
+     * of the `@javax.persistence.Table` annotation in a JPA entity class.
+     *
+     * This method ensures the proper transformation of the entity class from JDO to JPA by:
+     * - Converting standalone `@Index` annotations into inline definitions under the `indexes` attribute
+     *   of the `@Table` annotation.
+     * - Ensuring that all the indices specified for the JDO entity are preserved and correctly formatted
+     *   as part of the JPA entity class.
+     * - Retaining existing `@PersistenceCapable` schema configurations and translating it to
+     *   the JPA equivalent using `@Table`'s `schema` attribute.
+     * - Removing the original standalone `@Index` annotations after migration to prevent redundancy.
+     * - Ensuring that imports are updated to reflect the transition from JDO to JPA annotations.
+     *
+     * Preconditions:
+     * - The input class must be annotated with `@PersistenceCapable`.
+     * - One or more `@Index` annotations exist in the JDO entity class.
+     *
+     * Postconditions:
+     * - `@PersistenceCapable` is replaced with equivalent `@Entity` and `@Table` annotations.
+     * - The `indexes` attribute in the `@Table` annotation contains all the converted `@Index` annotations.
+     * - Redundant `@Index` annotations from JDO are removed.
+     * - Proper imports for JPA annotations are added and imports for JDO annotations are excluded.
+     *
+     * Dependencies:
+     * - Relies on the `MoveAnnotationsToAttribute` recipe to handle the transformation of index
+     *   annotations into the `indexes` attribute of the `@javax.persistence.Table` annotation.
+     * - Assumes the presence of utilities or constants for managing fully qualified names of
+     *   JDO and JPA annotations and their attributes.
+     */
     @DocumentExample
     @Test
     void moveIndexAnnotationFromIndexes() {

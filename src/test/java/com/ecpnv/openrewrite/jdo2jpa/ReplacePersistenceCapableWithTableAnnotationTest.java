@@ -68,7 +68,6 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                 """,
         """
                 import java.util.List;
-                import javax.jdo.annotations.PersistenceCapable;
                 import javax.persistence.Table;
                 
                 @Table(schema = "schemaName")
@@ -80,4 +79,34 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
             )
         );
     }
+
+    @DocumentExample
+    @Test
+    void addEntityReplaceWithTableAnnotation() {
+        rewriteRun(spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable"),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.IdentityType;
+                                
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.APPLICATION)
+                                public class SomeEntity {
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.persistence.Table;
+                                
+                                @Entity
+                                @Table(schema = "schemaName")
+                                public class SomeEntity {
+                                }
+                                """
+                )
+        );
+    }
+
 }

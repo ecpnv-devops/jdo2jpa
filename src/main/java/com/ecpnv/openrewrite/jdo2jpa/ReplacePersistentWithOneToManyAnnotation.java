@@ -158,6 +158,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                     maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                     maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
                     maybeAddImport(Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL);
+                    maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                     maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                     maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
 

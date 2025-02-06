@@ -140,7 +140,6 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.InheritanceStrategy;
                                 import javax.persistence.Inheritance;
                                 
                                 @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
@@ -256,7 +255,6 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.InheritanceStrategy;
                                 import javax.persistence.Inheritance;
                                 
                                 @Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
@@ -312,7 +310,6 @@ class InheritanceTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.InheritanceStrategy;
                                 import javax.persistence.Inheritance;
                                 
                                 @Inheritance(strategy = javax.persistence.InheritanceType.TABLE_PER_CLASS)

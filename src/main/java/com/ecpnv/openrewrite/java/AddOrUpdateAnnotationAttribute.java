@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -32,6 +33,8 @@ import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
 
 import static org.openrewrite.Tree.randomId;
+
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -425,6 +428,14 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                             .apply(getCursor(), a.getCoordinates().replaceArguments(), effectiveName, newAttributeValue))
                             .getArguments().get(0);
                     a = a.withArguments(ListUtils.concat(as, a.getArguments()));
+                }
+                if (foundOrSetAttributeWithDesiredValue.get() && StringUtils.isNotBlank(attributeName)) {
+                    // The attribute that is replaced might refer to an attributeType which might not be needed anymore
+                    RewriteUtils.findArgument(original, attributeName)
+                            .map(J.Assignment::getType)
+                            .map(JavaType::toString)
+                            .filter(name -> !"Unknown".equals(name) && StringUtils.isNotBlank(name))
+                            .ifPresent(this::maybeRemoveImport);
                 }
             }
             if (getCursor().getParentTreeCursor().getParent() != null) {
