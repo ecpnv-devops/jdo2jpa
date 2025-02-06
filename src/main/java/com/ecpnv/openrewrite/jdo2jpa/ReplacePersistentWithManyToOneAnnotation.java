@@ -142,6 +142,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     maybeAddImport(TARGET_TYPE);
                     maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                     maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+                    maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
 
                     return JavaTemplate.builder(template.toString())
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))

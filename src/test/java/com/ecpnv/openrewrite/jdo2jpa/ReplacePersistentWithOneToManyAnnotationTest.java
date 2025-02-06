@@ -69,7 +69,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                 """,
         """
                 import java.util.List;
-                import javax.jdo.annotations.Persistent;
                 import javax.persistence.FetchType;
                 import javax.persistence.OneToMany;
                 
@@ -110,7 +109,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                 """,
         """
                 import java.util.List;
-                import javax.jdo.annotations.Persistent;
                 import javax.persistence.FetchType;
                 import javax.persistence.OneToMany;
                 
@@ -151,7 +149,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.Persistent;
                                 import javax.persistence.CascadeType;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
@@ -190,7 +187,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.Persistent;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
                                 
@@ -229,7 +225,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.Persistent;
                                 import javax.persistence.CascadeType;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.OneToMany;
@@ -268,7 +263,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.jdo.annotations.Persistent;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.JoinTable;
                                 import javax.persistence.OneToMany;

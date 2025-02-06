@@ -71,7 +71,6 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 import javax.persistence.Entity;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.ManyToOne;
-                                import javax.jdo.annotations.Persistent;
                                 
                                 @Entity
                                 public class Person {}
@@ -123,7 +122,6 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 import javax.persistence.Entity;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.ManyToOne;
-                                import javax.jdo.annotations.Persistent;
                                 
                                 @Entity
                                 public class Person {}
@@ -176,7 +174,6 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 import javax.persistence.Entity;
                                 import javax.persistence.FetchType;
                                 import javax.persistence.ManyToOne;
-                                import javax.jdo.annotations.Persistent;
                                 
                                 @Entity
                                 public class Person {}

@@ -81,6 +81,8 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                                     .orElse("");
                     // Add @Entity
                     maybeAddImport(TARGET_TYPE);
+                    maybeRemoveImport(Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL);
+
                     return JavaTemplate.builder(template)
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE)
