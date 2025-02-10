@@ -105,7 +105,7 @@ recipeList:
       newAttributeName: nullable
   # Remove nullable = "true" as this is the default in JPA
   - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
-      matchByRegularExpression: '@Column\(.*nullable\s*=\s*"true".*\)'
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable\s*=\s*"true"(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: nullable
   # Change nullable = "false" to nullable = false
@@ -221,6 +221,11 @@ recipeList:
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Index
       attributeName: extensions
+  # Remove unique = "false" as this is the default in JPA
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@.*Index\((.|\s|\n)*unique\s*=\s*"false"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Index
+      attributeName: unique
   # Change Index type
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Index

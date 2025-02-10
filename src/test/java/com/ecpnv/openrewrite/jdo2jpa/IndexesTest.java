@@ -31,7 +31,9 @@ class IndexesTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Index");
+        spec
+                .parser(PARSER)
+                .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Index");
     }
 
     /**
@@ -362,6 +364,28 @@ class IndexesTest extends BaseRewriteTest {
     }
 
 
+    /**
+     * Refactors a Java class to move `@Index` annotations from fields and methods to the class level,
+     * adhering to JPA-compatible syntax. This transformation ensures that index definitions are
+     * part of the `@Table` annotation using the `indexes` attribute.
+     * <p>
+     * The method primarily handles:
+     * - Moving `@Index` annotations from fields or methods to the enclosing class.
+     * - Mapping index details such as name, columnList, and unique properties to the JPA equivalent.
+     * - Transforming the code structure while preserving semantic equivalence.
+     * <p>
+     * This is required when converting codebases from frameworks like JDO to JPA.
+     * <p>
+     * Preconditions:
+     * - The class and its members must contain valid annotations as per the provided language/java syntax.
+     * <p>
+     * Postconditions:
+     * - All `@Index` annotations on fields and methods are moved to the `indexes` attribute of the `@Table` annotation on the class.
+     * <p>
+     * Test Behavior:
+     * - Ensures annotations are correctly transformed without altering unrelated parts of the class.
+     * - Validates correct mapping and usage of attributes for `@Table` and `@Index`.
+     */
     @DocumentExample
     @Test
     void moveIndexFromFieldToClass() {
@@ -371,6 +395,7 @@ class IndexesTest extends BaseRewriteTest {
                         """
                                 import javax.persistence.Table;
                                 import javax.jdo.annotations.Index;
+                                import java.util.Date;
                                 
                                 @Index(name = "SomeEntityNameIndex", members = {"name"}, table = "table", 
                                 unique = "false", columns = {"col1", "col2"}, extensions = "")
@@ -379,20 +404,29 @@ class IndexesTest extends BaseRewriteTest {
                                         @Index(name = "SomeEntityIdIndex", unique = "true")
                                         private int id;
                                         private String name;
+                                        @Index(name = "SomeEntityDateIndex")
+                                        public Date getBirthDate(){ return null;}
                                 }
                                 """,
                         """
                                 import javax.persistence.Index;
                                 import javax.persistence.Table;
+                                import java.util.Date;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = "name"), @Index(name = "SomeEntityIdIndex", unique = "true",
-                                columnList = "id")})
+                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( columnList = "id",
+                                name = "SomeEntityIdIndex",
+                                unique = "true"), @javax.persistence.Index( columnList = "birthDate",
+                                name = "SomeEntityDateIndex"), @javax.persistence.Index( name = "SomeEntityNameIndex",
+                                columnList = "name")})
                                 public class SomeEntity {
+                                """ + "        " + """
                                 
                                         private int id;
                                         private String name;
+                                """ + "        " + """
+                                
+                                        public Date getBirthDate(){ return null;}
                                 }
                                 """
                 )

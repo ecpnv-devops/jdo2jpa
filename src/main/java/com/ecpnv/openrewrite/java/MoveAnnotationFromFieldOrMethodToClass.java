@@ -15,9 +15,11 @@
  */
 package com.ecpnv.openrewrite.java;
 
+import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -36,10 +38,26 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 import lombok.EqualsAndHashCode;
 
+/**
+ * This recipe is designed to move specific annotations from fields or methods to the class level.
+ * It allows for selective annotation matching, and optionally includes a mechanism to add an
+ * attribute to the annotation with the name of the field or method it is moved from.
+ * <p>
+ * Features:
+ * - Moves annotations that match a specified pattern to the class level.
+ * - Optionally adds an attribute to the annotation with the field or method name
+ * as its value, when an attribute name is provided.
+ * - Operates on class declarations, variable declarations, and method declarations.
+ * <p>
+ * Parameters:
+ * - `annotationPattern`: Defines the annotation pattern to match. Only annotations that match
+ * this pattern will be moved.
+ * - `attributeNameToAdd`: An optional parameter specifying an attribute to include in the moved
+ * annotation, with the name of the field or method being used as the value.
+ */
 @EqualsAndHashCode(callSuper = false)
 public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
 
@@ -77,62 +95,70 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
 
         return Preconditions.check(new UsesType<>(annotationPattern, false), new JavaIsoVisitor<ExecutionContext>() {
+
+            List<J.Annotation> annotationsToAddToClass;
+
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                List<J.Annotation> annotationsToAddToClass = new ArrayList<>();
-                List<Statement> modifiedStatements = classDecl.getBody().getStatements().stream()
-                        .map(v -> {
-                            // Search for fields and methods that have given annotation
-                            Set<J.Annotation> curAnno = FindAnnotations.find(v, annotationPattern);
-                            if (!curAnno.isEmpty()) {
-                                String name;
-                                if (v instanceof J.VariableDeclarations vd) {
-                                    // When found then remove from field
-                                    List<J.Annotation> la = vd.getLeadingAnnotations();
-                                    curAnno = addAttributeName(curAnno, vd.getVariables().get(0).getSimpleName());
-                                    la.removeAll(curAnno);
-                                    v = vd.withLeadingAnnotations(la);
-                                } else if (v instanceof J.MethodDeclaration md) {
-                                    // When found then remove from method
-                                    List<J.Annotation> la = md.getLeadingAnnotations();
-                                    curAnno = addAttributeName(curAnno, md.getName().getSimpleName());
-                                    la.removeAll(curAnno);
-                                    v = md.withLeadingAnnotations(la);
-                                }
-                                annotationsToAddToClass.addAll(curAnno);
-                            }
-                            return v;
-                        })
-                        .toList();
+                annotationsToAddToClass = new ArrayList<>();
+                classDecl = super.visitClassDeclaration(classDecl, executionContext);
                 if (!annotationsToAddToClass.isEmpty()) {
-                    // Replace modified statements
-                    classDecl = classDecl.withBody(classDecl.getBody().withStatements(modifiedStatements));
+                    // Add annotations from fields and methods
                     List<J.Annotation> la = classDecl.getLeadingAnnotations();
                     annotationsToAddToClass.addAll(la);
-                    // Add annotations from fields and methods
                     classDecl = classDecl.withLeadingAnnotations(annotationsToAddToClass);
-                } else {
-                    // When nothing found call super
-                    classDecl = super.visitClassDeclaration(classDecl, executionContext);
                 }
                 return classDecl;
             }
 
-            Set<J.Annotation> addAttributeName(Set<J.Annotation> curAnno, String name) {
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
+                J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, executionContext);
+                Set<J.Annotation> removeAnno = processAnnotation(mv, mv.getVariables().get(0).getSimpleName(),
+                        vd -> (J.Assignment) ((J.VariableDeclarations) vd).getLeadingAnnotations().get(0).getArguments().get(0));
+                if (!removeAnno.isEmpty()) {
+                    List<J.Annotation> newAnno = new ArrayList<>(mv.getLeadingAnnotations());
+                    newAnno.removeAll(removeAnno);
+                    mv = mv.withLeadingAnnotations(newAnno);
+                }
+                return mv;
+            }
+
+            @Override
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
+                J.MethodDeclaration md = super.visitMethodDeclaration(method, executionContext);
+                String name = md.getName().getSimpleName();
+                name = Introspector.decapitalize(name.substring(name.startsWith("is") ? 2 : 3));
+                Set<J.Annotation> removeAnno = processAnnotation(md, name,
+                        mdc -> (J.Assignment) ((J.MethodDeclaration) mdc).getLeadingAnnotations().get(0).getArguments().get(0));
+                if (!removeAnno.isEmpty()) {
+                    List<J.Annotation> newAnno = new ArrayList<>(md.getLeadingAnnotations());
+                    newAnno.removeAll(removeAnno);
+                    md = md.withLeadingAnnotations(newAnno);
+                }
+                return md;
+            }
+
+            Set<J.Annotation> processAnnotation(J current, String name, Function<J, J.Assignment> extractArgument) {
                 if (name != null && StringUtils.isNotBlank(attributeNameToAdd)) {
-                    // Add an attribute to the annotation with the name of the field or method
-                    curAnno = curAnno.stream()
+                    Set<J.Annotation> removeAnno = FindAnnotations.find(current, annotationPattern);
+                    Set<J.Annotation> curAnno = removeAnno.stream()
+                            // Add an attribute to the annotation with the name of the field or method
                             .map(a -> {
-                                J.Assignment as = (J.Assignment) ((J.Annotation) JavaTemplate.builder("#{} = #{}")
+                                J result = JavaTemplate.builder("#{} = #{}")
                                         .contextSensitive()
                                         .build()
-                                        .apply(getCursor(), a.getCoordinates().replaceArguments(), attributeNameToAdd, '"' + name + '"'))
-                                        .getArguments().get(0);
+                                        .apply(getCursor(), a.getCoordinates().replaceArguments(), attributeNameToAdd, '"' + name + '"');
+                                J.Assignment as = extractArgument.apply(result);
                                 return a.withArguments(ListUtils.concat(as, a.getArguments()));
                             })
                             .collect(Collectors.toSet());
+                    if (!curAnno.isEmpty()) {
+                        annotationsToAddToClass.addAll(curAnno);
+                        return removeAnno;
+                    }
                 }
-                return curAnno;
+                return Set.of();
             }
         });
     }
