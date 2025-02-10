@@ -387,8 +387,10 @@ class IndexesTest extends BaseRewriteTest {
                                 
                                 
                                 @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = "name")})
+                                columnList = "name"), @Index(name = "SomeEntityIdIndex", unique = "true",
+                                columnList = "id")})
                                 public class SomeEntity {
+                                
                                         private int id;
                                         private String name;
                                 }
