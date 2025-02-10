@@ -346,11 +346,13 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.persistence.Index;
                                 import javax.persistence.Table;
                                 
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
                                 @Entity
                                 @Table( schema = "schemaName", indexes = {@Index( name = "Person__name__IDX",
                                 columnList = "firstName, lastName"), @Index( name = "Person__email__IDX",
                                 columnList = "email")})
-                                public class SomeEntity {
+                                public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
                                 }

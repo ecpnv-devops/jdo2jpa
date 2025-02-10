@@ -40,6 +40,34 @@ public class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest{
 
     @DocumentExample
     @Test
+    void removeUnusedImportsSomeRandomImport() {
+        rewriteRun(
+                spec -> spec.parser(PARSER)
+                        .recipe(new RemovedUnusedImportsSpringSupport()),
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.IdentityType;
+                                
+                                public class SomeClass {
+                                    private List<String> listOfStrings;
+                                
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                public class SomeClass {
+                                    private List<String> listOfStrings;
+                                
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
     void removeUnusedImportsSpringImportUsageFull() {
         rewriteRun(
                 spec -> spec.parser(PARSER)

@@ -54,11 +54,10 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+      libraryOfAbstractClassName: jdo2jpa-abstract
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.PersistenceCapable'
-  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
-      type: javax.jdo.annotations.IdentityType
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
@@ -278,8 +277,6 @@ recipeList:
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.persistence.DiscriminatorValue
       attributeName: indexed
-  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
-      type: javax.jdo.annotations.DiscriminatorStrategy
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
@@ -347,8 +344,6 @@ recipeList:
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.persistence.Inheritance
       attributeName: customStrategy
-  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
-      type: javax.jdo.annotations.InheritanceStrategy
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup

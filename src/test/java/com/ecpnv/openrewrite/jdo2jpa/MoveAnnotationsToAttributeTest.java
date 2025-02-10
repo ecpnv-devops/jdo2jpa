@@ -332,6 +332,8 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 }
                                 """,
                         """
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
                                 import javax.persistence.Entity;
                                 import javax.persistence.Table;
                                 import javax.persistence.UniqueConstraint;
@@ -340,7 +342,7 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 @Table( schema = "schemaName", uniqueConstraints = {@UniqueConstraint( name = "Person__name__UNQ",
                                 columnNames = {"firstName", "lastName"}), @UniqueConstraint( name = "Person__email__UNQ",
                                 columnNames = {"email"})})
-                                public class SomeEntity {
+                                public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
                                 }

@@ -46,12 +46,21 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
+ * A recipe that removes unused imports to a certain extent.
+ * Based on {@link org.openrewrite.java.RemoveUnusedImports} and
+ * added scanning of usage of classes in {@link org.springframework.context.annotation.Import} annotations.
+ * Because of the complexity of scanning usage of classes in enum type classes these enum classes are not processed.
+ * There may be several other edge-cases where scanning of usage in a class description is incomplete and will result in
+ * removal of imports of classes that are being used.
+ * <p>
  * This recipe will remove any imports for types that are not referenced within the compilation unit. This recipe
  * is aware of the import layout style and will correctly handle unfolding of wildcard imports if the import counts
  * drop below the configured values.
- *
+ * <p>
  * Because unit testing requires full qualified names testing using simple class name in spring imports cannot be fully
  * tested.
+ *
+ * @author Wouter Veltmaat @ Open Circle Solutions
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
