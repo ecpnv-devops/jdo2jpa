@@ -37,10 +37,10 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
      * <p>
      * This method validates that:
      * - Fields annotated with `@Persistent` in a JDO-annotated class are correctly
-     *   replaced with `@ManyToOne` in a JPA-annotated class.
+     * replaced with `@ManyToOne` in a JPA-annotated class.
      * - Proper `FetchType.EAGER` is applied.
      * - Appropriate cascade types (`CascadeType.PERSIST, CascadeType.MERGE,
-     *   CascadeType.REFRESH, CascadeType.DETACH`) are included in the transformation.
+     * CascadeType.REFRESH, CascadeType.DETACH`) are included in the transformation.
      * - Necessary import statements are added to the resulting Java code.
      */
     @DocumentExample
@@ -141,7 +141,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
      * - Replacing the `@Persistent` annotation with `@ManyToOne`.
      * - Ensuring that `FetchType.LAZY` is applied as the fetch strategy.
      * - Including appropriate cascade types (`CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH`)
-     *   in the resulting annotation.
+     * in the resulting annotation.
      * - Adding necessary JPA imports to the resulting Java code.
      */
     @DocumentExample
