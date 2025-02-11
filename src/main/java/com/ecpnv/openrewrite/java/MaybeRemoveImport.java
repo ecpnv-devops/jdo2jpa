@@ -41,6 +41,6 @@ public class MaybeRemoveImport extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new RemoveImport<ExecutionContext>(type);
+        return new RemoveImport<>(type);
     }
 }

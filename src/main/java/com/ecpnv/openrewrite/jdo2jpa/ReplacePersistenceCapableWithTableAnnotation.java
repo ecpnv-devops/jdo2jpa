@@ -44,10 +44,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
-    public final static String TARGET_TYPE_NAME = Constants.Jpa.TABLE_ANNOTATION_NAME;
-    public final static String TARGET_TYPE = Constants.Jpa.TABLE_ANNOTATION_FULL;
-    public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
+    public static final String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
+    public static final String TARGET_TYPE_NAME = Constants.Jpa.TABLE_ANNOTATION_NAME;
+    public static final String TARGET_TYPE = Constants.Jpa.TABLE_ANNOTATION_FULL;
+    public static final String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
 
     @Override
     public @NotNull String getDisplayName() {
@@ -63,7 +63,7 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<>() {
 
             @Override
             public @NotNull J.ClassDeclaration visitClassDeclaration(

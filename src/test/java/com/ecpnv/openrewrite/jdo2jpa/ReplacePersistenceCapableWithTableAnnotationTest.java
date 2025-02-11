@@ -82,7 +82,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void addEntityReplaceWithTableAnnotation() {
+    void addEntityReplaceWithTableAnnotationForDatastore() {
         rewriteRun(spec -> spec.recipeFromResources(
         "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable",
         "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup"),
@@ -92,7 +92,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.PersistenceCapable;
                                 import javax.jdo.annotations.IdentityType;
                                 
-                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.APPLICATION)
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
                                 public class SomeEntity {
                                 }
                                 """,
@@ -111,4 +111,35 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void addEntityReplaceWithTableAnnotationForApplication() {
+        rewriteRun(spec -> spec.recipeFromResources(
+                        "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable",
+                        "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup"),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.IdentityType;
+                                
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.APPLICATION)
+                                public class SomeEntity {
+                                }
+                                """,
+                        """
+                                import javax.persistence.Entity;
+                                import javax.persistence.Table;
+                                
+                                /*
+                                TODO: manually migrate to JPA
+                                */
+                                @Entity
+                                @Table(schema = "schemaName")
+                                public class SomeEntity {
+                                }
+                                """
+                )
+        );
+    }
 }

@@ -1,12 +1,15 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -53,10 +56,11 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
-    public final static String TARGET_TYPE_NAME = Constants.Jpa.MANY_TO_ONE_ANNOTATION_NAME;
-    public final static String TARGET_TYPE = Constants.Jpa.MANY_TO_ONE_ANNOTATION_FULL;
-    public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
+    public static final String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
+    public static final String TARGET_TYPE_NAME = Constants.Jpa.MANY_TO_ONE_ANNOTATION_NAME;
+    public static final String TARGET_TYPE = Constants.Jpa.MANY_TO_ONE_ANNOTATION_FULL;
+    public static final String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
+    public static final String PERSISTENCE_CAPABLE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
 
     @Option(displayName = "Default cascade types to apply",
             description = "When the " + TARGET_ANNOTATION_TYPE +
@@ -82,11 +86,26 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                 TARGET_ANNOTATION_TYPE + " annotation.";
     }
 
+    @SuppressWarnings({"java:S3776"})
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<>() {
+            private Map<J.ClassDeclaration, Boolean> classDeclarationForEntityMap = new HashMap<>();
 
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
+                for (J.ClassDeclaration cd : compilationUnit.getClasses()) {
+                    //check which class(es) are annotated with @Entity or @PersistentCapable depending on the order of the class(es)
+                    classDeclarationForEntityMap.put(cd,
+                            CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jpa.ENTITY_ANNOTATION_FULL)) ||
+                                    CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)));
+                }
+
+                return super.visitCompilationUnit(compilationUnit, executionContext);
+            }
+
+            @SuppressWarnings({"java:S2259"})
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 // Exit if Collection
@@ -101,6 +120,14 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                 if (RewriteUtils.isMethodOwnerOfVar(multiVariable)) {
                     return multiVariable;
                 }
+                //exit if var not attribute of an entity class
+                for (Map.Entry<J.ClassDeclaration, Boolean> entry : classDeclarationForEntityMap.entrySet()) {
+                    //relate attribute to any of the declared classes that were check for annotations
+                    if (entry.getKey().getBody().getStatements().contains(multiVariable) && Boolean.FALSE.equals(entry.getValue())) {
+                        return multiVariable;
+                    }
+                }
+
                 // Verify that the field refers to an entity
                 if (RewriteUtils.hasAnnotation(multiVariable.getTypeAsFullyQualified(), Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)
                         || RewriteUtils.hasAnnotation(multiVariable.getTypeAsFullyQualified(), Constants.Jpa.ENTITY_ANNOTATION_FULL)) {
@@ -129,7 +156,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                         template.append(", fetch = FetchType.");
                         RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                                 .ifPresentOrElse(isDefault -> {
-                                            if (isDefault)
+                                            if (Boolean.TRUE.equals(isDefault))
                                                 template.append("EAGER");
                                             else
                                                 template.append("LAZY");

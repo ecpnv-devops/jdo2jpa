@@ -10,19 +10,22 @@ import java.util.regex.Pattern;
 
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.FindAnnotations;
+import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.java.tree.TypeUtils;
 
 import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
  * Utility class providing helper methods for handling and analyzing Java annotation metadata,
  * variable declarations, and related structures.
  *
- * @author Patrick Deenen @ Open Circle Solutions
+ * @author Patrick Deenen & Wouter Veltmaat @ Open Circle Solutions
  */
 @UtilityClass
 public class RewriteUtils {
@@ -49,6 +52,7 @@ public class RewriteUtils {
      * @param varName          the name of the variable to match within the assignment. Must not be null.
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
+    @SuppressWarnings({"java:S2259"})
     public static Optional<J.Assignment> findArgument(J.Annotation sourceAnnotation, String varName) {
         if (sourceAnnotation == null || sourceAnnotation.getArguments() == null || sourceAnnotation.getArguments().isEmpty()) {
             return Optional.empty();
@@ -116,8 +120,7 @@ public class RewriteUtils {
      * @return a list of matching leading annotations, or an empty list if no matching annotations are found.
      */
     public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
-        if (classDecl == null || StringUtils.isBlank(annotationType) || classDecl.getLeadingAnnotations() == null
-                || classDecl.getLeadingAnnotations().isEmpty()) {
+        if (classDecl == null || StringUtils.isBlank(annotationType) || classDecl.getLeadingAnnotations().isEmpty()) {
             return new ArrayList<>();
         }
         Pattern pattern = Pattern.compile(annotationType);
@@ -156,5 +159,21 @@ public class RewriteUtils {
             }
         }
         return order;
+    }
+
+    /**
+     * Checks if a collection of comments contains a text comment containing the text
+     *
+     * @param comments collection of comments. Can be empty.
+     * @param text     text that may contain any text comment. Can not be null.
+     * @return if comments contain any text comment containing text.
+     */
+    public static boolean commentsContains(final List<Comment> comments, @NonNull final String text) {
+        for (Comment comment : comments) {
+            if (comment instanceof TextComment textComment && textComment.getText().contains(text)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

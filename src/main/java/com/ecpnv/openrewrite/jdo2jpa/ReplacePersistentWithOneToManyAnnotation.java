@@ -55,10 +55,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
 
-    public final static String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
-    public final static String TARGET_TYPE_NAME = Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME;
-    public final static String TARGET_TYPE = Constants.Jpa.ONE_TO_MANY_ANNOTATION_FULL;
-    public final static String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
+    public static final String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
+    public static final String TARGET_TYPE_NAME = Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME;
+    public static final String TARGET_TYPE = Constants.Jpa.ONE_TO_MANY_ANNOTATION_FULL;
+    public static final String TARGET_ANNOTATION_TYPE = "@" + TARGET_TYPE;
 
     @Option(displayName = "Default cascade types to apply",
             description = "When the " + TARGET_ANNOTATION_TYPE +
@@ -84,11 +84,13 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 TARGET_ANNOTATION_TYPE + " annotation.";
     }
 
+    @SuppressWarnings({"java:S3776"})
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return new JavaIsoVisitor<>() {
 
+            @SuppressWarnings({"java:S2259", "java:S4449", "java:S2637"})
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 // Exit if not Collection
@@ -145,7 +147,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                     template.append("fetch = FetchType.");
                     RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
-                                        if (isDefault)
+                                        if (Boolean.TRUE.equals(isDefault))
                                             template.append("EAGER");
                                         else
                                             template.append("LAZY");

@@ -38,6 +38,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
         super(Set.of(Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL));
     }
 
+    @SuppressWarnings({"java:S2259", "java:S2637"})
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
 
@@ -45,11 +46,13 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
 
             @Override
             protected J.Annotation processExistingAnnotation(J.ClassDeclaration classDeclaration, J.Annotation annotation, ExecutionContext ctx) {
-                String classFgn = classDeclaration.getType().getFullyQualifiedName();
-                List<J.Annotation> foundAnnotations = parentAnnotationsByType.get(classFgn);
-                // When the parent class is processed, apply the class name when not available
-                if (foundAnnotations != null && foundAnnotations.contains(annotation)) {
-                    return processAddedAnnotation(classDeclaration, annotation, ctx);
+                if (classDeclaration.getType() != null) {
+                    String classFgn = classDeclaration.getType().getFullyQualifiedName();
+                    List<J.Annotation> foundAnnotations = parentAnnotationsByType.get(classFgn);
+                    // When the parent class is processed, apply the class name when not available
+                    if (foundAnnotations != null && foundAnnotations.contains(annotation)) {
+                        return processAddedAnnotation(classDeclaration, annotation, ctx);
+                    }
                 }
                 return super.processExistingAnnotation(classDeclaration, annotation, ctx);
             }
@@ -58,7 +61,8 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
             protected J.Annotation processAddedAnnotation(
                     J.ClassDeclaration classDeclaration, J.Annotation annotation, ExecutionContext ctx) {
                 // When no discriminator value exist then strategy is class name, hence the class name has to be added explicitly for JPA
-                J.Annotation newAnno = (J.Annotation) new AddOrUpdateAnnotationAttribute(Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL, false,
+                J.Annotation newAnno = (J.Annotation) new AddOrUpdateAnnotationAttribute(
+                        Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL, false,
                         null, classDeclaration.getType().getFullyQualifiedName(), "null",
                         AddOrUpdateAnnotationAttribute.Operation.BOTH)
                         .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx, getCursor());

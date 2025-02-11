@@ -9,7 +9,7 @@ import org.openrewrite.test.RewriteTest;
  */
 public class BaseRewriteTest implements RewriteTest {
 
-    public final static JavaParser.Builder<?, ?> PARSER = JavaParser.fromJavaVersion()
+    public static final JavaParser.Builder<?, ?> PARSER = JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(),
                     Constants.Jpa.CLASS_PATH,
                     Constants.Jdo.CLASS_PATH,

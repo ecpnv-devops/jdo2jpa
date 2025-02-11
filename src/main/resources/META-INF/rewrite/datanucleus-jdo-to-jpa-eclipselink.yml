@@ -51,9 +51,10 @@ tags:
   - persistence
   - PersistenceCapable
 recipeList:
-  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
-  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForEntityAnnotation:
+  - com.ecpnv.openrewrite.jdo2jpa.AddCommentToPersistenceCapableWithIdentityTypeApplication
+  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForPersistenceCapableAnnotation:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.PersistenceCapable'

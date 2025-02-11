@@ -84,6 +84,7 @@ public class RemoveAnnotationAttributeConditionally extends Recipe {
         this.attributeName = attributeName;
     }
 
+    @SuppressWarnings({"java:S3776"})
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesType<>(annotationType, false), new JavaIsoVisitor<ExecutionContext>() {
@@ -100,8 +101,7 @@ public class RemoveAnnotationAttributeConditionally extends Recipe {
                 AtomicBoolean shouldTrimNextPrefix = new AtomicBoolean(false);
                 return a.withArguments(ListUtils.map(a.getArguments(), arg -> {
                     try {
-                        if (arg instanceof J.Assignment) {
-                            J.Assignment assignment = (J.Assignment) arg;
+                        if (arg instanceof J.Assignment assignment) {
                             J.Identifier variable = (J.Identifier) assignment.getVariable();
                             if (attributeName.equals(variable.getSimpleName())) {
                                 if (!didPassFirstAttribute.get()) {

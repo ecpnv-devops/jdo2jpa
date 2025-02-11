@@ -9,6 +9,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -30,6 +31,8 @@ import org.openrewrite.java.tree.Space;
 
 import static org.openrewrite.java.tree.TypeUtils.isWellFormedType;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * A recipe that shortens fully qualified type references.
  * Based on {@link org.openrewrite.java.ShortenFullyQualifiedTypeReferences} and
@@ -41,6 +44,7 @@ import static org.openrewrite.java.tree.TypeUtils.isWellFormedType;
  *
  * @author Wouter Veltmaat @ Open Circle Solutions
  */
+@EqualsAndHashCode(callSuper = false)
 public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
 
     @Option(displayName = "Exclude packages",
@@ -51,7 +55,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
 
     @JsonCreator
     public ShortenFullyQualifiedTypeReferencesConditionally(
-            @NonNull  @JsonProperty("excludePackages") String excludePackages) {
+            @NonNull @JsonProperty("excludePackages") String excludePackages) {
         this.excludePackages = excludePackages;
     }
 
@@ -79,7 +83,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
             @Override
             public @Nullable J visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof JavaSourceFile) {
-                    return ShortenFullyQualifiedTypeReferencesConditionally.modifyOnly((J)tree, excludePackages).visit(tree, ctx);
+                    return ShortenFullyQualifiedTypeReferencesConditionally.modifyOnly((J) tree, excludePackages).visit(tree, ctx);
                 }
                 return (J) tree;
             }
@@ -101,6 +105,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
         return getVisitor(subtree, excludePackages);
     }
 
+    @SuppressWarnings({"java:S3776"})
     private static JavaVisitor<ExecutionContext> getVisitor(@Nullable J scope, @NonNull String excludePackages) {
         return new JavaVisitor<>() {
             final Map<String, JavaType> usedTypes = new HashMap<>();
@@ -116,19 +121,19 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
                 if (sourceFile instanceof JavaSourceFile) {
                     JavaIsoVisitor<Map<String, JavaType>> typeCollector = new JavaIsoVisitor<Map<String, JavaType>>() {
                         @Override
-                        public J.Import visitImport(J.Import import_, Map<String, JavaType> types) {
-                            if (!import_.isStatic() && isWellFormedType(import_.getQualid().getType())) {
-                                types.put(import_.getQualid().getSimpleName(), import_.getQualid().getType());
+                        public J.Import visitImport(J.Import anImport, Map<String, JavaType> types) {
+                            if (!anImport.isStatic() && isWellFormedType(anImport.getQualid().getType())) {
+                                types.put(anImport.getQualid().getSimpleName(), anImport.getQualid().getType());
                             }
-                            return import_;
+                            return anImport;
                         }
 
                         @Override
                         public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, Map<String, JavaType> types) {
-                            if (fieldAccess.getTarget() instanceof J.Identifier) {
-                                visitIdentifier((J.Identifier) fieldAccess.getTarget(), types);
-                            } else if (fieldAccess.getTarget() instanceof J.FieldAccess) {
-                                visitFieldAccess((J.FieldAccess) fieldAccess.getTarget(), types);
+                            if (fieldAccess.getTarget() instanceof J.Identifier identifier) {
+                                visitIdentifier(identifier, types);
+                            } else if (fieldAccess.getTarget() instanceof J.FieldAccess targetFieldAccess) {
+                                visitFieldAccess(targetFieldAccess, types);
                             }
                             return fieldAccess;
                         }
@@ -170,9 +175,9 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
             }
 
             @Override
-            public J visitImport(J.Import import_, ExecutionContext ctx) {
+            public J visitImport(J.Import anImport, ExecutionContext ctx) {
                 // stop recursion
-                return import_;
+                return anImport;
             }
 
             @Override
@@ -181,6 +186,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
                 return space;
             }
 
+            @SuppressWarnings({"java:S3824", "java:S4449"})
             @Override
             public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
                 if (!modify) {
@@ -188,7 +194,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
                 }
 
                 JavaType type = fieldAccess.getType();
-                if (fieldAccess.getName().getFieldType() == null && type instanceof JavaType.Class && ((JavaType.Class) type).getOwningClass() == null) {
+                if (fieldAccess.getName().getFieldType() == null && type instanceof JavaType.Class aClass && aClass.getOwningClass() == null) {
                     ensureInitialized();
 
                     String simpleName = fieldAccess.getSimpleName();
@@ -200,7 +206,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
                         } else if (!usedTypes.containsKey(simpleName)) {
                             maybeAddImport(fullyQualifiedName);
                             usedTypes.put(simpleName, type);
-                            if (!fieldAccess.getName().getAnnotations().isEmpty()) {
+                            if (CollectionUtils.isNotEmpty(fieldAccess.getName().getAnnotations())) {
                                 return fieldAccess.getName().withAnnotations(ListUtils.map(fieldAccess.getName().getAnnotations(), (i, a) -> {
                                     if (i == 0) {
                                         return a.withPrefix(fieldAccess.getPrefix());
@@ -218,7 +224,7 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
             private boolean isExcluded(final String fullyQualifiedName) {
                 final String[] split = excludePackages.split(",");
                 final List<String> excludedPackages = Arrays.asList(ArrayUtils.add(split, "java.lang"));
-                return excludedPackages.stream().anyMatch(packageName -> fullyQualifiedName.startsWith(packageName));
+                return excludedPackages.stream().anyMatch(fullyQualifiedName::startsWith);
             }
         };
     }

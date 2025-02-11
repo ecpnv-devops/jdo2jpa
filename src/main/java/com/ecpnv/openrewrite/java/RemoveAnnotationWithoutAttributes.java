@@ -3,6 +3,7 @@ package com.ecpnv.openrewrite.java;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -63,7 +64,7 @@ public class RemoveAnnotationWithoutAttributes extends Recipe {
         @Override
         public boolean matches(J.Annotation annotation) {
             return super.matches(annotation) &&
-                    (annotation.getArguments() == null || annotation.getArguments().isEmpty());
+                    (annotation.getArguments() == null || CollectionUtils.isEmpty(annotation.getArguments()));
         }
     }
 }

@@ -1,72 +1,85 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
 public final class Constants {
+    private Constants() {
+    }
 
-    public final static String REWRITE_ANNOTATION_PREFIX = "/*~~>*/";
+    public static final String REWRITE_ANNOTATION_PREFIX = "/*~~>*/";
 
     public static class Jdo {
-        public final static String CLASS_PATH = "jdo-api";
-        public final static String BASE_PACKAGE = "javax.jdo.annotations.";
 
-        public final static String COLUMN_ANNOTATION_NAME = "Column";
-        public final static String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
-        public final static String DISCRIMINATOR_ANNOTATION_NAME = "Discriminator";
-        public final static String DISCRIMINATOR_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_ANNOTATION_NAME;
-        public final static String DISCRIMINATOR_STRATEGY_ANNOTATION_NAME = "DiscriminatorStrategy";
-        public final static String DISCRIMINATOR_STRATEGY_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_STRATEGY_ANNOTATION_NAME;
-        public final static String ELEMENT_ANNOTATION_NAME = "Element";
-        public final static String ELEMENT_ANNOTATION_FULL = BASE_PACKAGE + ELEMENT_ANNOTATION_NAME;
-        public final static String INHERITANCE_ANNOTATION_NAME = "Inheritance";
-        public final static String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
-        public final static String JOIN_ANNOTATION_NAME = "Join";
-        public final static String JOIN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_ANNOTATION_NAME;
-        public final static String JOIN_ARGUMENT_COLUMN = "column";
-        public final static String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
-        public final static String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
-        public final static String PERSISTENT_ANNOTATION_NAME = "Persistent";
-        public final static String PERSISTENT_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENT_ANNOTATION_NAME;
-        public final static String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
-        public final static String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
-        public final static String PERSISTENT_ARGUMENT_TABLE = "table";
+        private Jdo() {
+        }
+
+        public static final String CLASS_PATH = "jdo-api";
+        public static final String BASE_PACKAGE = "javax.jdo.annotations.";
+
+        public static final String COLUMN_ANNOTATION_NAME = "Column";
+        public static final String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
+        public static final String DISCRIMINATOR_ANNOTATION_NAME = "Discriminator";
+        public static final String DISCRIMINATOR_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_ANNOTATION_NAME;
+        public static final String DISCRIMINATOR_STRATEGY_ANNOTATION_NAME = "DiscriminatorStrategy";
+        public static final String DISCRIMINATOR_STRATEGY_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_STRATEGY_ANNOTATION_NAME;
+        public static final String ELEMENT_ANNOTATION_NAME = "Element";
+        public static final String ELEMENT_ANNOTATION_FULL = BASE_PACKAGE + ELEMENT_ANNOTATION_NAME;
+        public static final String INHERITANCE_ANNOTATION_NAME = "Inheritance";
+        public static final String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
+        public static final String JOIN_ANNOTATION_NAME = "Join";
+        public static final String JOIN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_ANNOTATION_NAME;
+        public static final String JOIN_ARGUMENT_COLUMN = "column";
+        public static final String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
+        public static final String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
+        public static final String PERSISTENT_ANNOTATION_NAME = "Persistent";
+        public static final String PERSISTENT_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENT_ANNOTATION_NAME;
+        public static final String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
+        public static final String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
+        public static final String PERSISTENT_ARGUMENT_TABLE = "table";
+        public static final String IDENTITY_TYPE_ANNOTATION_NAME = "identityType";
+        public static final String IDENTITY_TYPE_APPLICATION = "APPLICATION";
+        public static final String IDENTITY_TYPE_DATASTORE = "DATASTORE";
     }
 
     public static class Jpa {
-        public final static String CLASS_PATH = "jakarta.persistence-api";
-        public final static String BASE_PACKAGE = "javax.persistence.";
+        private Jpa() {
+        }
 
-        public final static String COLUMN_ANNOTATION_NAME = "Column";
-        public final static String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
-        public final static String DISCRIMINATOR_VALUE_ANNOTATION_NAME = "DiscriminatorValue";
-        public final static String DISCRIMINATOR_VALUE_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_VALUE_ANNOTATION_NAME;
-        public final static String ENTITY_ANNOTATION_NAME = "Entity";
-        public final static String ENTITY_ANNOTATION_FULL = BASE_PACKAGE + ENTITY_ANNOTATION_NAME;
-        public final static String INDEX_ANNOTATION_NAME = "Index";
-        public final static String INDEX_ANNOTATION_FULL = BASE_PACKAGE + INDEX_ANNOTATION_NAME;
-        public final static String INDEX_ANNOTATION_COLUMN_LIST_ATTRIBUTE = "columnList";
-        public final static String INHERITANCE_ANNOTATION_NAME = "Inheritance";
-        public final static String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
-        public final static String JOIN_COLUMN_ANNOTATION_NAME = "JoinColumn";
-        public final static String JOIN_COLUMN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_COLUMN_ANNOTATION_NAME;
-        public final static String JOIN_TABLE_ANNOTATION_NAME = "JoinTable";
-        public final static String JOIN_TABLE_ANNOTATION_FULL = BASE_PACKAGE + JOIN_TABLE_ANNOTATION_NAME;
-        public final static String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
-        public final static String ONE_TO_MANY_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_MANY_ANNOTATION_NAME;
-        public final static String ONE_TO_MANY_ARGUMENT_MAPPED_BY = "mappedBy";
-        public final static String MANY_TO_ONE_ANNOTATION_NAME = "ManyToOne";
-        public final static String MANY_TO_ONE_ANNOTATION_FULL = BASE_PACKAGE + MANY_TO_ONE_ANNOTATION_NAME;
-        public final static String TABLE_ANNOTATION_NAME = "Table";
-        public final static String TABLE_ANNOTATION_FULL = BASE_PACKAGE + TABLE_ANNOTATION_NAME;
-        public final static String TABLE_ARGUMENT_SCHEMA = "schema";
-        public final static String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
-        public final static String TABLE_ARGUMENT_INDEXES = "indexes";
-        public final static String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
-        public final static String UNIQUE_CONSTRAINT_ANNOTATION_FULL = BASE_PACKAGE + UNIQUE_CONSTRAINT_ANNOTATION_NAME;
+        public static final String CLASS_PATH = "jakarta.persistence-api";
+        public static final String BASE_PACKAGE = "javax.persistence.";
 
-        public final static String CASCADE_TYPE_FULL = BASE_PACKAGE + "CascadeType";
-        public final static String FETCH_TYPE_FULL = BASE_PACKAGE + "FetchType";
+        public static final String COLUMN_ANNOTATION_NAME = "Column";
+        public static final String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
+        public static final String DISCRIMINATOR_VALUE_ANNOTATION_NAME = "DiscriminatorValue";
+        public static final String DISCRIMINATOR_VALUE_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_VALUE_ANNOTATION_NAME;
+        public static final String ENTITY_ANNOTATION_NAME = "Entity";
+        public static final String ENTITY_ANNOTATION_FULL = BASE_PACKAGE + ENTITY_ANNOTATION_NAME;
+        public static final String INDEX_ANNOTATION_NAME = "Index";
+        public static final String INDEX_ANNOTATION_FULL = BASE_PACKAGE + INDEX_ANNOTATION_NAME;
+        public static final String INDEX_ANNOTATION_COLUMN_LIST_ATTRIBUTE = "columnList";
+        public static final String INHERITANCE_ANNOTATION_NAME = "Inheritance";
+        public static final String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
+        public static final String JOIN_COLUMN_ANNOTATION_NAME = "JoinColumn";
+        public static final String JOIN_COLUMN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_COLUMN_ANNOTATION_NAME;
+        public static final String JOIN_TABLE_ANNOTATION_NAME = "JoinTable";
+        public static final String JOIN_TABLE_ANNOTATION_FULL = BASE_PACKAGE + JOIN_TABLE_ANNOTATION_NAME;
+        public static final String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
+        public static final String ONE_TO_MANY_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_MANY_ANNOTATION_NAME;
+        public static final String ONE_TO_MANY_ARGUMENT_MAPPED_BY = "mappedBy";
+        public static final String MANY_TO_ONE_ANNOTATION_NAME = "ManyToOne";
+        public static final String MANY_TO_ONE_ANNOTATION_FULL = BASE_PACKAGE + MANY_TO_ONE_ANNOTATION_NAME;
+        public static final String TABLE_ANNOTATION_NAME = "Table";
+        public static final String TABLE_ANNOTATION_FULL = BASE_PACKAGE + TABLE_ANNOTATION_NAME;
+        public static final String TABLE_ARGUMENT_SCHEMA = "schema";
+        public static final String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
+        public static final String TABLE_ARGUMENT_INDEXES = "indexes";
+        public static final String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
+        public static final String UNIQUE_CONSTRAINT_ANNOTATION_FULL = BASE_PACKAGE + UNIQUE_CONSTRAINT_ANNOTATION_NAME;
 
+        public static final String CASCADE_TYPE_FULL = BASE_PACKAGE + "CascadeType";
+        public static final String FETCH_TYPE_FULL = BASE_PACKAGE + "FetchType";
+
+        public static final String MIGRATION_COMMENT = "TODO: manually migrate to JPA";
     }
 
-    public final static String LOMBOK_CLASS_PATH = "lombok";
-    public final static String SPRING_CLASS_PATH = "spring-context";
+    public static final String LOMBOK_CLASS_PATH = "lombok";
+    public static final String SPRING_CLASS_PATH = "spring-context";
 }
