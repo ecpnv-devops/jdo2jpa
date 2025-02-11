@@ -34,7 +34,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
     /**
      * Tests the transformation of a `@Persistent` annotation to a `@ManyToOne` annotation
      * with an eager fetch type, associated cascade types, and the required imports.
-     *
+     * <p>
      * This method validates that:
      * - Fields annotated with `@Persistent` in a JDO-annotated class are correctly
      *   replaced with `@ManyToOne` in a JPA-annotated class.
@@ -42,7 +42,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
      * - Appropriate cascade types (`CascadeType.PERSIST, CascadeType.MERGE,
      *   CascadeType.REFRESH, CascadeType.DETACH`) are included in the transformation.
      * - Necessary import statements are added to the resulting Java code.
-     *
+     * <p>
      * Utilizes the Rewrite testing framework to apply the transformation and
      * verify that the output matches the specified expected result.
      */
@@ -89,13 +89,13 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
     /**
      * Tests the transformation of a `@Persistent` annotation with `defaultFetchGroup`
      * set to `false` into a `@ManyToOne` annotation with `FetchType.LAZY` in a Java class.
-     *
+     * <p>
      * This method validates the correct application of the transformation by:
      * - Replacing the `@Persistent` annotation with `@ManyToOne`.
      * - Ensuring that `FetchType.LAZY` is applied as the fetch strategy.
      * - Adding appropriate cascade types (`CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH`).
      * - Updating the import statements to include necessary JPA-related imports.
-     *
+     * <p>
      * Utilizes the Rewrite testing framework to verify that the input source code,
      * modified by the transformation recipe, aligns with the expected result.
      */
@@ -142,14 +142,14 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
     /**
      * Tests the transformation of a `@Persistent` annotation to a `@ManyToOne` annotation
      * with a lazy fetch type and associated cascade types in a Java class.
-     *
+     * <p>
      * This method validates the transformation process by:
      * - Replacing the `@Persistent` annotation with `@ManyToOne`.
      * - Ensuring that `FetchType.LAZY` is applied as the fetch strategy.
      * - Including appropriate cascade types (`CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH`)
      *   in the resulting annotation.
      * - Adding necessary JPA imports to the resulting Java code.
-     *
+     * <p>
      * Utilizes the Rewrite testing framework to apply the transformation and
      * verifies that the modified output aligns with the expected results.
      */
@@ -258,6 +258,46 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                     public void setPerson( Person person){
                                         Person p2 = null;
                                     }
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void replacePersistentWithColumnAllowsNull() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Column;
+                                
+                                @Entity
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent
+                                    @Column(allowsNull = "false")
+                                    private Person person;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.ManyToOne;
+                                
+                                @Entity
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @ManyToOne(optional = "false", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    private Person person;
                                 }
                                 """
                 )

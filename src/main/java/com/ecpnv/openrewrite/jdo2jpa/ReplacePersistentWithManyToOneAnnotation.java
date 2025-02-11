@@ -135,6 +135,16 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     // Find optional source annotation
                     Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
                     sourceAnnotationIfAny.ifPresent(annotation -> {
+                        // Search for @Column.allowsNull
+                        FindAnnotations.find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_NAME).stream()
+                                .findFirst()
+                                .flatMap(columnAnno ->
+                                        RewriteUtils.findBooleanArgument(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
+                                                .filter(allowsNull -> allowsNull)).ifPresent(allowsNull -> template
+                                        .append(" optional = \"")
+                                        .append(allowsNull)
+                                        .append("\", "));
+
                         // Search for dependentElement
                         RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                                 .filter(isDependent -> isDependent)

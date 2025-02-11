@@ -16,6 +16,7 @@ public final class Constants {
 
         public static final String COLUMN_ANNOTATION_NAME = "Column";
         public static final String COLUMN_ANNOTATION_FULL = BASE_PACKAGE + COLUMN_ANNOTATION_NAME;
+        public final static String COLUMN_ARGUMENT_ALLOWS_NULL = "allowsNull";
         public static final String DISCRIMINATOR_ANNOTATION_NAME = "Discriminator";
         public static final String DISCRIMINATOR_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_ANNOTATION_NAME;
         public static final String DISCRIMINATOR_STRATEGY_ANNOTATION_NAME = "DiscriminatorStrategy";
