@@ -1,5 +1,7 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,6 +10,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -89,6 +92,19 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
         return new JavaIsoVisitor<>() {
+            private Map<J.ClassDeclaration, Boolean> classDeclarationForEntityMap = new HashMap<>();
+
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
+                for (J.ClassDeclaration cd : compilationUnit.getClasses()) {
+                    //check which class(es) are annotated with @Entity or @PersistentCapable depending on the order of the class(es)
+                    classDeclarationForEntityMap.put(cd,
+                            CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jpa.ENTITY_ANNOTATION_FULL)) ||
+                                    CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)));
+                }
+
+                return super.visitCompilationUnit(compilationUnit, executionContext);
+            }
 
             @SuppressWarnings({"java:S2259", "java:S4449", "java:S2637"})
             @Override
@@ -105,6 +121,13 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 Set<J.Annotation> annotations = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE);
                 if (annotations.isEmpty()) {
                     return multiVariable;
+                }
+                //exit if var not attribute of an entity class
+                for (Map.Entry<J.ClassDeclaration, Boolean> entry : classDeclarationForEntityMap.entrySet()) {
+                    //relate attribute to any of the declared classes that were check for annotations
+                    if (entry.getKey().getBody().getStatements().contains(multiVariable) && Boolean.FALSE.equals(entry.getValue())) {
+                        return multiVariable;
+                    }
                 }
                 // Find mappedby argument
                 J.Annotation persistentAnno = annotations.iterator().next();
