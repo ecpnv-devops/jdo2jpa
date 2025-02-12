@@ -179,8 +179,9 @@ public class RewriteUtils {
         }
         var anno = annotation.toString().replace(Constants.REWRITE_ANNOTATION_PREFIX, "");
         for (int i = 0; i < annotations.size(); i++) {
-            if (annotations.get(i).toString().contains(anno)) {
-                String index = "0000" + annotations.get(i).toString().indexOf(anno);
+            var as = annotations.get(i).toString();
+            if (as.contains(anno)) {
+                String index = "0000" + as.indexOf(anno);
                 order = Long.valueOf(i + index.substring(index.length() - 4));
                 break;
             }

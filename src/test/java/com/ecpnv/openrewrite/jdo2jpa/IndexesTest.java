@@ -326,7 +326,7 @@ class IndexesTest extends BaseRewriteTest {
      */
     @DocumentExample
     @Test
-    void moveIndexAnnotationFromIndexes() {
+    void moveMultipleIndexAnnotations() {
         rewriteRun(
                 spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
                 //language=java
@@ -363,6 +363,63 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+
+    /**
+     * This method tests the refactoring process of migrating JDO-specific annotations
+     * (`@Indices` and `@Index` from `javax.jdo.annotations`) to their equivalent JPA-based
+     * annotations (`@Table` and `@Index` from `javax.persistence`). The goal is to ensure
+     * that persistent entity definitions annotated using JDO are correctly transformed
+     * into JPA entity representations.
+     * <p>
+     * Specifically, it verifies the following:
+     * - JDO's `@PersistenceCapable` annotation with its schema attribute is successfully
+     * replaced by JPA's `@Entity` and `@Table` annotations, preserving the schema name.
+     * - JDO's `@Indices` and contained `@Index` entries are converted into JPA's `@Table`
+     * annotation with an `indexes` attribute containing equivalent `@Index` definitions.
+     * - Capable of handling class-level annotations and converting them without affecting
+     * field definitions.
+     * <p>
+     * The test uses OpenRewrite to apply the required recipe transformation, ensuring the
+     * input JDO-based code is rewritten into the expected JPA-compliant output.
+     */
+    @DocumentExample
+    @Test
+    void moveMultipleIndexAnnotationsFromIndices() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Indices;
+                                import javax.jdo.annotations.Index;
+                                
+                                @PersistenceCapable(schema = "schemaName")
+                                @Indices(
+                                  @Index(name = "Person__name__IDX", members = {"firstName", "lastName"}),
+                                  @Index(name = "Person__email__IDX", members = {"email"}))
+                                public class SomeEntity {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """,
+                        """
+                                import javax.persistence.Entity;
+                                import javax.persistence.Index;
+                                import javax.persistence.Table;
+                                
+                                @Entity
+                                @Table( schema = "schemaName", indexes = {@Index( name = "Person__name__IDX",
+                                columnList = "firstName, lastName"), @Index( name = "Person__email__IDX",
+                                columnList = "email")})
+                                public class SomeEntity {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """
+                )
+        );
+    }
 
     /**
      * Refactors a Java class to move `@Index` annotations from fields and methods to the class level,

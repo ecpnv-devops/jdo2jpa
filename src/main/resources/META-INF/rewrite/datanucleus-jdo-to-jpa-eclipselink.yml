@@ -249,6 +249,11 @@ recipeList:
       sourceAnnotationType: javax.persistence.Index
       targetAnnotationType: javax.persistence.Table
       targetAttributeName: indexes
+  # Remove @Indices
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.Indices'
+  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
+      type: javax.jdo.annotations.Indices
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
