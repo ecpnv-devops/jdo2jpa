@@ -83,7 +83,7 @@ class InheritanceTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
-                                @Table(schema = "schemaname")
+                                @Table(schema = "schemaname", table = "tablename")
                                 @Entity
                                 @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Person")

@@ -70,6 +70,7 @@ public final class Constants {
         public static final String TABLE_ANNOTATION_NAME = "Table";
         public static final String TABLE_ANNOTATION_FULL = BASE_PACKAGE + TABLE_ANNOTATION_NAME;
         public static final String TABLE_ARGUMENT_SCHEMA = "schema";
+        public final static String TABLE_ARGUMENT_TABLE = "table";
         public static final String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
         public static final String TABLE_ARGUMENT_INDEXES = "indexes";
         public static final String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
