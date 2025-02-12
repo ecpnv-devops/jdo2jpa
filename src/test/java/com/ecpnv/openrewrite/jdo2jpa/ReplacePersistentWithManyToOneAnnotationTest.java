@@ -75,7 +75,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
                                     private Person person;
                                 }
                                 """
@@ -125,7 +125,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                     private Person person;
                                 }
                                 """
@@ -176,7 +176,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                     private Person person;
                                 }
                                 """
