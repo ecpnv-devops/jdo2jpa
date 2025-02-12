@@ -361,4 +361,61 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
+    /**
+     * Validates the transformation of a `@Persistent` annotation to a combination of `@Column`
+     * and `@ManyToOne` annotations, ensuring compatibility with JPA annotations while preserving
+     * semantic behavior.
+     * <p>
+     * This test specifically ensures the following:
+     * - Fields annotated with `@Persistent` in the input code are replaced with the appropriate
+     * JPA annotations (`@Column` and `@ManyToOne`) that adhere to the required constraints.
+     * - The `allowsNull` attribute specified in the `@Column` annotation is correctly mapped to
+     * the `optional` attribute in the `@ManyToOne` annotation (`optional = "false"` if `allowsNull` is "false").
+     * - Necessary cascade types (`CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH`)
+     * and `FetchType.LAZY` are applied in the generated `@ManyToOne` annotation.
+     * - Proper JPA-related imports are added to the resulting Java code.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithColumnAllowsNull() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Column;
+                                
+                                @Entity
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent
+                                    @Column(name = "personId", allowsNull = "false")
+                                    private Person person;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.ManyToOne;
+                                import javax.jdo.annotations.Column;
+                                
+                                @Entity
+                                public class Person {}
+                                public class SomeEntity {
+                                    private int id;
+                                
+                                    @Column(name = "personId")
+                                    @ManyToOne(optional = "false", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    private Person person;
+                                }
+                                """
+                )
+        );
+    }
 }
