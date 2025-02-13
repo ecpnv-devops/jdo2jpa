@@ -150,9 +150,9 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                                                 .ifPresent(allowsNullArg -> {
                                                     // Add optional argument
                                                     template
-                                                            .append(" optional = \"")
+                                                            .append(" optional = ")
                                                             .append(allowsNullArg.getAssignment())
-                                                            .append("\",");
+                                                            .append(",");
                                                     // Remove @Column annotation or allowsNull argument
                                                     List<Expression> args = new ArrayList<>(columnAnno.getArguments());
                                                     args.remove(allowsNullArg);
