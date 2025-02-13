@@ -1,5 +1,7 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +19,13 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import com.ecpnv.openrewrite.util.RewriteUtils;
@@ -133,8 +137,37 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
 
                     // Find optional source annotation
+                    List<J.Annotation> leadAnnos = new ArrayList<>(multiVariable.getLeadingAnnotations());
                     Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
                     sourceAnnotationIfAny.ifPresent(annotation -> {
+                        // When @Persistence is found replace
+                        leadAnnos.remove(annotation);
+                        // Search for @Column
+                        FindAnnotations.find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream()
+                                .findFirst()
+                                .ifPresent(columnAnno ->
+                                        // Search for @Column.allowsNull
+                                        RewriteUtils.findArgument(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
+                                                .ifPresent(allowsNullArg -> {
+                                                    // Add optional argument
+                                                    template
+                                                            .append(" optional = \"")
+                                                            .append(allowsNullArg.getAssignment())
+                                                            .append("\",");
+                                                    // Remove @Column annotation or allowsNull argument
+                                                    List<Expression> args = new ArrayList<>(columnAnno.getArguments());
+                                                    args.remove(allowsNullArg);
+                                                    // Remove @Column when no arguments are left
+                                                    leadAnnos.remove(columnAnno);
+                                                    if (!args.isEmpty()) {
+                                                        // Remove allowsNull argument and keep @Column
+                                                        var ca = columnAnno.withArguments(args);
+                                                        ca = ca.withMarkers(ca.getMarkers().withMarkers(List.of()));
+                                                        leadAnnos.add(ca);
+                                                    }
+                                                })
+                                );
+
                         // Search for dependentElement
                         RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                                 .filter(isDependent -> isDependent)
@@ -168,17 +201,16 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                     maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
                     maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
+                    maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);
 
-                    return JavaTemplate.builder(template.toString())
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
-                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
-                            .build()
-                            .apply(getCursor(), sourceAnnotationIfAny
-                                    // When @Persistence is found replace
-                                    .map(annotation -> annotation.getCoordinates().replace())
-                                    // Otherwise add annotation
-                                    .orElseGet(() -> multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)))
-                            );
+                    return maybeAutoFormat(multiVariable, multiVariable.withLeadingAnnotations(ListUtils.concat(leadAnnos,
+                                    ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
+                                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                                            .build()
+                                            .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
+                                            .getLeadingAnnotations().get(0))),
+                            ctx);
                 }
                 return super.visitVariableDeclarations(multiVariable, ctx);
             }
