@@ -2,12 +2,13 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Set;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
@@ -96,7 +97,7 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                     maybeRemoveImport(Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL);
 
                     return JavaTemplate.builder(template.toString())
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                            .javaParser(JavaParserFactory.create(ctx))
                             .imports(TARGET_TYPE)
                             .build()
                             .apply(getCursor(), sourceAnnotation.getCoordinates().replace());

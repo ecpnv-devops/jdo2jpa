@@ -7,7 +7,7 @@
 # NOTE: The main recipe doesn't cover all possible JDO ORM mapping variations possible, but is restricted to most
 #       common cases. Please feel free to extend the recipes with additional JDO mapping coverage.
 #
-# @author Patrick Deenen @ Open Circle Solutions
+# @author Patrick Deenen & Wouter Veltmaat @ Open Circle Solutions
 #
 
 ---
@@ -102,6 +102,8 @@ recipeList:
       annotationPattern: '@javax.jdo.annotations.PersistenceCapable'
   - com.ecpnv.openrewrite.java.MaybeRemoveImport:
       type: javax.jdo.annotations.IdentityType
+  # Update spring configurations to include entity scanning
+  - com.ecpnv.openrewrite.jdo2jpa.AddEntityScanAnnotationConditionally
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent

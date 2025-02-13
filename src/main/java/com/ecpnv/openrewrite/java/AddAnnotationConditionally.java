@@ -14,14 +14,13 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaCoordinates;
 import org.openrewrite.java.tree.Statement;
 
-import com.ecpnv.openrewrite.jdo2jpa.Constants;
+import com.ecpnv.openrewrite.util.JavaParserFactory;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -155,7 +154,7 @@ public class AddAnnotationConditionally extends Recipe {
                             // Add annotation to variable
                             maybeAddImport(annotationType);
                             return (Statement) JavaTemplate.builder(annotationTemplate)
-                                    .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                                    .javaParser(JavaParserFactory.create(ctx))
                                     .imports(annotationType)
                                     .build()
                                     .apply(getCursor(), coordinates.get());

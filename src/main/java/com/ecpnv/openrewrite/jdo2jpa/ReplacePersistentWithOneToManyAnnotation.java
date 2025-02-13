@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,7 +20,6 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.search.FindAnnotations;
@@ -170,12 +171,12 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
 
-                // Add @OneToMany
-                multiVariable = JavaTemplate.builder(template.toString())
-                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
-                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
-                        .build()
-                        .apply(getCursor(), persistentAnno.getCoordinates().replace());
+                    // Add @OneToMany
+                    multiVariable = JavaTemplate.builder(template.toString())
+                            .javaParser(JavaParserFactory.create(ctx))
+                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                            .build()
+                            .apply(getCursor(), persistentAnno.getCoordinates().replace());
 
                 if (table.isPresent() || joinAnno.isPresent()) {
                     // Add @JoinTable to var with table name
