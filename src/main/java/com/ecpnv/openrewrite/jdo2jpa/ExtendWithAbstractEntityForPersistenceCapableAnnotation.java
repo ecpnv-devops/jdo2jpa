@@ -14,7 +14,6 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -116,15 +115,15 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
                                 .classpathFromResources(new InMemoryExecutionContext(), resourceClasspath)
                                 .logCompilationWarningsAndErrors(true);
 
+                        //This line causes the imports to have white lines between them
+                        maybeAddImport(extendsFullClassName);
+
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
                                 .contextSensitive()
                                 .javaParser(javaParser)
                                 .imports(extendsFullClassName)
                                 .build()
                                 .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
-
-                        //This line causes the imports to have white lines between them
-                        doAfterVisit(new AddImport<>(extendsFullClassName, null, false));
 
                         return newCd;
                     }

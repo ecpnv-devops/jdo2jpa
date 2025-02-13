@@ -84,4 +84,87 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
+
+    /**
+     * `addEntityAnnotationAlongPersistanceCapable()`: Verifies that the recipe successfully identifies
+     * classes with the `@PersistenceCapable` annotation and adds the `@Entity` annotation with the required
+     * import statements. Contains assertions to ensure the correctness of the transformation.
+     */
+    @DocumentExample
+    @Test
+    void addEntityAnnotationAlongPersistanceCapableMultiline() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                
+                                @PersistenceCapable(
+                                        schema = "schemaName", 
+                                        table = "tableName")
+                                public class SomeEntity {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import javax.persistence.Entity;
+                                import javax.persistence.Table;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
+                                @Entity
+                                @Table( schema = "schemaName",  table = "tableName")
+                                public class SomeEntity extends EntityAbstract {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * `addEntityAnnotationAlongPersistanceCapable()`: Verifies that the recipe successfully identifies
+     * classes with the fully qualified type name `@javax.jdo.annotations.PersistenceCapable` annotation and
+     * adds the `@Entity` annotation with the required import statements. Contains assertions to ensure the
+     * correctness of the transformation.
+     */
+    @DocumentExample
+    @Test
+    void addEntityAnnotationAlongPersistanceCapableFqn() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                
+                                @javax.jdo.annotations.PersistenceCapable
+                                public class SomeEntity {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """,
+                        """
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
+                                import java.util.List;
+                                
+                                import javax.persistence.Entity;
+                                import javax.persistence.Table;
+                                
+                                @Entity
+                                @Table
+                                public class SomeEntity extends EntityAbstract {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """
+                )
+        );
+    }
 }
