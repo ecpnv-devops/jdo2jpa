@@ -74,11 +74,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
-                                import javax.persistence.OrderColumn;
+                                import javax.persistence.*;
                                 
                                 @Entity
                                 public class Person {}
@@ -304,11 +300,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.Entity;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.JoinTable;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
                                 
                                 @Entity
                                 public class Person {}
