@@ -19,7 +19,6 @@ import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,6 +36,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import lombok.EqualsAndHashCode;
@@ -114,8 +114,7 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                 J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, executionContext);
-                Set<J.Annotation> removeAnno = processAnnotation(mv, mv.getVariables().get(0).getSimpleName(),
-                        vd -> (J.Assignment) ((J.VariableDeclarations) vd).getLeadingAnnotations().get(0).getArguments().get(0));
+                Set<J.Annotation> removeAnno = processAnnotation(mv, mv.getVariables().get(0).getSimpleName());
                 if (!removeAnno.isEmpty()) {
                     List<J.Annotation> newAnno = new ArrayList<>(mv.getLeadingAnnotations());
                     newAnno.removeAll(removeAnno);
@@ -129,8 +128,7 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, executionContext);
                 String name = md.getName().getSimpleName();
                 name = Introspector.decapitalize(name.substring(name.startsWith("is") ? 2 : 3));
-                Set<J.Annotation> removeAnno = processAnnotation(md, name,
-                        mdc -> (J.Assignment) ((J.MethodDeclaration) mdc).getLeadingAnnotations().get(0).getArguments().get(0));
+                Set<J.Annotation> removeAnno = processAnnotation(md, name);
                 if (!removeAnno.isEmpty()) {
                     List<J.Annotation> newAnno = new ArrayList<>(md.getLeadingAnnotations());
                     newAnno.removeAll(removeAnno);
@@ -139,8 +137,8 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
                 return md;
             }
 
-            Set<J.Annotation> processAnnotation(J current, @NonNull String name, Function<J, J.Assignment> extractArgument) {
-                if (StringUtils.isNotBlank(attributeNameToAdd)) {
+            Set<J.Annotation> processAnnotation(@NonNull J current, @NonNull String name) {
+                if (name != null && StringUtils.isNotBlank(attributeNameToAdd)) {
                     Set<J.Annotation> removeAnno = FindAnnotations.find(current, annotationPattern);
                     Set<J.Annotation> curAnno = removeAnno.stream()
                             // Add an attribute to the annotation with the name of the field or method
@@ -149,7 +147,11 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
                                         .contextSensitive()
                                         .build()
                                         .apply(getCursor(), a.getCoordinates().replaceArguments(), attributeNameToAdd, '"' + name + '"');
-                                J.Assignment as = extractArgument.apply(result);
+                                Expression as = FindAnnotations
+                                        .find(result, annotationPattern).stream()
+                                        .findFirst()
+                                        .flatMap(arg -> arg.getArguments().stream().findFirst())
+                                        .orElse(null);
                                 return a.withArguments(ListUtils.concat(as, a.getArguments()));
                             })
                             .collect(Collectors.toSet());

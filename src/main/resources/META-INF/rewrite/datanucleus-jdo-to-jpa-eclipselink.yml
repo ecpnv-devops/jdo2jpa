@@ -23,6 +23,8 @@ tags:
   - java
   - javax
   - persistence
+preconditions:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
@@ -36,6 +38,18 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+displayName: Filter on entity classes
+recipeList:
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: javax.jdo.annotations.PersistenceCapable
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: javax.persistence.Entity
+  - org.openrewrite.text.Find:
+      find: "@interface"
+      filePattern: "**/*.java"
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
