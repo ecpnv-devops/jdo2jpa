@@ -54,6 +54,10 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddCommentToPersistenceCapableWithIdentityTypeApplication
   - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForPersistenceCapableAnnotation:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.DatastoreIdentity'
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.Version'
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
