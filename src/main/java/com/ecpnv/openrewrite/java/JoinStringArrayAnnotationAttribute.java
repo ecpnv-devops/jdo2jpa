@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -100,15 +103,14 @@ public class JoinStringArrayAnnotationAttribute extends Recipe {
 
             @Override
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                J.Annotation a = super.visitAnnotation(annotation, ctx);
-                if (!annotationMatcher.matches(a) || a.getArguments() == null || a.getArguments().isEmpty()) {
-                    return a;
+                J.Annotation visited = super.visitAnnotation(annotation, ctx);
+                if (!annotationMatcher.matches(visited) || CollectionUtils.isEmpty(visited.getArguments())) {
+                    return visited;
                 }
 
-                return a.getArguments().stream()
+                return visited.getArguments().stream()
                         .map(arg -> {
-                            if (arg instanceof J.Assignment) {
-                                J.Assignment assignment = (J.Assignment) arg;
+                            if (arg instanceof J.Assignment assignment) {
                                 J.Identifier variable = (J.Identifier) assignment.getVariable();
                                 if (attributeName.equals(variable.getSimpleName())) {
                                     return join(assignment.getAssignment());
@@ -121,9 +123,10 @@ public class JoinStringArrayAnnotationAttribute extends Recipe {
                         })
                         .filter(Objects::nonNull)
                         .findFirst()
-                        .orElse(a);
+                        .orElse(visited);
             }
 
+            @Nullable
             protected J.Annotation join(J javaObject) {
                 if (javaObject instanceof J.NewArray newArray) {
                     List<Expression> expressions = newArray.getInitializer();
@@ -139,6 +142,7 @@ public class JoinStringArrayAnnotationAttribute extends Recipe {
                                 .apply(getCursor(), newArray.getCoordinates().replace(), joinedList);
                     }
                 }
+
                 return null;
             }
         });

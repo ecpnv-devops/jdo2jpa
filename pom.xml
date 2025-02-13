@@ -22,7 +22,12 @@
         <rewrite-bom.version>3.0.1</rewrite-bom.version>
         <rewrite-java.version>8.43.2</rewrite-java.version>
         <rewrite-static-analysis.version>2.1.0</rewrite-static-analysis.version>
+        <jdo-api.version>3.2.1</jdo-api.version>
         <slf4j.version>2.0.16</slf4j.version>
+        <lombok.version>1.18.34</lombok.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-lang3.version>3.17.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
@@ -105,17 +110,31 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Nullability checks -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${jsr305.version}</version>
+        </dependency>
+
         <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
+            <version>${lombok.version}</version>
+        </dependency>
+
+        <!-- commons -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections4.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- For authoring tests for any kind of Recipe -->
@@ -151,7 +170,7 @@
         <dependency>
             <groupId>javax.jdo</groupId>
             <artifactId>jdo-api</artifactId>
-            <version>3.2.1</version>
+            <version>${jdo-api.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -174,6 +193,7 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M9</version>
             </plugin>
@@ -187,7 +207,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.32</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

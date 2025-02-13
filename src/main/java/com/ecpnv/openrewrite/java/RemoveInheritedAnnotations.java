@@ -132,13 +132,15 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
             Set<String> parentTypes = new HashSet<>();
             while (currentFq != null) {
                 currentFq = currentFq.getSupertype();
-                if (currentFq != null && (currentFq.getFullyQualifiedName().equals("java.lang.Object")
-                        || parentTypes.contains(currentFq.getFullyQualifiedName()))) {
-                    break;
-                }
-                parentTypes.add(currentFq.getFullyQualifiedName());
-                for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
-                    parentTypes.add(i.getFullyQualifiedName());
+                if (currentFq != null) {
+                    if (currentFq.getFullyQualifiedName().equals("java.lang.Object")
+                            || parentTypes.contains(currentFq.getFullyQualifiedName())) {
+                        break;
+                    }
+                    parentTypes.add(currentFq.getFullyQualifiedName());
+                    for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
+                        parentTypes.add(i.getFullyQualifiedName());
+                    }
                 }
             }
 

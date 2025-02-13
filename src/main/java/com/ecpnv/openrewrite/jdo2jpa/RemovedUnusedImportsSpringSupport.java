@@ -124,8 +124,7 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
             }
 
             for (JavaType javaType : cu.getTypesInUse().getTypesInUse()) {
-                if (javaType instanceof JavaType.Parameterized) {
-                    JavaType.Parameterized parameterized = (JavaType.Parameterized) javaType;
+                if (javaType instanceof JavaType.Parameterized parameterized) {
                     typesByPackage.computeIfAbsent(parameterized.getType().getPackageName(), f -> new HashSet<>())
                             .add(parameterized.getType());
                     for (JavaType typeParameter : parameterized.getTypeParameters()) {
@@ -138,13 +137,12 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                                     f -> new HashSet<>()).add(fq);
                         }
                     }
-                } else if (javaType instanceof JavaType.FullyQualified) {
-                    JavaType.FullyQualified fq = (JavaType.FullyQualified) javaType;
+                } else if (javaType instanceof JavaType.FullyQualified fullyQualified) {
                     typesByPackage.computeIfAbsent(
-                            fq.getOwningClass() == null ?
-                                    fq.getPackageName() :
-                                    toFullyQualifiedName(fq.getOwningClass().getFullyQualifiedName()),
-                            f -> new HashSet<>()).add(fq);
+                            fullyQualified.getOwningClass() == null ?
+                                    fullyQualified.getPackageName() :
+                                    toFullyQualifiedName(fullyQualified.getOwningClass().getFullyQualifiedName()),
+                            f -> new HashSet<>()).add(fullyQualified);
                 }
             }
 
@@ -169,9 +167,9 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                             for (Expression initializer : newArray.getInitializer()) {
                                 String className;
                                 if (initializer instanceof J.FieldAccess fieldAccess) {
-                                    className = fieldAccess.getTarget().print();
+                                    className = fieldAccess.getTarget().print(getCursor());
                                 } else {
-                                    className = stripClass(initializer.print());
+                                    className = stripClass(initializer.print(getCursor()));
                                 }
                                 final String member = JavaType.ShallowClass.build(className).getClassName();
                                 final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
@@ -227,7 +225,7 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                     // see https://github.com/openrewrite/rewrite/issues/1698 for more detail
                     String target = qualid.getTarget().toString();
                     String modifiedTarget = methodsAndFieldsByTypeName.keySet().stream()
-                            .filter((fqn) -> fullyQualifiedNamesAreEqual(target, fqn))
+                            .filter(fqn -> fullyQualifiedNamesAreEqual(target, fqn))
                             .findFirst()
                             .orElse(target);
                     SortedSet<String> targetMethodsAndFields = methodsAndFieldsByTypeName.get(modifiedTarget);
@@ -386,10 +384,8 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
             final String[] lines = string.split("\n");
             for (String line : lines) {
                 String result = line.trim();
-                if (result.contains(CLASS)) {
-                    if (!result.contains(COMMENT_SINGLE_LINE) || result.indexOf(COMMENT_SINGLE_LINE) > result.indexOf(CLASS)) {
-                        return result.substring(0, result.indexOf(CLASS));
-                    }
+                if (result.contains(CLASS) && (!result.contains(COMMENT_SINGLE_LINE) || result.indexOf(COMMENT_SINGLE_LINE) > result.indexOf(CLASS))) {
+                    return result.substring(0, result.indexOf(CLASS));
                 }
             }
             return string;

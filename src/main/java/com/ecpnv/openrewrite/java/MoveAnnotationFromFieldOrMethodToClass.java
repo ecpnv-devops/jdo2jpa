@@ -139,8 +139,8 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
                 return md;
             }
 
-            Set<J.Annotation> processAnnotation(J current, String name, Function<J, J.Assignment> extractArgument) {
-                if (name != null && StringUtils.isNotBlank(attributeNameToAdd)) {
+            Set<J.Annotation> processAnnotation(J current, @NonNull String name, Function<J, J.Assignment> extractArgument) {
+                if (StringUtils.isNotBlank(attributeNameToAdd)) {
                     Set<J.Annotation> removeAnno = FindAnnotations.find(current, annotationPattern);
                     Set<J.Annotation> curAnno = removeAnno.stream()
                             // Add an attribute to the annotation with the name of the field or method

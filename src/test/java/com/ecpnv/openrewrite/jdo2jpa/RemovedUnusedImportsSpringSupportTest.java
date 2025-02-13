@@ -8,7 +8,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import static com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport.RemoveUnusedImportsVisitor.stripClass;
 
-public class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest{
+class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest{
 
     @DocumentExample
     @Test
@@ -151,7 +151,7 @@ public class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest{
                 
                 """));
         assertEquals("FakeSchedulerV2", stripClass("""
-                /* test */    
+                /* test */
                 FakeSchedulerV2.class
                 """));
         assertEquals("FakeSchedulerV2", stripClass("""

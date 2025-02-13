@@ -79,10 +79,11 @@ public class AddAnnotationConditionally extends Recipe {
         this.matchByRegularExpression = matchByRegularExpression;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
-        if (declarationType == null)
+        if (declarationType == null) {
             this.declarationType = null;
-        else
+        } else {
             this.declarationType = DeclarationType.valueOf(declarationType);
+        }
     }
 
     @Override

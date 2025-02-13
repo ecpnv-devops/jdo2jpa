@@ -25,6 +25,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -173,7 +174,7 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             }
 
             List<J.Annotation> afterAnnotationList = ListUtils.concatAll(cd.getLeadingAnnotations(), annotationsFromParentClass);
-            if (afterAnnotationList != cd.getLeadingAnnotations()) {
+            if (afterAnnotationList != cd.getLeadingAnnotations() && CollectionUtils.isNotEmpty(afterAnnotationList)) {
                 cd = cd.withLeadingAnnotations(afterAnnotationList);
                 cd = autoFormat(cd, cd.getName(), ctx, getCursor().getParentTreeCursor());
                 for (J.Annotation annotation : annotationsFromParentClass) {

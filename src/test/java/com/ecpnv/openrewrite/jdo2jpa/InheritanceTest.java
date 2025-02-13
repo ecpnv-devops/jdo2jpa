@@ -62,7 +62,7 @@ class InheritanceTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Persistent;
                                 import javax.jdo.annotations.PersistenceCapable;
                                 
-                                @PersistenceCapable(schema = "schemaname", table = "tablename")
+                                @PersistenceCapable(schema = "schemaname", table = "person")
                                 @Discriminator("Person", strategy = "special", column = "col", columns = {"cols"}, indexed = "true")
                                 @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 public class Person {
@@ -70,6 +70,7 @@ class InheritanceTest extends BaseRewriteTest {
                                         private String name;
                                 }
                                 
+                                @PersistenceCapable(schema = "schemaname", table = "manager")
                                 @Inheritance
                                 public class Manager extends Person {
                                         @Persistent( mappedBy = "person")
@@ -92,7 +93,8 @@ class InheritanceTest extends BaseRewriteTest {
                                         private String name;
                                 }
                                 
-                                
+                                @Entity
+                                @Table(schema = "schemaname")
                                 @DiscriminatorValue("Manager")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {

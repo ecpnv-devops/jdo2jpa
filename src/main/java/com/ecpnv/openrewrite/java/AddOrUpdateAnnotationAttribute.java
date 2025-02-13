@@ -2,6 +2,7 @@ package com.ecpnv.openrewrite.java;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -55,6 +56,10 @@ import lombok.With;
  */
 @EqualsAndHashCode(callSuper = false)
 public class AddOrUpdateAnnotationAttribute extends Recipe {
+
+    public static final String ANNOTATION_ARGUMENT_TEMPLATE = "#{} = #{}";
+    public static final String ANNOTATION_REGEX = "[\\s+{}\"]";
+    public static final String ANNOTATION_VALUE = "value";
 
     public enum Operation {
         ADD, UPDATE, BOTH;
@@ -156,7 +161,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                     return a;
                 }
 
-                if (attributeName == null || "value".equals(attributeName)) {
+                if (attributeName == null || ANNOTATION_VALUE.equals(attributeName)) {
                     return JavaTemplate.builder("#{}")
                             .contextSensitive()
                             .build()
@@ -164,13 +169,13 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 } else {
                     String newAttributeValueResult = newAttributeValue;
                     if (((JavaType.FullyQualified) requireNonNull(a.getAnnotationType().getType())).getMethods().stream().anyMatch(method -> method.getReturnType().toString().equals("java.lang.String[]"))) {
-                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll("[\\s+{}\"]", "");
+                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                         List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
                         newAttributeValueResult = attributeList.stream()
                                 .map(String::valueOf)
                                 .collect(Collectors.joining("\", \"", "{\"", "\"}"));
                     }
-                    return JavaTemplate.builder("#{} = #{}")
+                    return JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
                             .contextSensitive()
                             .build()
                             .apply(getCursor(), a.getCoordinates().replaceArguments(), attributeName, newAttributeValueResult);
@@ -179,15 +184,14 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 // First assume the value exists amongst the arguments and attempt to update it
                 AtomicBoolean foundOrSetAttributeWithDesiredValue = new AtomicBoolean(false);
                 final J.Annotation finalA = a;
-                List<Expression> newArgs = ListUtils.map(currentArgs, it -> {
-                    if (it instanceof J.Assignment) {
-                        J.Assignment as = (J.Assignment) it;
-                        J.Identifier var = (J.Identifier) as.getVariable();
-                        if (attributeName == null && !"value".equals(var.getSimpleName())) {
-                            return it;
+                List<Expression> newArgs = ListUtils.map(currentArgs, expression -> {
+                    if (expression instanceof J.Assignment assignment) {
+                        J.Identifier variable = (J.Identifier) assignment.getVariable();
+                        if (attributeName == null && !ANNOTATION_VALUE.equals(variable.getSimpleName())) {
+                            return expression;
                         }
-                        if (attributeName != null && !attributeName.equals(var.getSimpleName())) {
-                            return it;
+                        if (attributeName != null && !attributeName.equals(variable.getSimpleName())) {
+                            return expression;
                         }
 
                         foundOrSetAttributeWithDesiredValue.set(true);
@@ -196,13 +200,13 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                             return null;
                         }
 
-                        if (as.getAssignment() instanceof J.NewArray) {
-                            List<Expression> jLiteralList = requireNonNull(((J.NewArray) as.getAssignment()).getInitializer());
-                            String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll("[\\s+{}\"]", "");
+                        if (assignment.getAssignment() instanceof J.NewArray newArray) {
+                            List<Expression> jLiteralList = requireNonNull(newArray.getInitializer());
+                            String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                             List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
 
-                            if (as.getMarkers().findFirst(AlreadyAppended.class).filter(ap -> ap.getValues().equals(newAttributeValue)).isPresent()) {
-                                return as;
+                            if (assignment.getMarkers().findFirst(AlreadyAppended.class).filter(ap -> ap.getValues().equals(newAttributeValue)).isPresent()) {
+                                return assignment;
                             }
 
                             if (Boolean.TRUE.equals(appendArray)) {
@@ -223,8 +227,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                                             .getArguments()).get(0);
                                     jLiteralList.add(e);
                                 }
-                                return changed ? as.withAssignment(((J.NewArray) as.getAssignment()).withInitializer(jLiteralList))
-                                        .withMarkers(as.getMarkers().add(new AlreadyAppended(randomId(), newAttributeValue))) : as;
+                                return changed ? assignment.withAssignment(((J.NewArray) assignment.getAssignment()).withInitializer(jLiteralList))
+                                        .withMarkers(assignment.getMarkers().add(new AlreadyAppended(randomId(), newAttributeValue))) : assignment;
                             }
                             int m = 0;
                             for (int i = 0; i < requireNonNull(jLiteralList).size(); i++) {
@@ -258,69 +262,67 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                                 }
                             }
 
-                            return as.withAssignment(((J.NewArray) as.getAssignment()).withInitializer(jLiteralList));
-                        } else if (as.getAssignment() instanceof J.FieldAccess) {
-                            String fullQn = as.getAssignment().getType() + "." + ((J.FieldAccess) as.getAssignment()).getName();
-                            if (newAttributeValue.equals(fullQn) || newAttributeValue.equals(as.getAssignment().toString())
+                            return assignment.withAssignment(((J.NewArray) assignment.getAssignment()).withInitializer(jLiteralList));
+                        } else if (assignment.getAssignment() instanceof J.FieldAccess fieldAccess) {
+                            String fullQn = assignment.getAssignment().getType() + "." + fieldAccess.getName();
+                            if (newAttributeValue.equals(fullQn) || newAttributeValue.equals(assignment.getAssignment().toString())
                                     || (operation.isAdd() && !operation.isUpdate())) {
-                                return it;
+                                return expression;
                             }
-                            if (!valueMatches(as.getAssignment(), oldAttributeValue)) {
-                                return it;
+                            if (!valueMatches(assignment.getAssignment(), oldAttributeValue)) {
+                                return expression;
                             }
-                            return ((J.Annotation) JavaTemplate.builder("#{} = #{}")
+                            return ((J.Annotation) JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
                                     .contextSensitive()
                                     .build()
                                     .apply(getCursor(), finalA.getCoordinates().replaceArguments(),
-                                            ((J.Identifier) as.getVariable()).getSimpleName(), newAttributeValue)
+                                            ((J.Identifier) assignment.getVariable()).getSimpleName(), newAttributeValue)
                             ).getArguments().get(0);
                         } else {
-                            J.Literal value = (J.Literal) as.getAssignment();
+                            J.Literal value = (J.Literal) assignment.getAssignment();
                             if (newAttributeValue.equals(value.getValueSource()) || (operation.isAdd() && !operation.isUpdate())) {
-                                return it;
+                                return expression;
                             }
                             if (!valueMatches(value, oldAttributeValue)) {
-                                return it;
+                                return expression;
                             }
-                            return as.withAssignment(value.withValue(newAttributeValue).withValueSource(newAttributeValue));
+                            return assignment.withAssignment(value.withValue(newAttributeValue).withValueSource(newAttributeValue));
                         }
-                    } else if (it instanceof J.Literal) {
+                    } else if (expression instanceof J.Literal literal) {
                         // The only way anything except an assignment can appear is if there's an implicit assignment to "value"
-                        if (attributeName == null || "value".equals(attributeName)) {
+                        if (attributeName == null || ANNOTATION_VALUE.equals(attributeName)) {
                             foundOrSetAttributeWithDesiredValue.set(true);
                             if (newAttributeValue == null) {
                                 return null;
                             }
-                            J.Literal value = (J.Literal) it;
-                            if (newAttributeValue.equals(value.getValueSource()) || (operation.isAdd() && !operation.isUpdate())) {
-                                return it;
+                            if (newAttributeValue.equals(literal.getValueSource()) || (operation.isAdd() && !operation.isUpdate())) {
+                                return expression;
                             }
-                            if (!valueMatches(value, oldAttributeValue)) {
-                                return it;
+                            if (!valueMatches(literal, oldAttributeValue)) {
+                                return expression;
                             }
-                            return ((J.Literal) it).withValue(newAttributeValue).withValueSource(newAttributeValue);
+                            return ((J.Literal) expression).withValue(newAttributeValue).withValueSource(newAttributeValue);
                         } else {
                             // Make the attribute name explicit, before we add the new value below
                             //noinspection ConstantConditions
                             return ((J.Annotation) JavaTemplate.builder("value = #{}")
                                     .contextSensitive()
                                     .build()
-                                    .apply(getCursor(), finalA.getCoordinates().replaceArguments(), it)
+                                    .apply(getCursor(), finalA.getCoordinates().replaceArguments(), expression)
                             ).getArguments().get(0);
                         }
-                    } else if (it instanceof J.FieldAccess) {
+                    } else if (expression instanceof J.FieldAccess fieldAccess) {
                         // The only way anything except an assignment can appear is if there's an implicit assignment to "value"
-                        if (attributeName == null || "value".equals(attributeName)) {
+                        if (attributeName == null || ANNOTATION_VALUE.equals(attributeName)) {
                             foundOrSetAttributeWithDesiredValue.set(true);
-                            if (!valueMatches(it, oldAttributeValue)) {
-                                return it;
+                            if (!valueMatches(expression, oldAttributeValue)) {
+                                return expression;
                             }
                             if (newAttributeValue == null) {
                                 return null;
                             }
-                            J.FieldAccess value = (J.FieldAccess) it;
-                            if (newAttributeValue.equals(value.toString()) || (operation.isAdd() && !operation.isUpdate())) {
-                                return it;
+                            if (newAttributeValue.equals(fieldAccess.toString()) || (operation.isAdd() && !operation.isUpdate())) {
+                                return expression;
                             }
                             //noinspection ConstantConditions
                             return ((J.Annotation) JavaTemplate.apply(newAttributeValue, getCursor(), finalA.getCoordinates().replaceArguments()))
@@ -331,21 +333,20 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                             return ((J.Annotation) JavaTemplate.builder("value = #{any()}")
                                     .contextSensitive()
                                     .build()
-                                    .apply(getCursor(), finalA.getCoordinates().replaceArguments(), it))
+                                    .apply(getCursor(), finalA.getCoordinates().replaceArguments(), expression))
                                     .getArguments().get(0);
                         }
-                    } else if (it instanceof J.NewArray) {
-                        if (it.getMarkers().findFirst(AlreadyAppended.class).filter(ap -> ap.getValues().equals(newAttributeValue)).isPresent()) {
-                            return it;
+                    } else if (expression instanceof J.NewArray newArray) {
+                        if (expression.getMarkers().findFirst(AlreadyAppended.class).filter(ap -> ap.getValues().equals(newAttributeValue)).isPresent()) {
+                            return expression;
                         }
 
                         if (newAttributeValue == null) {
                             return null;
                         }
 
-                        J.NewArray arrayValue = (J.NewArray) it;
-                        List<Expression> jLiteralList = requireNonNull(arrayValue.getInitializer());
-                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll("[\\s+{}\"]", "");
+                        List<Expression> jLiteralList = requireNonNull(newArray.getInitializer());
+                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                         List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
 
                         if (Boolean.TRUE.equals(appendArray)) {
@@ -368,8 +369,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                                 jLiteralList = ListUtils.map(jLiteralList, val -> valueMatches(val, oldAttributeValue) ? null : val);
                             }
 
-                            return changed ? arrayValue.withInitializer(jLiteralList)
-                                    .withMarkers(it.getMarkers().add(new AlreadyAppended(randomId(), newAttributeValue))) : it;
+                            return changed ? newArray.withInitializer(jLiteralList)
+                                    .withMarkers(expression.getMarkers().add(new AlreadyAppended(randomId(), newAttributeValue))) : expression;
                         }
                         int m = 0;
                         for (int i = 0; i < requireNonNull(jLiteralList).size(); i++) {
@@ -409,9 +410,9 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                             }
                         }
 
-                        return arrayValue.withInitializer(jLiteralList);
+                        return newArray.withInitializer(jLiteralList);
                     }
-                    return it;
+                    return expression;
                 });
 
                 if (newArgs != currentArgs) {
@@ -420,9 +421,9 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 if (operation.isAdd() && !foundOrSetAttributeWithDesiredValue.get()
                         && !attributeValIsAlreadyPresent(newArgs, newAttributeValue)) {
                     // There was no existing value to update, so add a new value into the argument list
-                    String effectiveName = (attributeName == null) ? "value" : attributeName;
+                    String effectiveName = (attributeName == null) ? ANNOTATION_VALUE : attributeName;
                     //noinspection ConstantConditions
-                    J.Assignment as = (J.Assignment) ((J.Annotation) JavaTemplate.builder("#{} = #{}")
+                    J.Assignment as = (J.Assignment) ((J.Annotation) JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
                             .contextSensitive()
                             .build()
                             .apply(getCursor(), a.getCoordinates().replaceArguments(), effectiveName, newAttributeValue))
@@ -434,7 +435,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                     RewriteUtils.findArgument(original, attributeName)
                             .map(J.Assignment::getType)
                             .map(JavaType::toString)
-                            .filter(name -> !"Unknown".equals(name) && StringUtils.isNotBlank(name))
+                            .filter(name -> StringUtils.isNotBlank(name) && !"Unknown".equals(name))
                             .ifPresent(this::maybeRemoveImport);
                 }
             }
@@ -451,21 +452,20 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
         }
         if (oldAttributeValue == null) { // null means wildcard
             return true;
-        } else if (expression instanceof J.Literal) {
-            return oldAttributeValue.equals(((J.Literal) expression).getValue());
-        } else if (expression instanceof J.FieldAccess) {
-            J.FieldAccess fa = (J.FieldAccess) expression;
-            String currentValue = fa.toString();
-            if (fa.getTarget() instanceof J.Identifier) {
-                currentValue = ((J.Identifier) fa.getTarget()).getSimpleName() + "." + fa.getSimpleName();
+        } else if (expression instanceof J.Literal literal) {
+            return oldAttributeValue.equals(literal.getValue());
+        } else if (expression instanceof J.FieldAccess fieldAccess) {
+            String currentValue = fieldAccess.toString();
+            if (fieldAccess.getTarget() instanceof J.Identifier identifier) {
+                currentValue = identifier.getSimpleName() + "." + fieldAccess.getSimpleName();
             }
             return oldAttributeValue.equals(currentValue);
-        } else if (expression instanceof J.Identifier) { // class names, static variables ..
+        } else if (expression instanceof J.Identifier identifier) { // class names, static variables ..
             if (oldAttributeValue.endsWith(".class")) {
                 String className = TypeUtils.toString(requireNonNull(expression.getType())) + ".class";
                 return className.endsWith(oldAttributeValue);
             } else {
-                return oldAttributeValue.equals(((J.Identifier) expression).getSimpleName());
+                return oldAttributeValue.equals(identifier.getSimpleName());
             }
         } else {
             throw new IllegalArgumentException("Unexpected expression type: " + expression.getClass());
@@ -482,7 +482,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     }
 
     private static boolean attributeIsString(@Nullable String attributeName, J.Annotation annotation) {
-        String actualAttributeName = (attributeName == null) ? "value" : attributeName;
+        String actualAttributeName = (attributeName == null) ? ANNOTATION_VALUE : attributeName;
         JavaType.Class annotationType = (JavaType.Class) annotation.getType();
         if (annotationType != null) {
             for (JavaType.Method m : annotationType.getMethods()) {
@@ -499,14 +499,12 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             return attributeValue == null;
         }
         for (Expression e : expression) {
-            if (e instanceof J.Literal) {
-                J.Literal literal = (J.Literal) e;
-                if (literal.getValueSource() != null && literal.getValueSource().equals(attributeValue)) {
-                    return true;
-                }
+            if (e instanceof J.Literal literal &&
+                    Objects.equals(literal.getValueSource(), attributeValue)) {
+                return true;
             }
-            if (e instanceof J.NewArray) {
-                return attributeValIsAlreadyPresent(((J.NewArray) e).getInitializer(), attributeValue);
+            if (e instanceof J.NewArray newArray) {
+                return attributeValIsAlreadyPresent(newArray.getInitializer(), attributeValue);
             }
         }
         return false;

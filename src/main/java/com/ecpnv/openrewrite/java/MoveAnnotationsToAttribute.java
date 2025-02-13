@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -53,6 +54,7 @@ import lombok.Value;
  * - The recipe also ensures that the source annotation type and target annotation type are properly managed
  * in terms of imports and syntax.
  * <p>
+ *
  * @author Patrick Deenen @ Open Circle Solutions
  * <p>
  * TODO Currently only supports annotations on a class; should be extended for annotations on fields and methods.
@@ -99,7 +101,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>(sourceAnnotationType, false), new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>(sourceAnnotationType, false), new JavaIsoVisitor<>() {
 
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -128,12 +130,12 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 // Add target attribute to target annotation
                 template.append(targetAttributeName).append(" = {");
                 for (Iterator<J.Annotation> it = annotations.iterator(); it.hasNext(); ) {
-                    J.Annotation a = it.next();
+                    J.Annotation annotation = it.next();
                     template.append("@").append(sourceAnnotationType);
-                    if (a.getArguments() != null && !a.getArguments().isEmpty()) {
+                    if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                         template
                                 .append("( ")
-                                .append(String.join(",\n", a.getArguments().stream().map(Objects::toString).toList()))
+                                .append(String.join(",\n", annotation.getArguments().stream().map(Objects::toString).toList()))
                                 .append(")");
                     }
                     if (it.hasNext()) template.append(", ");
@@ -153,14 +155,8 @@ public class MoveAnnotationsToAttribute extends Recipe {
                                 .orElseGet(() -> classDecl.getCoordinates().addAnnotation(
                                         Comparator.comparing(J.Annotation::getSimpleName))));
                 // Remove existing annotation
-                Pattern p = Pattern.compile(sourceAnnotationType);
-                for (int i = 0; i < classDeclaration.getLeadingAnnotations().size(); ) {
-                    if (classDeclaration.getLeadingAnnotations().get(i).getType().isAssignableFrom(p)) {
-                        classDeclaration.getLeadingAnnotations().remove(i);
-                    } else {
-                        i++;
-                    }
-                }
+                Pattern pattern = Pattern.compile(sourceAnnotationType);
+                classDeclaration.getLeadingAnnotations().removeIf(annotation -> annotation.getType().isAssignableFrom(pattern));
                 maybeAutoFormat(classDecl, classDeclaration, ctx);
                 return classDeclaration;
             }
