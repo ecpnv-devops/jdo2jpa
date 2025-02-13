@@ -54,6 +54,10 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddCommentToPersistenceCapableWithIdentityTypeApplication
   - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForPersistenceCapableAnnotation:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.DatastoreIdentity'
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@javax.jdo.annotations.Version'
   - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
@@ -365,7 +369,7 @@ tags:
   - cleanup
 recipeList:
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
-      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.apache.isis.applib.value,org.incode.module.document.dom.impl.docs
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs
   - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
