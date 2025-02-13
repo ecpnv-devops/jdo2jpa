@@ -103,7 +103,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table(schema = "schemaName")
+                                @Table( schema = "schemaName")
                                 public class SomeEntity extends EntityAbstract {
                                 }
                                 """

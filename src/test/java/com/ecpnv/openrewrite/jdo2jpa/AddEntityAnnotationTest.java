@@ -68,12 +68,15 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
+                                
                                 import javax.persistence.Entity;
                                 import javax.persistence.Table;
                                 
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
                                 @Entity
                                 @Table
-                                public class SomeEntity {
+                                public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private List<String> listofStrings;
                                 }
