@@ -275,6 +275,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {}
+                                @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @Persistent
@@ -291,6 +292,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {}
+                                @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @ManyToOne(optional = "false", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
@@ -329,6 +331,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {}
+                                @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @Persistent
@@ -346,6 +349,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {}
+                                @Entity
                                 public class SomeEntity {
                                     private int id;
                                 
