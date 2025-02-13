@@ -99,7 +99,6 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
 
     public static class RemoveUnusedImportsVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        @SuppressWarnings({"java:S6541", "java:S3776", "java:S1871"})
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
             ImportLayoutStyle layoutStyle = Optional.ofNullable(cu.getStyle(ImportLayoutStyle.class))

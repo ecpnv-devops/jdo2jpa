@@ -128,7 +128,6 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             this.parentAnnotationsByType = parentAnnotationsByType;
         }
 
-        @SuppressWarnings({"java:S3776"})
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
             J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
@@ -189,7 +188,6 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             return cd;
         }
 
-        @SuppressWarnings({"java:S1172"})
         protected J.Annotation processExistingAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,
@@ -197,7 +195,6 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             return annotation;
         }
 
-        @SuppressWarnings({"java:S1172"})
         protected J.Annotation processAddedAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,

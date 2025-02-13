@@ -87,7 +87,6 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 TARGET_ANNOTATION_TYPE + " annotation.";
     }
 
-    @SuppressWarnings({"java:S3776"})
     @Override
     public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
 
@@ -106,7 +105,6 @@ public class ReplacePersistentWithOneToManyAnnotation extends Recipe {
                 return super.visitCompilationUnit(compilationUnit, executionContext);
             }
 
-            @SuppressWarnings({"java:S2259", "java:S4449", "java:S2637"})
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 // Exit if not Collection

@@ -99,7 +99,6 @@ public class MoveAnnotationsToAttribute extends Recipe {
         this.targetAttributeName = targetAttributeName;
     }
 
-    @SuppressWarnings({"java:S3776", "java:S2259"})
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesType<>(sourceAnnotationType, false), new JavaIsoVisitor<>() {
@@ -157,13 +156,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
                                         Comparator.comparing(J.Annotation::getSimpleName))));
                 // Remove existing annotation
                 Pattern pattern = Pattern.compile(sourceAnnotationType);
-                for (int i = 0; i < classDeclaration.getLeadingAnnotations().size(); ) {
-                    if (classDeclaration.getLeadingAnnotations().get(i).getType().isAssignableFrom(pattern)) {
-                        classDeclaration.getLeadingAnnotations().remove(i);
-                    } else {
-                        i++;
-                    }
-                }
+                classDeclaration.getLeadingAnnotations().removeIf(annotation -> annotation.getType().isAssignableFrom(pattern));
                 maybeAutoFormat(classDecl, classDeclaration, ctx);
                 return classDeclaration;
             }

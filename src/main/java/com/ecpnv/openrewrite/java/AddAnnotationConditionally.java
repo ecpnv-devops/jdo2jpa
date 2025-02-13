@@ -70,7 +70,6 @@ public class AddAnnotationConditionally extends Recipe {
             example = "VAR")
     DeclarationType declarationType;
 
-    @SuppressWarnings({"java:S2583"})
     @JsonCreator
     public AddAnnotationConditionally(
             @NonNull @JsonProperty("matchByRegularExpression") String matchByRegularExpression,

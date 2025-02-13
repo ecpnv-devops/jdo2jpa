@@ -84,7 +84,6 @@ public class RemoveAnnotationAttributeConditionally extends Recipe {
         this.attributeName = attributeName;
     }
 
-    @SuppressWarnings({"java:S3776"})
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesType<>(annotationType, false), new JavaIsoVisitor<ExecutionContext>() {

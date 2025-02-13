@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Comment;
@@ -39,7 +40,9 @@ public class RewriteUtils {
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
     public static Optional<J.Assignment> findArgument(Set<J.Annotation> sourceAnnotations, String varName) {
-        if (sourceAnnotations == null || sourceAnnotations.isEmpty() || StringUtils.isBlank(varName)) {
+        if (Optional.ofNullable(sourceAnnotations)
+                .map(CollectionUtils::isEmpty)
+                .orElse(Boolean.TRUE) || StringUtils.isBlank(varName)) {
             return Optional.empty();
         }
         return findArgument(sourceAnnotations.iterator().next(), varName);
@@ -52,9 +55,11 @@ public class RewriteUtils {
      * @param varName          the name of the variable to match within the assignment. Must not be null.
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
-    @SuppressWarnings({"java:S2259"})
     public static Optional<J.Assignment> findArgument(J.Annotation sourceAnnotation, String varName) {
-        if (sourceAnnotation == null || sourceAnnotation.getArguments() == null || sourceAnnotation.getArguments().isEmpty()) {
+        if (sourceAnnotation == null || Optional.ofNullable(sourceAnnotation)
+                .map(J.Annotation::getArguments)
+                .map(CollectionUtils::isEmpty)
+                .orElse(Boolean.TRUE)) {
             return Optional.empty();
         }
         return sourceAnnotation.getArguments().stream()
@@ -87,7 +92,10 @@ public class RewriteUtils {
      * @return true if the source type contains the specified annotation, false otherwise.
      */
     public static boolean hasAnnotation(JavaType.FullyQualified sourceType, String annotationName) {
-        if (sourceType == null || sourceType.getAnnotations().isEmpty()) {
+        if (sourceType == null || Optional.ofNullable(sourceType)
+                .map(JavaType.FullyQualified::getAnnotations)
+                .map(CollectionUtils::isEmpty)
+                .orElse(Boolean.TRUE)) {
             return false;
         }
         return sourceType.getAnnotations().stream()
@@ -120,14 +128,18 @@ public class RewriteUtils {
      * @return a list of matching leading annotations, or an empty list if no matching annotations are found.
      */
     public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
-        if (classDecl == null || StringUtils.isBlank(annotationType) || classDecl.getLeadingAnnotations().isEmpty()) {
+        if (classDecl == null || StringUtils.isBlank(annotationType) ||
+                Optional.ofNullable(classDecl)
+                        .map(J.ClassDeclaration::getLeadingAnnotations)
+                        .map(CollectionUtils::isEmpty)
+                        .orElse(Boolean.TRUE)) {
             return new ArrayList<>();
         }
         Pattern pattern = Pattern.compile(annotationType);
         List<J.Annotation> annotations = classDecl.getLeadingAnnotations().stream()
                 .filter(annotation -> annotation.getType().isAssignableFrom(pattern))
                 .toList();
-        if (annotations.isEmpty()) {
+        if (CollectionUtils.isEmpty(annotations)) {
             annotations = FindAnnotations.find(classDecl, annotationType).stream()
                     .filter(a -> TypeUtils.isOfClassType(a.getType(), annotationType))
                     .sorted(Comparator.comparing(a -> getOrder(classDecl.getLeadingAnnotations(), a)))
@@ -147,7 +159,7 @@ public class RewriteUtils {
      */
     public static Long getOrder(List<J.Annotation> annotations, J.Annotation annotation) {
         Long order = 0l;
-        if (annotations == null || annotations.isEmpty()) {
+        if (CollectionUtils.isEmpty(annotations)) {
             return order;
         }
         var anno = annotation.toString().replace(Constants.REWRITE_ANNOTATION_PREFIX, "");

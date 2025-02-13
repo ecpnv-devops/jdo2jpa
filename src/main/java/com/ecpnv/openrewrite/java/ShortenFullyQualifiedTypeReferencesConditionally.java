@@ -105,7 +105,6 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
         return getVisitor(subtree, excludePackages);
     }
 
-    @SuppressWarnings({"java:S3776"})
     private static JavaVisitor<ExecutionContext> getVisitor(@Nullable J scope, @NonNull String excludePackages) {
         return new JavaVisitor<>() {
             final Map<String, JavaType> usedTypes = new HashMap<>();
@@ -186,7 +185,6 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
                 return space;
             }
 
-            @SuppressWarnings({"java:S3824", "java:S4449"})
             @Override
             public J visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
                 if (!modify) {

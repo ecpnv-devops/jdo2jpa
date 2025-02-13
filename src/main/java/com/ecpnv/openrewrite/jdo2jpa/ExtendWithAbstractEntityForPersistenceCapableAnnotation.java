@@ -105,8 +105,10 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
                         final String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
                         String[] resourceClasspath = new String[]{Jpa.CLASS_PATH, Jdo.CLASS_PATH};
-                        if (StringUtils.isNoneBlank(libraryOfAbstractClassName)) {
-                            resourceClasspath = ArrayUtils.add(resourceClasspath, libraryOfAbstractClassName);
+                        // use system property for test cases
+                        final String additionalLibraryFileForAbstractClassName = System.getProperty("libraryOfAbstractClassName", libraryOfAbstractClassName);
+                        if (StringUtils.isNoneBlank(additionalLibraryFileForAbstractClassName)) {
+                            resourceClasspath = ArrayUtils.add(resourceClasspath, additionalLibraryFileForAbstractClassName);
                         }
 
                         final JavaParser.Builder<?, ?> javaParser = JavaParser.fromJavaVersion()

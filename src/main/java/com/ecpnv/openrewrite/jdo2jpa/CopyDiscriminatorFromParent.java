@@ -38,7 +38,6 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
         super(Set.of(Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL));
     }
 
-    @SuppressWarnings({"java:S2259", "java:S2637"})
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
 

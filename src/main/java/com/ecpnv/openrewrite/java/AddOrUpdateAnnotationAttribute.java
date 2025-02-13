@@ -146,7 +146,6 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 addOrUpdateAnnotationAttributeVisitor);
     }
 
-    @SuppressWarnings({"java:S3776", "java:S6541", "java:S135", "java:S127", "java:S2259"})
     public class AddOrUpdateAnnotationAttributeVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
         public J.Annotation visitAnnotation(J.Annotation a, ExecutionContext ctx) {
