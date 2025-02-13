@@ -54,29 +54,29 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
     @Test
     void replaceWithTableAnnotation() {
         rewriteRun(//language=java
-            //language=java
-            java(
-        """
-                import java.util.List;
-                import javax.jdo.annotations.PersistenceCapable;
-                
-                @PersistenceCapable(schema = "schemaName")
-                public class SomeEntity {
-                        private int id;
-                        private List<String> listofStrings;
-                }
-                """,
-        """
-                import java.util.List;
-                import javax.persistence.Table;
-                
-                @Table(schema = "schemaName")
-                public class SomeEntity {
-                        private int id;
-                        private List<String> listofStrings;
-                }
-                """
-            )
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                
+                                @PersistenceCapable(schema = "schemaName")
+                                public class SomeEntity {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.Table;
+                                
+                                @Table( schema = "schemaName")
+                                public class SomeEntity {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """
+                )
         );
     }
 
@@ -103,7 +103,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table(schema = "schemaName")
+                                @Table( schema = "schemaName")
                                 public class SomeEntity extends EntityAbstract {
                                 }
                                 """
@@ -135,7 +135,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 TODO: manually migrate to JPA
                                 */
                                 @Entity
-                                @Table(schema = "schemaName")
+                                @Table( schema = "schemaName")
                                 public class SomeEntity {
                                 }
                                 """

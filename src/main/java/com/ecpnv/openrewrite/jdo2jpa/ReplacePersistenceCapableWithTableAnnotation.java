@@ -73,17 +73,29 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                         && FindAnnotations.find(classDecl, TARGET_ANNOTATION_TYPE).isEmpty()) {
                     J.Annotation sourceAnnotation = sourceAnnotations.iterator().next();
 
+                    StringBuilder template = new StringBuilder("@" + TARGET_TYPE_NAME);
                     // Get schema
-                    String template = "@" + TARGET_TYPE_NAME +
-                            RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
-                                    .map(J.Assignment::toString)
-                                    .map(t -> "(" + t + ")")
-                                    .orElse("");
-                    // Add @Entity
+                    boolean addedSchema = RewriteUtils.findArgumentValueAsString(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
+                            .map(t -> {
+                                template.append("( schema = \"" + t + "\"");
+                                return true;
+                            }).orElse(false);
+
+                    // Get table
+                    RewriteUtils.findArgumentValueAsString(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
+                            .ifPresentOrElse(t -> {
+                                if (addedSchema) template.append(", ");
+                                else template.append("(");
+                                template.append(" table = \"" + t + "\")");
+                            }, () -> {
+                                if (addedSchema) template.append(")");
+                            });
+
+                    // Add @Table import
                     maybeAddImport(TARGET_TYPE);
                     maybeRemoveImport(Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL);
 
-                    return JavaTemplate.builder(template)
+                    return JavaTemplate.builder(template.toString())
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
                             .imports(TARGET_TYPE)
                             .build()

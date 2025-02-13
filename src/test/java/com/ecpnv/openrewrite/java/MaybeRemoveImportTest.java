@@ -32,20 +32,52 @@ class MaybeRemoveImportTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new MaybeRemoveImport(Constants.Jdo.DISCRIMINATOR_STRATEGY_ANNOTATION_FULL));
+        spec.parser(PARSER).recipe(new MaybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL));
     }
 
+    /**
+     * Verifies the successful removal of the `@Column` annotation from the provided Java code.
+     * <p>
+     * The method executes a rewrite process on a given snippet of Java code, where the
+     * `@Column` annotation is defined, and confirms that the resulting output no longer
+     * includes the annotation.
+     * <p>
+     * This test ensures that the rewrite operation properly identifies and removes the
+     * specified import and related annotation from the source code when applied.
+     */
     @DocumentExample
     @Test
-    void moveIndexConstraintAnnotation() {
+    void removeAnnotation() {
         rewriteRun(//language=java
                 java(
                         """
-                                import javax.jdo.annotations.DiscriminatorStrategy;
+                                import javax.jdo.annotations.Column;
                                 
                                 public class SomeEntity {}
                                 """,
                         """
+                                public class SomeEntity {}
+                                """
+                )
+        );
+    }
+
+    /**
+     * Ensures that the `@Column` annotation on a class is not removed or altered during the rewrite process.
+     * This test verifies the persistence of the annotation in the provided Java code.
+     * <p>
+     * The method runs a rewrite process using a Java code snippet as input and validates
+     * that the annotated class structure remains unchanged.
+     */
+    @DocumentExample
+    @Test
+    void doNotRemoveAnnotation() {
+        rewriteRun(//language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Column;
+                                
+                                @Column
                                 public class SomeEntity {}
                                 """
                 )

@@ -58,7 +58,11 @@ recipeList:
       annotationPattern: '@javax.jdo.annotations.DatastoreIdentity'
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.Version'
-  - com.ecpnv.openrewrite.jdo2jpa.AddEntityAnnotation
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@.*PersistenceCapable.*'
+      annotationType: javax.persistence.Entity
+      annotationTemplate: '@Entity'
+      declarationType: CLASS
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.PersistenceCapable'
@@ -101,7 +105,7 @@ tags:
   - java
   - javax
   - persistence
-  - Persistent
+  - Column
 recipeList:
   # replace @Column(..allowsNull..) with @Column(..nullable..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
@@ -160,7 +164,7 @@ tags:
   - java
   - javax
   - persistence
-  - Persistent
+  - Unique
 recipeList:
   # replace @Unique(..members..) with @Unique(..columnNames..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
@@ -205,7 +209,7 @@ tags:
   - java
   - javax
   - persistence
-  - Persistent
+  - Index
 recipeList:
   # Move @Index from field to class
   - com.ecpnv.openrewrite.java.MoveAnnotationFromFieldOrMethodToClass:
@@ -258,7 +262,7 @@ tags:
   - java
   - javax
   - persistence
-  - Persistent
+  - Discriminator
 recipeList:
   # Translate discriminator strategy of class name to discriminator values with the names of the classes
   # by copying @Discriminator from parent class to subclasses when omitted and use the subclass name
@@ -304,7 +308,7 @@ tags:
   - java
   - javax
   - persistence
-  - Persistent
+  - Inheritance
 recipeList:
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:

@@ -42,7 +42,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddEntityAnnotation());
+        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable");
     }
 
     /**
@@ -54,31 +54,34 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
     @Test
     void addEntityAnnotationAlongPersistanceCapable() {
         rewriteRun(//language=java
-            //language=java
-            java(
-        """
-                import java.util.List;
-                import javax.jdo.annotations.PersistenceCapable;
-                
-                @PersistenceCapable
-                public class SomeEntity {
-                        private int id;
-                        private List<String> listofStrings;
-                }
-                """,
-        """
-                import java.util.List;
-                import javax.jdo.annotations.PersistenceCapable;
-                import javax.persistence.Entity;
-                
-                @Entity
-                @PersistenceCapable
-                public class SomeEntity {
-                        private int id;
-                        private List<String> listofStrings;
-                }
-                """
-            )
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                
+                                @PersistenceCapable
+                                public class SomeEntity {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import javax.persistence.Entity;
+                                import javax.persistence.Table;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                
+                                @Entity
+                                @Table
+                                public class SomeEntity extends EntityAbstract {
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """
+                )
         );
     }
 }
