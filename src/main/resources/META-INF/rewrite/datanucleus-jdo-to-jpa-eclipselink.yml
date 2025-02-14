@@ -46,6 +46,8 @@ name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 displayName: Filter on entity classes
 recipeList:
   - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.springframework.context.annotation.Configuration
+  - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: javax.jdo.annotations.PersistenceCapable
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: javax.persistence.Entity

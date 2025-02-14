@@ -1,42 +1,67 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
+import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
+import org.openrewrite.java.search.FindMissingTypes;
 import org.openrewrite.java.tree.J;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 
 /**
  * A recipe that adds a {@link org.springframework.boot.autoconfigure.domain.EntityScan} when it finds a
- * {@link org.springframework.context.annotation.ComponentScan} and copies the arguments of those annotations.
+ * {@link org.springframework.context.annotation.Configuration} with a
+ * {@link org.springframework.context.annotation.ComponentScan} and uses the package name for the entity scan path.
  * <p>
- * After this recipe the full qualified classname of the EntityScan annotation needs to be shortened which can be done
- * with the {@link org.openrewrite.java.ShortenFullyQualifiedTypeReferences} or a similar variant.
+ * The parameter 'configSubPackageName' can be used to indicate the sub package where the spring configuration can be found.
+ * The parameter 'entitySubPackageName' can be used to indicate the sub package where the entities can be found.
  * <p>
  *
  * @author Wouter Veltmaat @ Open Circle Solutions
  */
 public class AddEntityScanAnnotationConditionally extends Recipe {
 
-    private static final String COMPONENT_SCAN_CLASS_NAME = "org.springframework.context.annotation.ComponentScan";
+    private static final String COMPONENT_SCAN_CLASS_NAME = "ComponentScan";
+    private static final String COMPONENT_SCAN_FULL_CLASS = "org.springframework.context.annotation." + COMPONENT_SCAN_CLASS_NAME;
+    private static final String COMPONENT_SCAN_ANNOTATION = "@" + COMPONENT_SCAN_FULL_CLASS;
     private static final String ENTITY_SCAN_CLASS_NAME = "EntityScan";
-    private static final String ENTITY_SCAN_FULL_CLASS = "org.springframework.boot.autoconfigure.domain.EntityScan";
+    private static final String ENTITY_SCAN_FULL_CLASS = "org.springframework.boot.autoconfigure.domain." + ENTITY_SCAN_CLASS_NAME;
     private static final String ENTITY_SCAN_FULL_ANNOTATION = "@" + ENTITY_SCAN_FULL_CLASS;
-    private static final String BASE_PACKAGES = "basePackages";
-    private static final String VALUE = "value";
+
+    @Option(displayName = "Configuration sub package name",
+            description = "The sub package name where Spring configuration is located.",
+            example = "config")
+    @Nullable
+    String configSubPackageName;
+
+    @Option(displayName = "Entities sub package name",
+            description = "The sub package name where entities are located.",
+            example = "entities")
+    @Nullable
+    String entitySubPackageName;
+
+    @JsonCreator
+    public AddEntityScanAnnotationConditionally(
+            @Nullable @JsonProperty("configSubPackageName") String configSubPackageName,
+            @Nullable @JsonProperty("entitySubPackageName") String entitySubPackageName) {
+        this.configSubPackageName = configSubPackageName;
+        this.entitySubPackageName = entitySubPackageName;
+    }
 
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
@@ -51,12 +76,20 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
+
+
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
+                doAfterVisit(new FindMissingTypes().getVisitor());
+                return super.visitVariableDeclarations(multiVariable, executionContext);
+            }
+
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 final List<J.Annotation> annotations = cd.getLeadingAnnotations();
-                final Set<J.Annotation> componentScanAnnotations = FindAnnotations.find(cd, COMPONENT_SCAN_CLASS_NAME);
+                final Set<J.Annotation> componentScanAnnotations = FindAnnotations.find(cd, COMPONENT_SCAN_ANNOTATION);
 
                 J.Annotation entityScanAnnotation = annotations.stream()
                         .filter(annotation -> annotation.getSimpleName().contains(ENTITY_SCAN_CLASS_NAME))
@@ -64,22 +97,14 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
                         .orElse(null);
 
                 if (CollectionUtils.isNotEmpty(componentScanAnnotations) && entityScanAnnotation == null) {
-                    final List<String> elements = componentScanAnnotations.stream()
-                            .map(this::findPackages)
-                            .flatMap(List::stream)
-                            .collect(Collectors.toList());
-                    Collections.sort(elements);//sorting avoids quantum states in tests
-
-                    String template;
-                    if (CollectionUtils.isEmpty(elements)) {
-                        template = ENTITY_SCAN_FULL_ANNOTATION;
-                    } else if (elements.size() == 1) {
-                        template = ENTITY_SCAN_FULL_ANNOTATION + "(" + BASE_PACKAGES + " = %s)".formatted(elements.stream()
-                                .collect(Collectors.joining(",")));
-                    } else {
-                        template = ENTITY_SCAN_FULL_ANNOTATION + "(" + BASE_PACKAGES + " = {%s})".formatted(elements.stream()
-                                .collect(Collectors.joining(",")));
+                    String packageName = classDecl.getType().getPackageName();
+                    if (StringUtils.isNotBlank(configSubPackageName) && packageName.endsWith(configSubPackageName)) {
+                        packageName = packageName.substring(0, packageName.length() - 1 - configSubPackageName.length());
                     }
+                    if (StringUtils.isNotBlank(entitySubPackageName)) {
+                        packageName += "." + entitySubPackageName;
+                    }
+                    final String template = ENTITY_SCAN_FULL_ANNOTATION + "({\"%s\"})".formatted(packageName);
 
                     return JavaTemplate.builder(template)
                             .javaParser(JavaParserFactory.create(ctx))
@@ -89,38 +114,6 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
                 }
 
                 return cd;
-            }
-
-            /**
-             * Checks 'value' and 'basePackages' values for package references.
-             * <p>
-             * {@link org.springframework.context.annotation.ComponentScan} has more annotation arguments that are not handled here.
-             *
-             * @param annotation {@link org.springframework.context.annotation.ComponentScan} annotation
-             * @return packages referred to in the annotation
-             */
-            private List<String> findPackages(J.Annotation annotation) {
-                if (CollectionUtils.isEmpty(annotation.getArguments())) {
-                    return Collections.emptyList();
-                } else {
-                    return annotation.getArguments().stream().map(argument -> {
-                                final List<String> result = new ArrayList<>();
-                                if (argument instanceof J.Assignment assignment) {
-                                    if (assignment.getVariable() instanceof J.Identifier identifier) {
-                                        if (VALUE.equals(identifier.getSimpleName()) || BASE_PACKAGES.equals(identifier.getSimpleName())) {
-                                            if (assignment.getAssignment() instanceof J.Literal literal) {
-                                                if (literal.getValue() instanceof String value) {
-                                                    result.add("\"%s\"".formatted(value));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                return result;
-                            })
-                            .flatMap(List::stream)
-                            .toList();
-                }
             }
         };
     }
