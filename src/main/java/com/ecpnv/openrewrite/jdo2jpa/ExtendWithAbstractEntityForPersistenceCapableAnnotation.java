@@ -101,9 +101,6 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
                     if (StringUtils.isBlank(simpleName) || Constants.Jdo.IDENTITY_TYPE_DATASTORE.equals(simpleName)) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
 
-                        //This line causes the imports to have white lines between them
-                        maybeAddImport(extendsFullClassName);
-
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
                                 .contextSensitive()
                                 .javaParser(JavaParserFactory.create(ctx))
@@ -112,7 +109,7 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
                                 .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
 
                         //This line causes the imports to have white lines between them
-                        doAfterVisit(new AddImport<>(extendsFullClassName, null, true));
+                        doAfterVisit(new AddImport<>(extendsFullClassName, null, false));
 
                         return newCd;
                     }
