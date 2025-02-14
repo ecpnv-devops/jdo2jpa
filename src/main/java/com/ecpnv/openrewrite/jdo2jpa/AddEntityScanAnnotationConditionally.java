@@ -35,6 +35,8 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
     private static final String ENTITY_SCAN_CLASS_NAME = "EntityScan";
     private static final String ENTITY_SCAN_FULL_CLASS = "org.springframework.boot.autoconfigure.domain.EntityScan";
     private static final String ENTITY_SCAN_FULL_ANNOTATION = "@" + ENTITY_SCAN_FULL_CLASS;
+    private static final String BASE_PACKAGES = "basePackages";
+    private static final String VALUE = "value";
 
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
@@ -72,10 +74,10 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
                     if (CollectionUtils.isEmpty(elements)) {
                         template = ENTITY_SCAN_FULL_ANNOTATION;
                     } else if (elements.size() == 1) {
-                        template = ENTITY_SCAN_FULL_ANNOTATION + "(basePackages = %s)".formatted(elements.stream()
+                        template = ENTITY_SCAN_FULL_ANNOTATION + "(" + BASE_PACKAGES + " = %s)".formatted(elements.stream()
                                 .collect(Collectors.joining(",")));
                     } else {
-                        template = ENTITY_SCAN_FULL_ANNOTATION + "(basePackages = {%s})".formatted(elements.stream()
+                        template = ENTITY_SCAN_FULL_ANNOTATION + "(" + BASE_PACKAGES + " = {%s})".formatted(elements.stream()
                                 .collect(Collectors.joining(",")));
                     }
 
@@ -89,16 +91,28 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
                 return cd;
             }
 
+            /**
+             * Checks 'value' and 'basePackages' values for package references.
+             * <p>
+             * {@link org.springframework.context.annotation.ComponentScan} has more annotation arguments that are not handled here.
+             *
+             * @param annotation {@link org.springframework.context.annotation.ComponentScan} annotation
+             * @return packages referred to in the annotation
+             */
             private List<String> findPackages(J.Annotation annotation) {
                 if (CollectionUtils.isEmpty(annotation.getArguments())) {
                     return Collections.emptyList();
                 } else {
-                    return annotation.getArguments().stream().map(arg -> {
+                    return annotation.getArguments().stream().map(argument -> {
                                 final List<String> result = new ArrayList<>();
-                                if (arg instanceof J.Assignment assignment) {
-                                    if (assignment.getAssignment() instanceof J.Literal literal) {
-                                        if (literal.getValue() instanceof String value) {
-                                            result.add("\"%s\"".formatted(value));
+                                if (argument instanceof J.Assignment assignment) {
+                                    if (assignment.getVariable() instanceof J.Identifier identifier) {
+                                        if (VALUE.equals(identifier.getSimpleName()) || BASE_PACKAGES.equals(identifier.getSimpleName())) {
+                                            if (assignment.getAssignment() instanceof J.Literal literal) {
+                                                if (literal.getValue() instanceof String value) {
+                                                    result.add("\"%s\"".formatted(value));
+                                                }
+                                            }
                                         }
                                     }
                                 }
