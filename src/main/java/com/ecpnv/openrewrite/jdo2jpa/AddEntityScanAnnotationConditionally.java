@@ -77,13 +77,6 @@ public class AddEntityScanAnnotationConditionally extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
 
-
-            @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
-                doAfterVisit(new FindMissingTypes().getVisitor());
-                return super.visitVariableDeclarations(multiVariable, executionContext);
-            }
-
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
