@@ -80,6 +80,41 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * A version of {@link #replaceWithTableAnnotation} where the schema attribute is defined by a static value.
+     */
+    @DocumentExample
+    @Test
+    void replaceWithTableAnnotationForStatic() {
+        rewriteRun(//language=java
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                
+                                @PersistenceCapable(schema = SomeEntity.SCHEMA)
+                                public class SomeEntity {
+                                        private static final String SCHEMA = "schemaName";
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.Table;
+                                
+                                @Table( schema = SomeEntity.SCHEMA)
+                                public class SomeEntity {
+                                        private static final String SCHEMA = "schemaName";
+                                        private int id;
+                                        private List<String> listofStrings;
+                                }
+                                """
+                )
+        );
+    }
+
     @DocumentExample
     @Test
     void addEntityReplaceWithTableAnnotationForDatastore() {
