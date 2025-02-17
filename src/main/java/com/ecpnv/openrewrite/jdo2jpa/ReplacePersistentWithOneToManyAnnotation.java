@@ -2,11 +2,8 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-
-import com.ecpnv.openrewrite.util.JavaParserFactory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,8 +24,10 @@ import org.openrewrite.java.RemoveAnnotationAttribute;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import com.ecpnv.openrewrite.java.AddAnnotationConditionally;
+import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.Data;
@@ -105,14 +104,14 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                         J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, executionContext);
                         // Check if Collection or already has target annotation or no source annotation is found
-                        J.Annotation persistentAnno = validateVar(mv);
-                        if (persistentAnno != null) {
+                        Optional<J.Annotation> persistentAnno = getPersistentAnnotation(mv);
+                        if (validateVar(mv) && persistentAnno.isPresent()) {
                             // Find mappedby argument
-                            RewriteUtils.findArgument(persistentAnno, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
+                            RewriteUtils.findArgument(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
                                     .ifPresent(assignment -> {
                                         // Add fqn#varname,column-name-value to accumulator
                                         RewriteUtils.getParameterType(multiVariable, 0, 0)
-                                                .map(pt -> pt.getFullyQualifiedName())
+                                                .map(JavaType.FullyQualified::getFullyQualifiedName)
                                                 .ifPresent(name -> acc.varPersistentWithMappedBy
                                                         .put(name, assignment.getAssignment().toString()));
                                     });
@@ -122,7 +121,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                     .findFirst()
                                     .ifPresent(ca -> {
                                         // Find name
-                                        RewriteUtils.findArgument(ca, Constants.Jdo.COLUMN_ARGUMENT_NAME)
+                                        RewriteUtils.findArgument(ca, Constants.Jdo.ARGUMENT_NAME)
                                                 .map(J.Assignment::getAssignment)
                                                 .ifPresent(e -> {
                                                     // Add fqn#varname,column-name-value to accumulator
@@ -145,22 +144,16 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
     }
 
 
-    static J.Annotation validateVar(J.VariableDeclarations multiVariable) {
-        // Exit if not Collection
-        if (multiVariable.getType() == null || !multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
-            return null;
-        }
-        // Exit if already has target annotation
-        if (!FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty()) {
-            return null;
-        }
+    static boolean validateVar(J.VariableDeclarations multiVariable) {
+        // Should have a Collection
+        return multiVariable.getType() == null || !multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))
+                // Should not have target annotation
+                || !FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty();
+    }
+
+    static Optional<J.Annotation> getPersistentAnnotation(J.VariableDeclarations multiVariable) {
         // Exit if no source annotation is found
-        Set<J.Annotation> annotations = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE);
-        if (annotations.isEmpty()) {
-            return null;
-        }
-        // Find mappedby argument
-        return annotations.iterator().next();
+        return FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
     }
 
     public class ReplacePersistentWithOneToManyAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -174,8 +167,14 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
             multiVariable = super.visitVariableDeclarations(multiVariable, ctx);
-            // Check for Collection or already has target annotation or no source annotation is found
-            J.Annotation persistentAnno = validateVar(multiVariable);
+            // Find @Element annotation
+            Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
+            // Check for Collection or already has target annotation
+            if (validateVar(multiVariable)) {
+                return multiVariable;
+            }
+            // Find source annotation == @Persistent
+            J.Annotation persistentAnno = getPersistentAnnotation(multiVariable).orElse(elemAnno.orElse(null));
             if (persistentAnno == null) {
                 // Remove name from @Column?
                 var varColName = RewriteUtils.toFullyQualifiedNameWithVar(multiVariable.getVariables().get(0));
@@ -184,7 +183,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 if (acc.varColumnWithName.containsKey(varColName) && varName.equals(acc.varPersistentWithMappedBy.get(persistentVarType))) {
                     // Remove annotation
                     multiVariable = (J.VariableDeclarations) new RemoveAnnotationAttribute(Constants.Jdo.COLUMN_ANNOTATION_FULL,
-                            Constants.Jdo.COLUMN_ARGUMENT_NAME).getVisitor().visit(multiVariable, ctx);
+                            Constants.Jdo.ARGUMENT_NAME).getVisitor().visit(multiVariable, ctx);
                 }
                 return multiVariable;
             }
@@ -246,12 +245,12 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
 
-                    // Add @OneToMany
-                    multiVariable = JavaTemplate.builder(template.toString())
-                            .javaParser(JavaParserFactory.create(ctx))
-                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
-                            .build()
-                            .apply(getCursor(), persistentAnno.getCoordinates().replace());
+                // Add @OneToMany
+                multiVariable = JavaTemplate.builder(template.toString())
+                        .javaParser(JavaParserFactory.create(ctx))
+                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                        .build()
+                        .apply(getCursor(), persistentAnno.getCoordinates().replace());
 
                 if (mappedBy.isPresent()) {
                     // Must we add a @JoinColumn?
@@ -286,8 +285,6 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                             .append("\""));
                     // Add join column
                     addJoinColumns(joinAnno, joinTableTemplate, "joinColumns", table.isPresent());
-                    // Find @Element annotation
-                    Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
                     // Add inverse join column
                     addJoinColumns(elemAnno, joinTableTemplate, "inverseJoinColumns", true);
                     joinTableTemplate.append(")");
@@ -300,6 +297,22 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     multiVariable = (J.VariableDeclarations) new RemoveAnnotation(Constants.Jdo.JOIN_ANNOTATION_FULL).getVisitor().visit(multiVariable, ctx);
                     // Remove @Element
                     multiVariable = (J.VariableDeclarations) new RemoveAnnotation(Constants.Jdo.ELEMENT_ANNOTATION_FULL).getVisitor().visit(multiVariable, ctx);
+                } else if (elemAnno.isPresent()) {
+                    // Add @JoinColumn to var
+                    StringBuilder joinColTemplate = new StringBuilder("@")
+                            .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
+                            .append("(");
+                    RewriteUtils.findArgument(elemAnno.get(), Constants.Jdo.ARGUMENT_NAME)
+                            .map(assignment -> assignment.getAssignment().toString())
+                            .ifPresent(name -> joinColTemplate
+                                    .append("name = \"")
+                                    .append(name)
+                                    .append("\""));
+                    joinColTemplate.append(")\n");
+                    multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
+                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
+                            Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, joinColTemplate.toString(), "VAR")
+                            .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                 }
                 return multiVariable;
             }
