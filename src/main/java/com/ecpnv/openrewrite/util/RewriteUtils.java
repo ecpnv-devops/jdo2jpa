@@ -164,6 +164,58 @@ public class RewriteUtils {
     }
 
     /**
+     * Finds and returns a list of annotations from the provided Java type that match the specified annotation type.
+     *
+     * @param javaType       the Java type to search for annotations. Must not be null.
+     * @param annotationType the fully qualified name of the annotation to look for. Must not be null or blank.
+     * @return a list of matching annotations, or an empty list if no matching annotations are found.
+     */
+    public static List<JavaType.FullyQualified> findAnnotations(JavaType javaType, String annotationType) {
+        if (javaType == null || StringUtils.isBlank(annotationType)) {
+            return new ArrayList<>();
+        }
+        List<JavaType.FullyQualified> annotations = switch (javaType) {
+            case JavaType.Array a -> a.getAnnotations();
+            case JavaType.FullyQualified fq -> fq.getAnnotations();
+            case JavaType.Method m -> m.getAnnotations();
+            case JavaType.Variable v -> v.getAnnotations();
+            default -> new ArrayList<>();
+        };
+        return annotations.stream()
+                .filter(a -> a.getFullyQualifiedName().equals(annotationType))
+                .toList();
+    }
+
+    /**
+     * Constructs a fully qualified name for a given variable by combining its owner's fully qualified name
+     * and the variable's simple name.
+     *
+     * @param variable the variable for which the fully qualified name is to be created. Must not be null.
+     * @return a fully qualified name in the format "owner#variableName", or null if the variable's type is null.
+     */
+    public static String toFullyQualifiedNameWithVar(J.VariableDeclarations.NamedVariable variable) {
+        if (variable.getVariableType() == null) return null;
+        return variable.getVariableType().getOwner() + "#" + variable.getSimpleName();
+    }
+
+    public Optional<JavaType.FullyQualified> getParameterType(J.VariableDeclarations multiVariable, int varIndex, int paramIndex) {
+        if (varIndex >= multiVariable.getVariables().size()) {
+            return Optional.empty();
+        }
+        return Optional.of(multiVariable.getVariables().get(varIndex))
+                .map(J.VariableDeclarations.NamedVariable::getVariableType)
+                .map(JavaType.Variable::getType)
+                .filter(jt -> jt instanceof JavaType.Parameterized)
+                .map(jt -> (JavaType.Parameterized) jt)
+                .map(JavaType.Parameterized::getTypeParameters)
+                .filter(l -> paramIndex < l.size())
+                .map(l -> l.get(paramIndex))
+                // Found parameter type
+                .filter(jt -> jt instanceof JavaType.FullyQualified)
+                .map(jt -> (JavaType.FullyQualified) jt);
+    }
+
+    /**
      * Computes a unique order value for the specified annotation among a list of annotations.
      * The order value is determined based on the annotation's index in the provided list and position in the
      * optional owner annotation.

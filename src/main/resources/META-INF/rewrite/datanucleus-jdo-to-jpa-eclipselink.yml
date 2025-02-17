@@ -132,6 +132,8 @@ recipeList:
       attributeName: defaultFetchGroup
   - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
       annotationType: '@javax.jdo.annotations.Persistent'
+  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
+      annotationType: '@javax.jdo.annotations.Column'
   # Replace @Order with @OrderColumn
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Order
