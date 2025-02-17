@@ -5,26 +5,24 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import static com.ecpnv.openrewrite.jdo2jpa.Constants.Jdo;
-import static com.ecpnv.openrewrite.jdo2jpa.Constants.Jpa;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -102,28 +100,16 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
 
                     if (StringUtils.isBlank(simpleName) || Constants.Jdo.IDENTITY_TYPE_DATASTORE.equals(simpleName)) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
-                        final String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
-                        String[] resourceClasspath = new String[]{Jpa.CLASS_PATH, Jdo.CLASS_PATH};
-                        // use system property for test cases
-                        final String additionalLibraryFileForAbstractClassName = System.getProperty("libraryOfAbstractClassName", libraryOfAbstractClassName);
-                        if (StringUtils.isNoneBlank(additionalLibraryFileForAbstractClassName)) {
-                            resourceClasspath = ArrayUtils.add(resourceClasspath, additionalLibraryFileForAbstractClassName);
-                        }
-
-                        final JavaParser.Builder<?, ?> javaParser = JavaParser.fromJavaVersion()
-                                .classpath(classPath)
-                                .classpathFromResources(new InMemoryExecutionContext(), resourceClasspath)
-                                .logCompilationWarningsAndErrors(true);
-
-                        //This line causes the imports to have white lines between them
-                        maybeAddImport(extendsFullClassName);
 
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
                                 .contextSensitive()
-                                .javaParser(javaParser)
+                                .javaParser(JavaParserFactory.create(ctx))
                                 .imports(extendsFullClassName)
                                 .build()
                                 .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
+
+                        //This line causes the imports to have white lines between them
+                        doAfterVisit(new AddImport<>(extendsFullClassName, null, false));
 
                         return newCd;
                     }

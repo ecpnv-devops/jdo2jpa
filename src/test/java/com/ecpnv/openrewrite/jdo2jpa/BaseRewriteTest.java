@@ -1,6 +1,7 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import org.openrewrite.InMemoryExecutionContext;
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RewriteTest;
 
@@ -9,14 +10,9 @@ import org.openrewrite.test.RewriteTest;
  */
 public class BaseRewriteTest implements RewriteTest {
 
-    {
+    static {
         System.setProperty("libraryOfAbstractClassName", "jdo2jpa-abstract");//hack to include test jar in rewrite recipe
     }
 
-    public static final JavaParser.Builder<?, ?> PARSER = JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(),
-                    Constants.Jpa.CLASS_PATH,
-                    Constants.Jdo.CLASS_PATH,
-                    Constants.SPRING_CLASS_PATH,
-                    Constants.LOMBOK_CLASS_PATH);//lombok seems to be a special edge-case
+    public static final JavaParser.Builder<?, ?> PARSER = JavaParserFactory.create();
 }

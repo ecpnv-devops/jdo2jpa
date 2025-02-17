@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,7 +21,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
@@ -185,17 +186,17 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);
 
-                return maybeAutoFormat(multiVariable, multiVariable.withLeadingAnnotations(ListUtils.concat(leadAnnos,
-                                ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
-                                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
-                                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
-                                        .build()
-                                        .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
-                                        .getLeadingAnnotations().get(0))),
-                        ctx);
+                    return maybeAutoFormat(multiVariable, multiVariable.withLeadingAnnotations(ListUtils.concat(leadAnnos,
+                                    ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
+                                            .javaParser(JavaParserFactory.create(ctx))
+                                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                                            .build()
+                                            .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
+                                            .getLeadingAnnotations().get(0))),
+                            ctx);
+                }
+                return super.visitVariableDeclarations(multiVariable, ctx);
             }
-            return super.visitVariableDeclarations(multiVariable, ctx);
-        }
 
     }
 }

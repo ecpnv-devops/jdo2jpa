@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,13 +21,11 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 
-import com.ecpnv.openrewrite.jdo2jpa.Constants;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
@@ -145,7 +145,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 maybeAddImport(targetAnnotationType);
                 // Add annotation as attribute
                 classDeclaration = JavaTemplate.builder(template.toString())
-                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                        .javaParser(JavaParserFactory.create(ctx))
                         .imports(targetAnnotationType)
                         .build()
                         .apply(getCursor(), targetAnnotation

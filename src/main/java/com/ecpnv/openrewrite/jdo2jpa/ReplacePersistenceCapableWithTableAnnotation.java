@@ -7,11 +7,11 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
@@ -75,20 +75,15 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 
                     StringBuilder template = new StringBuilder("@" + TARGET_TYPE_NAME);
                     // Get schema
-                    boolean addedSchema = RewriteUtils.findArgumentValueAsString(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
-                            .map(t -> {
-                                template.append("( schema = \"" + t + "\"");
-                                return true;
-                            }).orElse(false);
+                    boolean addedSchema = RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
+                            .map(t -> addSchema(t, template)).orElse(false);
 
                     // Get table
                     RewriteUtils.findArgumentValueAsString(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
-                            .ifPresentOrElse(t -> {
-                                if (addedSchema) template.append(", ");
-                                else template.append("(");
-                                template.append(" table = \"" + t + "\")");
-                            }, () -> {
-                                if (addedSchema) template.append(")");
+                            .ifPresentOrElse(t -> addTable(t, addedSchema, template), () -> {
+                                if (addedSchema) {
+                                    template.append(")");
+                                }
                             });
 
                     // Add @Table import
@@ -96,13 +91,31 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                     maybeRemoveImport(Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL);
 
                     return JavaTemplate.builder(template.toString())
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, Constants.Jpa.CLASS_PATH))
+                            .javaParser(JavaParserFactory.create(ctx))
                             .imports(TARGET_TYPE)
                             .build()
                             .apply(getCursor(), sourceAnnotation.getCoordinates().replace());
 
                 }
                 return super.visitClassDeclaration(classDecl, ctx);
+            }
+
+            private static void addTable(String t, boolean addedSchema, StringBuilder template) {
+                if (addedSchema) {
+                    template.append(", ");
+                } else {
+                    template.append("(");
+                }
+                template.append(" table = \"" + t + "\")");
+            }
+
+            private static boolean addSchema(J.Assignment assignment, StringBuilder template) {
+                if (assignment.getAssignment() instanceof J.FieldAccess fieldAccess) {
+                    template.append("( schema = " + fieldAccess);
+                } else if (assignment.getAssignment() instanceof J.Literal literal) {
+                    template.append("( schema = \"" + literal + "\"");
+                }
+                return true;
             }
         };
     }
