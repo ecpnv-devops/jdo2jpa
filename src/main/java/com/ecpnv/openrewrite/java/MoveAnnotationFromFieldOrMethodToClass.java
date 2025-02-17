@@ -127,12 +127,17 @@ public class MoveAnnotationFromFieldOrMethodToClass extends Recipe {
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, executionContext);
                 String name = md.getName().getSimpleName();
-                name = Introspector.decapitalize(name.substring(name.startsWith("is") ? 2 : 3));
-                Set<J.Annotation> removeAnno = processAnnotation(md, name);
-                if (!removeAnno.isEmpty()) {
-                    List<J.Annotation> newAnno = new ArrayList<>(md.getLeadingAnnotations());
-                    newAnno.removeAll(removeAnno);
-                    md = md.withLeadingAnnotations(newAnno);
+                if (StringUtils.isNotBlank(name)) {
+                    name = name.substring(name.startsWith("is") ? 2 : name.length() > 2 ? 3 : name.length());
+                    if (StringUtils.isNotBlank(name)) {
+                        name = Introspector.decapitalize(name);
+                        Set<J.Annotation> removeAnno = processAnnotation(md, name);
+                        if (!removeAnno.isEmpty()) {
+                            List<J.Annotation> newAnno = new ArrayList<>(md.getLeadingAnnotations());
+                            newAnno.removeAll(removeAnno);
+                            md = md.withLeadingAnnotations(newAnno);
+                        }
+                    }
                 }
                 return md;
             }
