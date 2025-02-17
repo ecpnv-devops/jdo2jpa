@@ -118,7 +118,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table( schema = "schemaName",  table = "tableName")
+                                @Table(schema = "schemaName", name = "tableName")
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private List<String> listofStrings;

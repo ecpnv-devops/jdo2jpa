@@ -70,7 +70,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.persistence.Table;
                                 
-                                @Table( schema = "schemaName")
+                                @Table(schema = "schemaName")
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
@@ -93,9 +93,10 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.jdo.annotations.PersistenceCapable;
                                 
-                                @PersistenceCapable(schema = SomeEntity.SCHEMA)
+                                @PersistenceCapable(schema = SomeEntity.SCHEMA, table = SomeEntity.TABLE)
                                 public class SomeEntity {
                                         private static final String SCHEMA = "schemaName";
+                                        private static final String TABLE = "tableName";
                                         private int id;
                                         private List<String> listofStrings;
                                 }
@@ -104,9 +105,10 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.persistence.Table;
                                 
-                                @Table( schema = SomeEntity.SCHEMA)
+                                @Table(schema = SomeEntity.SCHEMA, name = SomeEntity.TABLE)
                                 public class SomeEntity {
                                         private static final String SCHEMA = "schemaName";
+                                        private static final String TABLE = "tableName";
                                         private int id;
                                         private List<String> listofStrings;
                                 }
@@ -138,7 +140,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table( schema = "schemaName")
+                                @Table(schema = "schemaName")
                                 public class SomeEntity extends EntityAbstract {
                                 }
                                 """
@@ -170,7 +172,7 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 TODO: manually migrate to JPA
                                 */
                                 @Entity
-                                @Table( schema = "schemaName")
+                                @Table(schema = "schemaName")
                                 public class SomeEntity {
                                 }
                                 """

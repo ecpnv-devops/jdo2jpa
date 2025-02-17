@@ -79,7 +79,7 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                             .map(t -> addSchema(t, template)).orElse(false);
 
                     // Get table
-                    RewriteUtils.findArgumentValueAsString(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
+                    RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
                             .ifPresentOrElse(t -> addTable(t, addedSchema, template), () -> {
                                 if (addedSchema) {
                                     template.append(")");
@@ -100,23 +100,28 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
                 return super.visitClassDeclaration(classDecl, ctx);
             }
 
-            private static void addTable(String t, boolean addedSchema, StringBuilder template) {
-                if (addedSchema) {
-                    template.append(", ");
-                } else {
-                    template.append("(");
-                }
-                template.append(" table = \"" + t + "\")");
-            }
-
             private static boolean addSchema(J.Assignment assignment, StringBuilder template) {
                 if (assignment.getAssignment() instanceof J.FieldAccess fieldAccess) {
-                    template.append("( schema = " + fieldAccess);
+                    template.append("(schema = " + fieldAccess);
                 } else if (assignment.getAssignment() instanceof J.Literal literal) {
-                    template.append("( schema = \"" + literal + "\"");
+                    template.append("(schema = \"" + literal + "\"");
                 }
                 return true;
             }
+
+            private static void addTable(J.Assignment assignment, boolean addedSchema, StringBuilder template) {
+                if (addedSchema) {
+                    template.append(",");
+                } else {
+                    template.append("(");
+                }
+                if (assignment.getAssignment() instanceof J.FieldAccess fieldAccess) {
+                    template.append(" name = " + fieldAccess + ")");
+                } else if (assignment.getAssignment() instanceof J.Literal literal) {
+                    template.append(" name = \"" + literal + "\")");
+                }
+            }
+
         };
     }
 }
