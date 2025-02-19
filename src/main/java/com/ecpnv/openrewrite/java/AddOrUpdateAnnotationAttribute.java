@@ -148,42 +148,47 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
 
     public class AddOrUpdateAnnotationAttributeVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
-        public J.Annotation visitAnnotation(J.Annotation a, ExecutionContext ctx) {
-            J.Annotation original = super.visitAnnotation(a, ctx);
-            if (!TypeUtils.isOfClassType(a.getType(), annotationType)) {
+        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+            J.Annotation original = super.visitAnnotation(annotation, ctx);
+            if (!TypeUtils.isOfClassType(annotation.getType(), annotationType)) {
                 return original;
             }
 
-            String newAttributeValue = maybeQuoteStringArgument(attributeName, attributeValue, a);
-            List<Expression> currentArgs = a.getArguments();
+            String newAttributeValue = maybeQuoteStringArgument(attributeName, attributeValue, annotation);
+            List<Expression> currentArgs = annotation.getArguments();
             if (currentArgs == null || currentArgs.isEmpty() || currentArgs.get(0) instanceof J.Empty) {
                 if (newAttributeValue == null || oldAttributeValue != null) {
-                    return a;
+                    return annotation;
                 }
 
+                J.Annotation result = null;
                 if (attributeName == null || ANNOTATION_VALUE.equals(attributeName)) {
-                    return JavaTemplate.builder("#{}")
+                    result = JavaTemplate.builder("#{}")
                             .contextSensitive()
                             .build()
-                            .apply(getCursor(), a.getCoordinates().replaceArguments(), newAttributeValue);
+                            .apply(getCursor(), annotation.getCoordinates().replaceArguments(), newAttributeValue);
                 } else {
                     String newAttributeValueResult = newAttributeValue;
-                    if (((JavaType.FullyQualified) requireNonNull(a.getAnnotationType().getType())).getMethods().stream().anyMatch(method -> method.getReturnType().toString().equals("java.lang.String[]"))) {
+                    if (((JavaType.FullyQualified) requireNonNull(annotation.getAnnotationType().getType())).getMethods().stream().anyMatch(method -> method.getReturnType().toString().equals("java.lang.String[]"))) {
                         String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                         List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
                         newAttributeValueResult = attributeList.stream()
                                 .map(String::valueOf)
                                 .collect(Collectors.joining("\", \"", "{\"", "\"}"));
                     }
-                    return JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
+                    result = JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
                             .contextSensitive()
                             .build()
-                            .apply(getCursor(), a.getCoordinates().replaceArguments(), attributeName, newAttributeValueResult);
+                            .apply(getCursor(), annotation.getCoordinates().replaceArguments(), attributeName, newAttributeValueResult);
                 }
+                if (getCursor().getParentTreeCursor().getParent() != null) {
+                    result = maybeAutoFormat(original, result, ctx);
+                }
+                return result;
             } else {
                 // First assume the value exists amongst the arguments and attempt to update it
                 AtomicBoolean foundOrSetAttributeWithDesiredValue = new AtomicBoolean(false);
-                final J.Annotation finalA = a;
+                final J.Annotation finalA = annotation;
                 List<Expression> newArgs = ListUtils.map(currentArgs, expression -> {
                     if (expression instanceof J.Assignment assignment) {
                         J.Identifier variable = (J.Identifier) assignment.getVariable();
@@ -416,7 +421,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 });
 
                 if (newArgs != currentArgs) {
-                    a = a.withArguments(newArgs);
+                    annotation = annotation.withArguments(newArgs);
                 }
                 if (operation.isAdd() && !foundOrSetAttributeWithDesiredValue.get()
                         && !attributeValIsAlreadyPresent(newArgs, newAttributeValue)) {
@@ -426,9 +431,9 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                     J.Assignment as = (J.Assignment) ((J.Annotation) JavaTemplate.builder(ANNOTATION_ARGUMENT_TEMPLATE)
                             .contextSensitive()
                             .build()
-                            .apply(getCursor(), a.getCoordinates().replaceArguments(), effectiveName, newAttributeValue))
+                            .apply(getCursor(), annotation.getCoordinates().replaceArguments(), effectiveName, newAttributeValue))
                             .getArguments().get(0);
-                    a = a.withArguments(ListUtils.concat(as, a.getArguments()));
+                    annotation = annotation.withArguments(ListUtils.concat(as, annotation.getArguments()));
                 }
                 if (foundOrSetAttributeWithDesiredValue.get() && StringUtils.isNotBlank(attributeName)) {
                     // The attribute that is replaced might refer to an attributeType which might not be needed anymore
@@ -440,9 +445,9 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 }
             }
             if (getCursor().getParentTreeCursor().getParent() != null) {
-                a = maybeAutoFormat(original, a, ctx);
+                annotation = maybeAutoFormat(original, annotation, ctx);
             }
-            return a;
+            return annotation;
         }
     }
 

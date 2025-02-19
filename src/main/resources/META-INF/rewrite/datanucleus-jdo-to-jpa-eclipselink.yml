@@ -33,7 +33,6 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Index
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Relations
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
   # NOTE: recipes without parameters are always run before recipes with parameters, hence when one depends on ordering
@@ -132,6 +131,8 @@ recipeList:
       attributeName: defaultFetchGroup
   - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
       annotationType: '@javax.jdo.annotations.Persistent'
+  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
+      annotationType: '@javax.jdo.annotations.Column'
   # Replace @Order with @OrderColumn
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Order
@@ -161,14 +162,32 @@ recipeList:
       annotationType: javax.jdo.annotations.Column
       oldAttributeName: allowsNull
       newAttributeName: nullable
+  # replace @Column(..allowsNull..) with @Column(..nullable..)
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.persistence.Column
+      oldAttributeName: allowsNull
+      newAttributeName: nullable
   # Remove nullable = "true" as this is the default in JPA
   - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
       matchByRegularExpression: '@Column\((.|\s|\n)*nullable\s*=\s*"true"(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: nullable
+  # Remove nullable = "true" as this is the default in JPA
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable\s*=\s*"true"(.|\s|\n)*\)'
+      annotationType: javax.persistence.Column
+      attributeName: nullable
   # Change nullable = "false" to nullable = false
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
+      attributeName: nullable
+      oldAttributeValue: "false"
+      attributeValue: false
+      operation: UPDATE
+      appendArray: false
+  # Change nullable = "false" to nullable = false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      annotationType: javax.persistence.Column
       attributeName: nullable
       oldAttributeValue: "false"
       attributeValue: false
@@ -418,37 +437,6 @@ recipeList:
       attributeName: customStrategy
   - com.ecpnv.openrewrite.java.MaybeRemoveImport:
       type: javax.jdo.annotations.InheritanceStrategy
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.Relations
-displayName: Migrate @Column to @JoinColumn
-description: Migrate @Column to @JoinColumn.
-tags:
-  - jdo
-  - jpa
-  - migrate
-  - modernize
-  - java
-  - javax
-  - persistence
-  - Column
-#preconditions:
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Relations.acceptOnlyRelations
-recipeList:
-  # Change column type for related entities
-  - com.ecpnv.openrewrite.java.ReplaceAnnotationConditionally:
-      annotationPatternToReplace: '@javax.persistence.Column'
-      annotationTemplateToInsert: '@javax.persistence.JoinColumn'
-      packageName: 'org.estatio.module'
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.Relations.acceptOnlyRelations
-displayName: Filter on and entity classes
-recipeList:
-  - org.openrewrite.java.search.FindTypes:
-      fullyQualifiedTypeName: javax.persistence.ManyToOne
-  - org.openrewrite.java.search.FindTypes:
-      fullyQualifiedTypeName: javax.persistence.OneToMany
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup

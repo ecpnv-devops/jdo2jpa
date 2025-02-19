@@ -103,37 +103,42 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                 java(
                         """
                                 import java.util.List;
+                                import javax.jdo.annotations.Column;
                                 import javax.persistence.Entity;
                                 import javax.jdo.annotations.Persistent;
 
                                 import java.lang.Deprecated;
                                 
                                 @Entity
-                                public class Person {}
+                                public class Person {
+                                    @Column(name = "someEntity_id")
+                                    private SomeEntity someEntity;
+                                }
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @Persistent( mappedBy = "person")
+                                    @Persistent( mappedBy = "someEntity")
                                     @Deprecated
                                     private List<Person> persons;
                                 }
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
                                 
                                 import java.lang.Deprecated;
                                 
                                 @Entity
-                                public class Person {}
+                                public class Person {
+                                    @ManyToOne()
+                                    private SomeEntity someEntity;
+                                }
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                     @Deprecated
+                                    @JoinColumn(name = "someEntity_id")
                                     private List<Person> persons;
                                 }
                                 """

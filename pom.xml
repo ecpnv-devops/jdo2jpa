@@ -13,10 +13,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.testSource>17</maven.compiler.testSource>
-        <maven.compiler.testTarget>17</maven.compiler.testTarget>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.testSource>21</maven.compiler.testSource>
+        <maven.compiler.testTarget>21</maven.compiler.testTarget>
         <junit.version>5.11.4</junit.version>
         <assertj.version>3.27.2</assertj.version>
         <rewrite-bom.version>3.0.1</rewrite-bom.version>
