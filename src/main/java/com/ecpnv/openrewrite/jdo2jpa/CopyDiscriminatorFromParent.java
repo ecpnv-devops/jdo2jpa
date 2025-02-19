@@ -49,7 +49,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                     String classFgn = classDeclaration.getType().getFullyQualifiedName();
                     List<J.Annotation> foundAnnotations = parentAnnotationsByType.get(classFgn);
                     // When the parent class is processed, apply the class name when not available
-                    if (foundAnnotations != null && foundAnnotations.contains(annotation)) {
+                    if (foundAnnotations != null && !foundAnnotations.contains(annotation)) {
                         return processAddedAnnotation(classDeclaration, annotation, ctx);
                     }
                 }
