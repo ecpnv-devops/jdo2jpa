@@ -11,13 +11,13 @@ public class JoinColumnTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void testJoinColumnHappyPath() {
+    void testJoinColumnUnidirectional() {
         rewriteRun(spec -> spec.parser(PARSER)
                         .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
                 //language=java
                 java(
                         """
-                                package org.estatio.module.country.dom;
+                                package module.country.dom;
                                 
                                 import javax.persistence.Entity;
                                 import javax.persistence.Column;
@@ -47,7 +47,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 """
                         ,
                         """
-                                package org.estatio.module.country.dom;
+                                package module.country.dom;
                                 
                                 import javax.persistence.Entity;
                                 import javax.persistence.JoinColumn;
@@ -62,20 +62,20 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 @Entity
                                 public class Country extends EntityAbstract {
                                     @Getter @Setter
-                                    @Column(allowsNull = "false", length = 255)
+                                            @Column(nullable = false, length = 255)
                                     private String name;
                                 }
                                 
                                 @Entity
                                 public class State extends EntityAbstract {
                                     @Getter @Setter
-                                    @Column(allowsNull = "false", length = 255)
+                                            @Column(nullable = false, length = 255)
                                     private String name;
                                 
                                     @Getter 
                                     @Setter
-                                    @JoinColumn(allowsNull = "false", name = "countryId")
-                                    @ManyToOne()
+                                    @ManyToOne(optional = false)
+                                    @JoinColumn(nullable = false, name = "countryId")
                                     private Country country;
                                 }
                                 """
@@ -85,13 +85,13 @@ public class JoinColumnTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void testJoinColumnUnHappyPath() {
+    void testNoJoinColumn() {
         rewriteRun(spec -> spec.parser(PARSER)
                         .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
                 //language=java
                 java(
                         """
-                                package org.estatio.module.country.dom;
+                                package module.country.dom;
                                 
                                 import javax.persistence.Entity;
                                 
@@ -117,7 +117,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 """
                         ,
                         """
-                                package org.estatio.module.country.dom;
+                                package module.country.dom;
                                 
                                 import javax.persistence.Entity;
                                 import javax.persistence.ManyToOne;

@@ -162,14 +162,32 @@ recipeList:
       annotationType: javax.jdo.annotations.Column
       oldAttributeName: allowsNull
       newAttributeName: nullable
+  # replace @Column(..allowsNull..) with @Column(..nullable..)
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.persistence.Column
+      oldAttributeName: allowsNull
+      newAttributeName: nullable
   # Remove nullable = "true" as this is the default in JPA
   - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
       matchByRegularExpression: '@Column\((.|\s|\n)*nullable\s*=\s*"true"(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: nullable
+  # Remove nullable = "true" as this is the default in JPA
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable\s*=\s*"true"(.|\s|\n)*\)'
+      annotationType: javax.persistence.Column
+      attributeName: nullable
   # Change nullable = "false" to nullable = false
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
+      attributeName: nullable
+      oldAttributeValue: "false"
+      attributeValue: false
+      operation: UPDATE
+      appendArray: false
+  # Change nullable = "false" to nullable = false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      annotationType: javax.persistence.Column
       attributeName: nullable
       oldAttributeValue: "false"
       attributeValue: false

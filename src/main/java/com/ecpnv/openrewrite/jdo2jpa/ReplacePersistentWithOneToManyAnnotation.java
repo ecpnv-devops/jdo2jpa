@@ -146,9 +146,9 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
 
     static boolean validateVar(J.VariableDeclarations multiVariable) {
         // Should have a Collection
-        return multiVariable.getType() == null || !multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))
+        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))
                 // Should not have target annotation
-                || !FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty();
+                && FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty();
     }
 
     static Optional<J.Annotation> getPersistentAnnotation(J.VariableDeclarations multiVariable) {
@@ -169,22 +169,24 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             multiVariable = super.visitVariableDeclarations(multiVariable, ctx);
             // Find @Element annotation
             Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
-            // Check for Collection or already has target annotation
-            if (validateVar(multiVariable)) {
-                return multiVariable;
-            }
             // Find source annotation == @Persistent
             J.Annotation persistentAnno = getPersistentAnnotation(multiVariable).orElse(elemAnno.orElse(null));
-            if (persistentAnno == null) {
+            // Find @Column
+            Optional<J.Annotation> colAnno = FindAnnotations.find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream().findFirst();
+            if (persistentAnno == null && colAnno.isPresent()) {
                 // Remove name from @Column?
                 var varColName = RewriteUtils.toFullyQualifiedNameWithVar(multiVariable.getVariables().get(0));
                 var persistentVarType = multiVariable.getVariables().get(0).getVariableType().getOwner().toString();
                 var varName = multiVariable.getVariables().get(0).getSimpleName();
                 if (acc.varColumnWithName.containsKey(varColName) && varName.equals(acc.varPersistentWithMappedBy.get(persistentVarType))) {
-                    // Remove annotation
+                    // Remove annotation attribute
                     multiVariable = (J.VariableDeclarations) new RemoveAnnotationAttribute(Constants.Jdo.COLUMN_ANNOTATION_FULL,
                             Constants.Jdo.ARGUMENT_NAME).getVisitor().visit(multiVariable, ctx);
                 }
+                return multiVariable;
+            }
+            // Check for Collection or already has target annotation
+            if (!validateVar(multiVariable)) {
                 return multiVariable;
             }
             // Find mappedby argument

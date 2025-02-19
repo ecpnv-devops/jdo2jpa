@@ -3,9 +3,8 @@ package com.ecpnv.openrewrite.jdo2jpa;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-
-import com.ecpnv.openrewrite.util.JavaParserFactory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,6 +26,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
@@ -100,7 +100,8 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
     public class ReplacePersistentWithManyToOneAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariableOrg, ExecutionContext ctx) {
+            J.VariableDeclarations multiVariable = super.visitVariableDeclarations(multiVariableOrg, ctx);
             // Exit if Collection
             if (multiVariable.getType() == null || multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
                 return multiVariable;
@@ -119,55 +120,89 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                 // Entity field found, hence ManyToOne applies
                 StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
 
-                // Find optional source annotation
+                // Find optional source annotation (@Persistent)
                 List<J.Annotation> leadAnnos = new ArrayList<>(multiVariable.getLeadingAnnotations());
                 Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
+                // Search for @Column
+                StringBuilder colTemplate = new StringBuilder("@")
+                        .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
+                        .append("(");
+                Optional<J.Annotation> columnAnnoIfAny = FindAnnotations
+                        .find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream().findFirst()
+                        .or(() -> FindAnnotations.find(multiVariable, Constants.Jpa.COLUMN_ANNOTATION_FULL).stream().findFirst());
+                AtomicBoolean added = new AtomicBoolean(false);
+                columnAnnoIfAny.ifPresent(columnAnno -> {
+                    List<Expression> args = new ArrayList<>(columnAnno.getArguments());
+                    // Search for @Column.allowsNull
+                    AtomicBoolean foundNullOrName = new AtomicBoolean(false);
+                    RewriteUtils.findArgument(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
+                            .ifPresent(allowsNullArg -> {
+                                // Add optional argument
+                                template
+                                        .append(" optional = ")
+                                        .append(allowsNullArg.getAssignment());
+                                colTemplate
+                                        .append(" nullable = ")
+                                        .append(allowsNullArg.getAssignment());
+                                // Remove @Column annotation or allowsNull argument
+                                args.remove(allowsNullArg);
+                                foundNullOrName.set(true);
+                                added.set(true);
+                            });
+                    RewriteUtils.findArgument(columnAnno, Constants.Jdo.ARGUMENT_NAME)
+                            .ifPresentOrElse(nameArg -> {
+                                if (foundNullOrName.get()) {
+                                    colTemplate.append(", ");
+                                }
+                                colTemplate
+                                        .append(" name = \"")
+                                        .append(nameArg.getAssignment())
+                                        .append("\")");
+                                // Remove name argument
+                                args.remove(nameArg);
+                                foundNullOrName.set(true);
+                            }, () -> colTemplate.delete(0, colTemplate.length()));
+                    if (foundNullOrName.get()) {
+                        // Remove @Column when no arguments are left
+                        leadAnnos.remove(columnAnno);
+                        if (!args.isEmpty()) {
+                            // Remove allowsNull and/or name argument and keep @Column
+                            var ca = columnAnno.withArguments(args);
+                            ca = ca.withMarkers(ca.getMarkers().withMarkers(List.of()));
+                            leadAnnos.add(ca);
+                        }
+                    }
+                });
+
                 sourceAnnotationIfAny.ifPresent(annotation -> {
                     // When @Persistence is found replace
                     leadAnnos.remove(annotation);
-                    // Search for @Column
-                    FindAnnotations.find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream()
-                            .findFirst()
-                            .ifPresent(columnAnno ->
-                                    // Search for @Column.allowsNull
-                                    RewriteUtils.findArgument(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
-                                            .ifPresent(allowsNullArg -> {
-                                                // Add optional argument
-                                                template
-                                                        .append(" optional = ")
-                                                        .append(allowsNullArg.getAssignment())
-                                                        .append(",");
-                                                // Remove @Column annotation or allowsNull argument
-                                                List<Expression> args = new ArrayList<>(columnAnno.getArguments());
-                                                args.remove(allowsNullArg);
-                                                // Remove @Column when no arguments are left
-                                                leadAnnos.remove(columnAnno);
-                                                if (!args.isEmpty()) {
-                                                    // Remove allowsNull argument and keep @Column
-                                                    var ca = columnAnno.withArguments(args);
-                                                    ca = ca.withMarkers(ca.getMarkers().withMarkers(List.of()));
-                                                    leadAnnos.add(ca);
-                                                }
-                                            })
-                            );
 
                     // Search for dependentElement
                     RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                             .filter(isDependent -> isDependent)
-                            .ifPresentOrElse(isDependent -> template
-                                            .append(" cascade = {CascadeType.REMOVE")
-                                            .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
-                                            .append("}"),
-                                    () -> {
-                                        if (!StringUtils.isBlank(defaultCascade))
-                                            template
-                                                    .append(" cascade = {")
-                                                    .append(defaultCascade)
-                                                    .append("}");
-                                    });
+                            .ifPresentOrElse(isDependent -> {
+                                template
+                                        .append(added.get() ? ", " : "")
+                                        .append("cascade = {CascadeType.REMOVE")
+                                        .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                                        .append("}");
+                                added.set(true);
+                            }, () -> {
+                                if (!StringUtils.isBlank(defaultCascade)) {
+                                    template
+                                            .append(added.get() ? ", " : "")
+                                            .append(" cascade = {")
+                                            .append(defaultCascade)
+                                            .append("}");
+                                    added.set(true);
+                                }
+                            });
 
                     // Search for defaultFetchGroup
-                    template.append(", fetch = FetchType.");
+                    template
+                            .append(added.get() ? ", " : "")
+                            .append("fetch = FetchType.");
                     RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
                                         if (Boolean.TRUE.equals(isDefault))
@@ -183,20 +218,31 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                 maybeAddImport(TARGET_TYPE);
                 maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+                maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);
 
-                    return maybeAutoFormat(multiVariable, multiVariable.withLeadingAnnotations(ListUtils.concat(leadAnnos,
-                                    ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
+                var leadAnnosResult = ListUtils.concat(leadAnnos, ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
+                        .javaParser(JavaParserFactory.create(ctx))
+                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                        .build()
+                        .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
+                        .getLeadingAnnotations().get(0));
+
+                // Only add @JoinColumn when the relation is UNIdirectional and NOT bidirectional
+                if (!colTemplate.isEmpty() && !RewriteUtils.hasCollectionMemberOfSameTypeAsOwner(multiVariable)) {
+                    leadAnnosResult = ListUtils.concat(leadAnnosResult, columnAnnoIfAny.map(colAnno ->
+                                    ((J.VariableDeclarations) JavaTemplate.builder(colTemplate.toString())
                                             .javaParser(JavaParserFactory.create(ctx))
-                                            .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                                            .imports(TARGET_TYPE, Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL)
                                             .build()
                                             .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
-                                            .getLeadingAnnotations().get(0))),
-                            ctx);
+                                            .getLeadingAnnotations().get(0))
+                            .orElse(null));
                 }
-                return super.visitVariableDeclarations(multiVariable, ctx);
+                return maybeAutoFormat(multiVariableOrg, multiVariable.withLeadingAnnotations(leadAnnosResult), ctx);
             }
-
+            return multiVariable;
+        }
     }
 }

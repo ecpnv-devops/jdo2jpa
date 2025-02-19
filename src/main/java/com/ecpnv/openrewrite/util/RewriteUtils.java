@@ -164,6 +164,26 @@ public class RewriteUtils {
     }
 
     /**
+     * Checks whether the provided multi-variable declaration contains a collection member
+     * of the same type as the owner of its first variable.
+     *
+     * @param multiVariable the multi-variable declaration to analyze.
+     * @return true if the multi-variable declaration contains a collection member
+     * whose type parameter matches the owner of its first variable, false otherwise.
+     */
+    public static boolean hasCollectionMemberOfSameTypeAsOwner(J.VariableDeclarations multiVariable) {
+        if (multiVariable == null) return false;
+        return multiVariable
+                .getTypeAsFullyQualified()
+                .getMembers().stream()
+                .map(m -> m.getType())
+                .filter(t -> t.isAssignableFrom(Pattern.compile("java.util.Collection")))
+                .map(t -> (JavaType.Parameterized) t)
+                .anyMatch(p -> p.getTypeParameters().get(0).equals(
+                        multiVariable.getVariables().get(0).getVariableType().getOwner()));
+    }
+
+    /**
      * Finds and returns a list of annotations from the provided Java type that match the specified annotation type.
      *
      * @param javaType       the Java type to search for annotations. Must not be null.

@@ -341,20 +341,15 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.ManyToOne;
-                                import javax.jdo.annotations.Column;
+                                import javax.persistence.*;
                                 
                                 @Entity
                                 public class Person {}
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                
-                                    @Column(name = "personId")
                                     @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @JoinColumn(nullable = false, name = "personId")
                                     private Person person;
                                 }
                                 """
