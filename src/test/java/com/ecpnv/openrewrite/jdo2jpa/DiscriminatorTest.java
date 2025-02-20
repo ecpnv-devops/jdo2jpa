@@ -29,8 +29,8 @@ class DiscriminatorTest extends BaseRewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(PARSER).recipeFromResources(
-        "com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator",
-        "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup");
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator",
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup");
     }
 
     /**
@@ -79,6 +79,49 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 }
                                 
                                 @DiscriminatorValue(value = "Manager")
+                                @DiscriminatorColumn(name = "discriminator", length = 255)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void useDiscriminatorValue() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Discriminator;
+                                import javax.jdo.annotations.DiscriminatorStrategy;
+                                
+                                @Discriminator("person_discriminator")
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Discriminator("manager_discriminator")
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.DiscriminatorColumn;
+                                import javax.persistence.DiscriminatorValue;
+                                
+                                @DiscriminatorValue("person_discriminator")
+                                @DiscriminatorColumn(name = "discriminator", length = 255)
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                
+                                @DiscriminatorValue("manager_discriminator")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;

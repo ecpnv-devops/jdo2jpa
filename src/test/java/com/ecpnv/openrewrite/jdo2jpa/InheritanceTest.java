@@ -84,10 +84,10 @@ class InheritanceTest extends BaseRewriteTest {
                                 import javax.persistence.*;
                                 
                                 @Table(schema = "schemaname", name = "person")
-                                @Entity
-                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 @DiscriminatorValue("Person")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
+                                @Entity
+                                @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                 public class Person extends EntityAbstract {
                                         private int id;
                                         private String name;

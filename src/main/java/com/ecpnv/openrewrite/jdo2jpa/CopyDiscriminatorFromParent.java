@@ -3,12 +3,13 @@ package com.ecpnv.openrewrite.jdo2jpa;
 import java.util.List;
 import java.util.Set;
 
+import com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute;
+import com.ecpnv.openrewrite.java.CopyNonInheritedAnnotations;
+import com.ecpnv.openrewrite.util.RewriteUtils;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.tree.J;
-
-import com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute;
-import com.ecpnv.openrewrite.java.CopyNonInheritedAnnotations;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -48,8 +49,11 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                 if (classDeclaration.getType() != null) {
                     String classFgn = classDeclaration.getType().getFullyQualifiedName();
                     List<J.Annotation> foundAnnotations = parentAnnotationsByType.get(classFgn);
-                    // When the parent class is processed, apply the class name when not available
-                    if (foundAnnotations != null && foundAnnotations.contains(annotation)) {
+                    // When the annotation already exists
+                    if (foundAnnotations != null && foundAnnotations.contains(annotation)
+                            // and the value argument is not provided
+                            && RewriteUtils.findArgumentValue(annotation, null).isEmpty()) {
+                        // Then apply the class name when not available
                         return processAddedAnnotation(classDeclaration, annotation, ctx);
                     }
                 }

@@ -12,7 +12,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Comment;
-import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TextComment;
@@ -41,9 +40,7 @@ public class RewriteUtils {
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
     public static Optional<J.Assignment> findArgument(Set<J.Annotation> sourceAnnotations, String varName) {
-        if (Optional.ofNullable(sourceAnnotations)
-                .map(CollectionUtils::isEmpty)
-                .orElse(Boolean.TRUE) || StringUtils.isBlank(varName)) {
+        if (sourceAnnotations == null || sourceAnnotations.isEmpty() || StringUtils.isBlank(varName)) {
             return Optional.empty();
         }
         return findArgument(sourceAnnotations.iterator().next(), varName);
@@ -58,9 +55,8 @@ public class RewriteUtils {
      * @return an Optional containing the string value of the matching assignment, or an empty Optional if no match is found.
      */
     public static Optional<String> findArgumentValueAsString(J.Annotation sourceAnnotation, String varName) {
-        return findArgument(sourceAnnotation, varName)
-                .map(J.Assignment::getAssignment)
-                .map(Expression::toString);
+        return findArgumentValue(sourceAnnotation, varName)
+                .map(Object::toString);
     }
 
     /**
@@ -85,6 +81,38 @@ public class RewriteUtils {
     }
 
     /**
+     * Finds the first assignment value within the arguments of the specified annotation that matches the given variable name.
+     *
+     * @param sourceAnnotation the annotation whose arguments will be searched. Must not be null.
+     * @param varName          the name of the variable to match within the assignment. Must not be null.
+     * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
+     */
+    public static Optional<Object> findArgumentValue(J.Annotation sourceAnnotation, String varName) {
+        if (sourceAnnotation == null || Optional.ofNullable(sourceAnnotation)
+                .map(J.Annotation::getArguments)
+                .map(CollectionUtils::isEmpty)
+                .orElse(Boolean.TRUE)) {
+            return Optional.empty();
+        }
+        return sourceAnnotation.getArguments().stream()
+                .map(a -> {
+                    // Test if literal
+                    if (varName == null || "value".equals(varName)) {
+                        if (a instanceof J.Literal lit) {
+                            return lit.getValue();
+                        }
+                    } else
+                        // Test if assignment
+                        if (a instanceof J.Assignment assignment && assignment.getVariable().toString().equals(varName)) {
+                            return assignment.getAssignment();
+                        }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .findFirst();
+    }
+
+    /**
      * Retrieves a boolean value from the assignment expression of the specified annotation's arguments
      * that matches the given variable name.
      *
@@ -92,9 +120,8 @@ public class RewriteUtils {
      * @param varName          the name of the variable to match within the assignment. Must not be null.
      * @return an Optional containing the boolean value of the matching assignment, or an empty Optional if no match is found.
      */
-    public static Optional<Boolean> findBooleanArgument(J.Annotation sourceAnnotation, String varName) {
-        return findArgument(sourceAnnotation, varName)
-                .map(J.Assignment::getAssignment)
+    public static Optional<Boolean> findArgumentAsBoolean(J.Annotation sourceAnnotation, String varName) {
+        return findArgumentValue(sourceAnnotation, varName)
                 .map(Object::toString)
                 .map(Boolean::parseBoolean);
     }
