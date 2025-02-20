@@ -27,6 +27,7 @@ public final class Constants {
         public static final String ELEMENT_ANNOTATION_FULL = BASE_PACKAGE + ELEMENT_ANNOTATION_NAME;
         public static final String INHERITANCE_ANNOTATION_NAME = "Inheritance";
         public static final String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
+        public static final String INHERITANCE_ARGUMENT_STRATEGY = "strategy";
         public static final String JOIN_ANNOTATION_NAME = "Join";
         public static final String JOIN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_ANNOTATION_NAME;
         public static final String JOIN_ARGUMENT_COLUMN = "column";

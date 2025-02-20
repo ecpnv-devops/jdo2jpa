@@ -112,13 +112,13 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
             return TreeVisitor.noop();
         }
 
-        return new CopyAnnoVisitor(acc.getParentAnnotationsByType());
+        return new RemoveAnnoVisitor(acc.getParentAnnotationsByType());
     }
 
-    public static class CopyAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
+    public static class RemoveAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
         protected final Map<String, List<J.Annotation>> parentAnnotationsByType;
 
-        public CopyAnnoVisitor(Map<String, List<J.Annotation>> parentAnnotationsByType) {
+        public RemoveAnnoVisitor(Map<String, List<J.Annotation>> parentAnnotationsByType) {
             this.parentAnnotationsByType = parentAnnotationsByType;
         }
 
@@ -145,6 +145,7 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
             }
 
             // Collect the annotations to remove
+            J.ClassDeclaration finalCd = cd;
             List<J.Annotation> annotationsToRemove = cd.getLeadingAnnotations().stream()
                     // Is there any parent type
                     .filter(ca -> parentTypes.stream()
@@ -154,6 +155,7 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
                             .flatMap(List::stream)
                             // Matching annotations in the current class?
                             .anyMatch(pa -> ca.getType() != null && ca.getType().equals(pa.getType())))
+                    .filter(atr -> processAnnotationBeforeRemoval(finalCd, atr, ctx))
                     .toList();
 
             if (!annotationsToRemove.isEmpty()) {
@@ -165,6 +167,22 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
             }
 
             return cd;
+        }
+
+        /**
+         * When overridden in the subclass this method provides the possibility to take additional actions
+         * based on the removal of annotation or even cancel the removal.
+         *
+         * @param classDeclaration
+         * @param annotation
+         * @param ctx
+         * @return true when the annotation should be removed otherwise false
+         */
+        protected boolean processAnnotationBeforeRemoval(
+                J.ClassDeclaration classDeclaration,
+                J.Annotation annotation,
+                ExecutionContext ctx) {
+            return true;
         }
     }
 

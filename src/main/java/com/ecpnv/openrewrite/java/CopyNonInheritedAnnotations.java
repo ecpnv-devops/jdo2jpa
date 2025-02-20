@@ -188,6 +188,16 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             return cd;
         }
 
+        /**
+         * Processes an existing annotation within the context of a class declaration.
+         * This method can be overridden to modify the existing annotations or interact
+         * with them as needed during the visitation process.
+         *
+         * @param classDeclaration the class declaration that contains the annotation being processed
+         * @param annotation       the specific annotation being processed
+         * @param ctx              the execution context in which the processing occurs
+         * @return the processed annotation, which can be the same as the input annotation or a modified version
+         */
         protected J.Annotation processExistingAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,
@@ -195,6 +205,16 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
             return annotation;
         }
 
+        /**
+         * Processes an annotation that is being added to a class declaration.
+         * This method allows customization or modification of newly added annotations
+         * during the visitation process.
+         *
+         * @param classDeclaration the class declaration to which the annotation is being added
+         * @param annotation the annotation being added
+         * @param ctx the execution context in which the processing occurs
+         * @return the processed annotation, which can either be the same annotation or a modified version
+         */
         protected J.Annotation processAddedAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,
