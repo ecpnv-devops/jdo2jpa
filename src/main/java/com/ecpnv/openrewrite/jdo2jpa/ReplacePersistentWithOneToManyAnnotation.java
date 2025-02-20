@@ -202,7 +202,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
 
                 // Search for dependentElement
                 AtomicBoolean added = new AtomicBoolean(false);
-                RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
+                RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                         .filter(isDependent -> isDependent)
                         .ifPresentOrElse(isDependent -> {
                             mappedBy.ifPresent(ma -> template.append(", "));
@@ -227,7 +227,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     template.append(", ");
                 }
                 template.append("fetch = FetchType.");
-                RewriteUtils.findBooleanArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                         .ifPresentOrElse(isDefault -> {
                                     if (Boolean.TRUE.equals(isDefault))
                                         template.append("EAGER");

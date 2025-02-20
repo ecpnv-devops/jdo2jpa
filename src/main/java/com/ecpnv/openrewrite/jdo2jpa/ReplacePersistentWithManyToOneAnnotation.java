@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,9 +27,6 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -179,7 +178,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     leadAnnos.remove(annotation);
 
                     // Search for dependentElement
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
+                    RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
                             .filter(isDependent -> isDependent)
                             .ifPresentOrElse(isDependent -> {
                                 template
@@ -203,7 +202,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     template
                             .append(added.get() ? ", " : "")
                             .append("fetch = FetchType.");
-                    RewriteUtils.findBooleanArgument(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
+                    RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
                                         if (Boolean.TRUE.equals(isDefault))
                                             template.append("EAGER");
