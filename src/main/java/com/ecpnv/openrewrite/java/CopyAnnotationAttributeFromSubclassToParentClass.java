@@ -30,6 +30,26 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+/**
+ * A recipe for copying a specific attribute from an annotation on a subclass
+ * to the corresponding annotation on a parent class. This class provides functionality
+ * to scan for annotations in a subclass that match a specific type and optionally
+ * a regular expression, and then replicate an attribute from those annotations
+ * to the annotations on the parent class.
+ * <p>
+ * This recipe can be configured with the following options:
+ * - The type of the annotation to target.
+ * - The specific attribute of the annotation to copy.
+ * - An optional regular expression to filter the annotations further.
+ * - A flag to restrict copying to the immediate parent class only.
+ * <p>
+ * It utilizes scanning capabilities to initially capture the relevant relationships between
+ * subclasses and their parent classes, as well as the matching annotations. Then it applies
+ * transformations to copy attributes between the matched annotations on subclasses to their
+ * parent classes.
+ *
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRecipe<CopyAnnotationAttributeFromSubclassToParentClass.Accumulator> {
@@ -50,14 +70,22 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
             example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
     String matchByRegularExpression;
 
+    @Option(displayName = "Copy to base class only",
+            description = "When specified, only annotations that are one level down the base class are copied.",
+            required = false,
+            example = "true")
+    Boolean copyToBaseClassOnly;
+
     @JsonCreator
     public CopyAnnotationAttributeFromSubclassToParentClass(
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("attributeToCopyToParent") String attributeToCopyToParent,
-            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression) {
+            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
+            @Nullable @JsonProperty("copyToBaseClassOnly") Boolean copyToBaseClassOnly) {
         this.annotationType = annotationType;
         this.attributeToCopyToParent = attributeToCopyToParent;
         this.matchByRegularExpression = matchByRegularExpression;
+        this.copyToBaseClassOnly = copyToBaseClassOnly != null && copyToBaseClassOnly;
     }
 
     @Override
@@ -81,20 +109,8 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                if (cd.getType() != null) {
+                if (ctx.getCycle() == 1 && cd.getType() != null) {
 
-                    // Collect the names of all super classes and interfaces.
-                    JavaType.FullyQualified currentFq = cd.getType();
-                    while (currentFq != null) {
-                        for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
-                            acc.childrenByParent.computeIfAbsent(i, v -> new HashSet<>()).add(currentFq);
-                        }
-                        JavaType.FullyQualified supertype = currentFq.getSupertype();
-                        if (supertype != null) {
-                            acc.childrenByParent.computeIfAbsent(supertype, v -> new HashSet<>()).add(currentFq);
-                        }
-                        currentFq = supertype;
-                    }
                     // Find all matching annotations for each type
                     JavaType.FullyQualified classFqn = cd.getType();
                     for (J.Annotation annotation : cd.getLeadingAnnotations()) {
@@ -102,6 +118,26 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                         if (annoFq != null && annotationType.equals(annoFq.getFullyQualifiedName())) {
                             acc.annotationsByType.computeIfAbsent(classFqn, v -> new HashSet<>()).add(annotation);
                         }
+                    }
+
+                    // Collect the names of all super classes and interfaces.
+                    JavaType.FullyQualified currentFq = cd.getType();
+                    while (currentFq != null) {
+                        JavaType.FullyQualified supertype = currentFq.getSupertype();
+                        for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
+                            // When copyToBaseClassOnly == true, then only register class when it has the given annotation
+                            if (!copyToBaseClassOnly || i.getAnnotations().stream()
+                                    .anyMatch(a -> annotationType.equals(a.getFullyQualifiedName()))) {
+                                acc.childrenByParent.computeIfAbsent(i, v -> new HashSet<>()).add(currentFq);
+                            }
+                        }
+                        if (supertype != null && !"java.lang.Object".equals(supertype.getFullyQualifiedName())
+                                // When copyToBaseClassOnly == true, then only register class when it has the given annotation
+                                && (!copyToBaseClassOnly || supertype.getAnnotations().stream()
+                                .anyMatch(a -> annotationType.equals(a.getFullyQualifiedName())))) {
+                            acc.childrenByParent.computeIfAbsent(supertype, v -> new HashSet<>()).add(currentFq);
+                        }
+                        currentFq = supertype;
                     }
                 }
                 return cd;
@@ -119,7 +155,9 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
 
                 JavaType.FullyQualified currentFq = cd.getType();
-                if (currentFq != null && acc.childrenByParent.containsKey(currentFq)) {
+                if (currentFq != null && acc.childrenByParent.containsKey(currentFq)
+                        // When copyToBaseClassOnly == true then current class should be the base class for given annotation
+                        && (!copyToBaseClassOnly || currentFq.getSupertype() == null || !acc.childrenByParent.containsKey(currentFq.getSupertype()))) {
                     // Match every annotation of this class with the specified type
                     var curAnnos = new ArrayList<>(cd.getLeadingAnnotations());
                     var newAnnos = RewriteUtils.findLeadingAnnotations(cd, annotationType).stream()
@@ -141,7 +179,8 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                                             .map(assignmentOfChild -> {
                                                 curAnnos.remove(ac);
                                                 var newArg = ac.getArguments();
-                                                RewriteUtils.findArgument(ac, attributeToCopyToParent).ifPresent(newArg::remove);
+                                                RewriteUtils.findArgument(ac, attributeToCopyToParent)
+                                                        .ifPresent(newArg::remove);
                                                 newArg.add(assignmentOfChild);
                                                 return ac.withArguments(newArg);
                                             })
