@@ -39,11 +39,11 @@ public class RewriteUtils {
      * @param varName           the name of the variable to match within the assignment. Must not be blank.
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
-    public static Optional<J.Assignment> findArgument(Set<J.Annotation> sourceAnnotations, String varName) {
+    public static Optional<J.Assignment> findArgumentAssignment(Set<J.Annotation> sourceAnnotations, String varName) {
         if (sourceAnnotations == null || sourceAnnotations.isEmpty() || StringUtils.isBlank(varName)) {
             return Optional.empty();
         }
-        return findArgument(sourceAnnotations.iterator().next(), varName);
+        return findArgumentAssignment(sourceAnnotations.iterator().next(), varName);
     }
 
     /**
@@ -66,7 +66,7 @@ public class RewriteUtils {
      * @param varName          the name of the variable to match within the assignment. Must not be null.
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
-    public static Optional<J.Assignment> findArgument(J.Annotation sourceAnnotation, String varName) {
+    public static Optional<J.Assignment> findArgumentAssignment(J.Annotation sourceAnnotation, String varName) {
         if (sourceAnnotation == null || Optional.ofNullable(sourceAnnotation)
                 .map(J.Annotation::getArguments)
                 .map(CollectionUtils::isEmpty)
@@ -77,6 +77,38 @@ public class RewriteUtils {
                 .filter(a -> a instanceof J.Assignment)
                 .map(a -> (J.Assignment) a)
                 .filter(a -> varName.equals(a.getVariable().toString()))
+                .findFirst();
+    }
+
+    /**
+     * Finds the first assignment expression within the arguments of the specified annotation that matches the given variable name.
+     *
+     * @param sourceAnnotation the annotation whose arguments will be searched. Must not be null.
+     * @param varName          the name of the variable to match within the assignment. Must not be null.
+     * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
+     */
+    public static Optional<J> findArgument(J.Annotation sourceAnnotation, String varName) {
+        if (sourceAnnotation == null || Optional.ofNullable(sourceAnnotation)
+                .map(J.Annotation::getArguments)
+                .map(CollectionUtils::isEmpty)
+                .orElse(Boolean.TRUE)) {
+            return Optional.empty();
+        }
+        return sourceAnnotation.getArguments().stream()
+                .map(a -> {
+                    // Test if assignment
+                    if (a instanceof J.Assignment assignment) {
+                        if (assignment.getVariable().toString().equals(varName)) {
+                            return assignment;
+                        }
+                    } else
+                        // Otherwise test if looking for value
+                        if (varName == null || "value".equals(varName)) {
+                            return (J) a;
+                        }
+                    return null;
+                })
+                .filter(Objects::nonNull)
                 .findFirst();
     }
 

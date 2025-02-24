@@ -90,6 +90,46 @@ class CopyDiscriminatorFromParentTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Verifies that there is no change in the `@Discriminator` annotation when the discriminator
+     * value is already explicitly defined in the child class.
+     * <p>
+     * This test checks that the `Manager` class retains its own defined discriminator value
+     * (`Manager_discriminator`) and that it does not get overridden or altered by the `Person`
+     * class's discriminator value (`Person_discriminator`).
+     * <p>
+     * Key aspects verified:
+     * - The child class maintains its explicitly defined `@Discriminator` annotation value.
+     * - The transformation does not alter existing valid annotations in the child class.
+     * - Proper differentiation of discriminator values between parent and child classes.
+     */
+    @DocumentExample
+    @Test
+    void noChangeWithDiscriminatorValue() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Discriminator;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                @Discriminator("Person_discriminator")
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Discriminator(Manager.DISCRIMINATOR_VALUE)
+                                public class Manager extends Person {
+                                        public static final String DISCRIMINATOR_VALUE = "Manager_discriminator";
+                                        @Persistent( mappedBy = "person")
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
     @DocumentExample
     @Test
     void copyNonInheritedAnnotationsUsingClassnameWithStrategy() {

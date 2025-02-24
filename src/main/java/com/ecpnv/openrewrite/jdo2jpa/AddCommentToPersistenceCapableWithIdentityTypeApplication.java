@@ -3,6 +3,8 @@ package com.ecpnv.openrewrite.jdo2jpa;
 import java.util.List;
 import java.util.Set;
 
+import com.ecpnv.openrewrite.util.RewriteUtils;
+
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
@@ -14,8 +16,6 @@ import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.marker.Markers;
-
-import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -60,7 +60,7 @@ public class AddCommentToPersistenceCapableWithIdentityTypeApplication extends R
                 final List<Comment> comments = cd.getComments();
                 if (!RewriteUtils.commentsContains(comments, Constants.Jpa.MIGRATION_COMMENT) && !sourceAnnotations.isEmpty()) {
                     final J.Annotation sourceAnnotation = sourceAnnotations.iterator().next();
-                    final String simpleName = RewriteUtils.findArgument(sourceAnnotation, Constants.Jdo.IDENTITY_TYPE_ANNOTATION_NAME)
+                    final String simpleName = RewriteUtils.findArgumentAssignment(sourceAnnotation, Constants.Jdo.IDENTITY_TYPE_ANNOTATION_NAME)
                             .map(J.Assignment::getAssignment)
                             .filter(J.FieldAccess.class::isInstance)
                             .map(J.FieldAccess.class::cast)

@@ -2,8 +2,12 @@ package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Set;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import static com.ecpnv.openrewrite.jdo2jpa.Constants.Jdo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -18,11 +22,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
-
-import static com.ecpnv.openrewrite.jdo2jpa.Constants.Jdo;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -91,7 +90,7 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getExtends() == null && !sourceAnnotations.isEmpty()) {
                     final J.Annotation sourceAnnotation = sourceAnnotations.iterator().next();
-                    final String simpleName = RewriteUtils.findArgument(sourceAnnotation, Constants.Jdo.IDENTITY_TYPE_ANNOTATION_NAME)
+                    final String simpleName = RewriteUtils.findArgumentAssignment(sourceAnnotation, Constants.Jdo.IDENTITY_TYPE_ANNOTATION_NAME)
                             .map(J.Assignment::getAssignment)
                             .filter(J.FieldAccess.class::isInstance)
                             .map(J.FieldAccess.class::cast)

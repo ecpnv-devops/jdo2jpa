@@ -75,11 +75,11 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
 
                     StringBuilder template = new StringBuilder("@" + TARGET_TYPE_NAME);
                     // Get schema
-                    boolean addedSchema = RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
+                    boolean addedSchema = RewriteUtils.findArgumentAssignment(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_SCHEMA)
                             .map(t -> addSchema(t, template)).orElse(false);
 
                     // Get table
-                    RewriteUtils.findArgument(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
+                    RewriteUtils.findArgumentAssignment(sourceAnnotation, Constants.Jpa.TABLE_ARGUMENT_TABLE)
                             .ifPresentOrElse(t -> addTable(t, addedSchema, template), () -> {
                                 if (addedSchema) {
                                     template.append(")");

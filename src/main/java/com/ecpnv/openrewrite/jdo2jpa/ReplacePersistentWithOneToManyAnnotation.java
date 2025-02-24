@@ -107,7 +107,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                         Optional<J.Annotation> persistentAnno = getPersistentAnnotation(mv);
                         if (validateVar(mv) && persistentAnno.isPresent()) {
                             // Find mappedby argument
-                            RewriteUtils.findArgument(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
+                            RewriteUtils.findArgumentAssignment(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
                                     .ifPresent(assignment -> {
                                         // Add fqn#varname,column-name-value to accumulator
                                         RewriteUtils.getParameterType(multiVariable, 0, 0)
@@ -121,7 +121,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                     .findFirst()
                                     .ifPresent(ca -> {
                                         // Find name
-                                        RewriteUtils.findArgument(ca, Constants.Jdo.ARGUMENT_NAME)
+                                        RewriteUtils.findArgumentAssignment(ca, Constants.Jdo.ARGUMENT_NAME)
                                                 .map(J.Assignment::getAssignment)
                                                 .ifPresent(e -> {
                                                     // Add fqn#varname,column-name-value to accumulator
@@ -190,9 +190,9 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 return multiVariable;
             }
             // Find mappedby argument
-            Optional<J.Assignment> mappedBy = RewriteUtils.findArgument(persistentAnno, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
+            Optional<J.Assignment> mappedBy = RewriteUtils.findArgumentAssignment(persistentAnno, Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY);
             // Find Table argument
-            Optional<J.Assignment> table = RewriteUtils.findArgument(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_TABLE);
+            Optional<J.Assignment> table = RewriteUtils.findArgumentAssignment(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_TABLE);
             // Find @Join annotation
             Optional<J.Annotation> joinAnno = FindAnnotations.find(multiVariable, Constants.Jdo.JOIN_ANNOTATION_FULL).stream().findFirst();
             if (mappedBy.isPresent() || table.isPresent() || joinAnno.isPresent()) {
@@ -304,7 +304,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     StringBuilder joinColTemplate = new StringBuilder("@")
                             .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
                             .append("(");
-                    RewriteUtils.findArgument(elemAnno.get(), Constants.Jdo.ARGUMENT_NAME)
+                    RewriteUtils.findArgumentAssignment(elemAnno.get(), Constants.Jdo.ARGUMENT_NAME)
                             .map(assignment -> assignment.getAssignment().toString())
                             .ifPresent(name -> joinColTemplate
                                     .append("name = \"")
@@ -328,7 +328,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 if (hasPreviousArg) {
                     joinTableTemplate.append(",\n");
                 }
-                Optional<J.Assignment> colArg = RewriteUtils.findArgument(ja, Constants.Jdo.JOIN_ARGUMENT_COLUMN);
+                Optional<J.Assignment> colArg = RewriteUtils.findArgumentAssignment(ja, Constants.Jdo.JOIN_ARGUMENT_COLUMN);
                 joinTableTemplate
                         .append(joinColumnsName)
                         .append(" = {@")

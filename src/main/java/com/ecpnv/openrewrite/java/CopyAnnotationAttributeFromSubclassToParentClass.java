@@ -169,7 +169,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                                             .map(acc.annotationsByType::get)
                                             .flatMap(Set::stream)
                                             // That have a value in the specified attribute
-                                            .map(a -> RewriteUtils.findArgument(a, attributeToCopyToParent))
+                                            .map(a -> RewriteUtils.findArgumentAssignment(a, attributeToCopyToParent))
                                             .filter(Optional::isPresent)
                                             .map(Optional::get)
                                             // Use the first found assignment
@@ -179,7 +179,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                                             .map(assignmentOfChild -> {
                                                 curAnnos.remove(ac);
                                                 var newArg = ac.getArguments();
-                                                RewriteUtils.findArgument(ac, attributeToCopyToParent)
+                                                RewriteUtils.findArgumentAssignment(ac, attributeToCopyToParent)
                                                         .ifPresent(newArg::remove);
                                                 newArg.add(assignmentOfChild);
                                                 return ac.withArguments(newArg);
