@@ -52,7 +52,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                     // When the annotation already exists
                     if (foundAnnotations != null && foundAnnotations.contains(annotation)
                             // and the value argument is not provided
-                            && RewriteUtils.findArgumentValue(annotation, null).isEmpty()) {
+                            && RewriteUtils.findArgument(annotation, null).isEmpty()) {
                         // Then apply the class name when not available
                         return processAddedAnnotation(classDeclaration, annotation, ctx);
                     }

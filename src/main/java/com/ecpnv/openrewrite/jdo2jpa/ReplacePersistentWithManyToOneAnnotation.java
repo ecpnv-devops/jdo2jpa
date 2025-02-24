@@ -134,7 +134,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                     List<Expression> args = new ArrayList<>(columnAnno.getArguments());
                     // Search for @Column.allowsNull
                     AtomicBoolean foundNullOrName = new AtomicBoolean(false);
-                    RewriteUtils.findArgument(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
+                    RewriteUtils.findArgumentAssignment(columnAnno, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
                             .ifPresent(allowsNullArg -> {
                                 // Add optional argument
                                 template
@@ -148,7 +148,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
                                 foundNullOrName.set(true);
                                 added.set(true);
                             });
-                    RewriteUtils.findArgument(columnAnno, Constants.Jdo.ARGUMENT_NAME)
+                    RewriteUtils.findArgumentAssignment(columnAnno, Constants.Jdo.ARGUMENT_NAME)
                             .ifPresentOrElse(nameArg -> {
                                 if (foundNullOrName.get()) {
                                     colTemplate.append(", ");

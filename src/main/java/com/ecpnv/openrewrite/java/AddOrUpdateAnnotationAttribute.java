@@ -437,7 +437,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 }
                 if (foundOrSetAttributeWithDesiredValue.get() && StringUtils.isNotBlank(attributeName)) {
                     // The attribute that is replaced might refer to an attributeType which might not be needed anymore
-                    RewriteUtils.findArgument(original, attributeName)
+                    RewriteUtils.findArgumentAssignment(original, attributeName)
                             .map(J.Assignment::getType)
                             .map(JavaType::toString)
                             .filter(name -> StringUtils.isNotBlank(name) && !"Unknown".equals(name))

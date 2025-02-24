@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
-
+import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,8 +25,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-
-import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -120,7 +118,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
                         .stream()
                         .findFirst();
                 // Exit when target attribute already exist
-                if (targetAnnotation.isPresent() && RewriteUtils.findArgument(targetAnnotation.get(), targetAttributeName).isPresent()) {
+                if (targetAnnotation.isPresent() && RewriteUtils.findArgumentAssignment(targetAnnotation.get(), targetAttributeName).isPresent()) {
                     return classDeclaration;
                 }
                 // Add existing attributes
