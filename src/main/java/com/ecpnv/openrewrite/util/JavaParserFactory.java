@@ -1,7 +1,5 @@
 package com.ecpnv.openrewrite.util;
 
-import lombok.experimental.UtilityClass;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openrewrite.ExecutionContext;
@@ -10,12 +8,15 @@ import org.openrewrite.java.JavaParser;
 
 import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Utility class for creating a {@link JavaParser.Builder} instance with a fixed set of constant resource libraries
  * and uses defined JVM libraries.
  * <p>
  * For testing purposes an additional test library file is included when defined as a system property.
  * <p>
+ *
  * @author Wouter Veltmaat @ Open Circle Solutions
  */
 @UtilityClass
@@ -32,11 +33,20 @@ public class JavaParserFactory {
                 Constants.Jdo.CLASS_PATH,
                 Constants.SPRING_CONTEXT_CLASS_PATH,
                 Constants.SPRING_BOOT_AUTOCONFIGURATION_CLASS_PATH,
-                Constants.LOMBOK_CLASS_PATH};
+                Constants.LOMBOK_CLASS_PATH,
+                Constants.JAVAX_INJECT};
         //hack to include a jar file for testing extending abstract classes
         final String additionalLibraryFileForAbstractClassName = System.getProperty("libraryOfAbstractClassName");
         if (StringUtils.isNoneBlank(additionalLibraryFileForAbstractClassName)) {
             resourceClasspath = ArrayUtils.add(resourceClasspath, additionalLibraryFileForAbstractClassName);
+        }
+        //hack to add additional test libraries
+        final String additionalTestLibraries = System.getProperty("additionalTestLibraries");
+        if (StringUtils.isNoneBlank(additionalTestLibraries)) {
+            final String[] libraries = additionalTestLibraries.split(";");
+            for (String lib : libraries) {
+                resourceClasspath = ArrayUtils.add(resourceClasspath, lib);
+            }
         }
 
         return JavaParser.fromJavaVersion().classpath(classPath).classpathFromResources(ctx, resourceClasspath);

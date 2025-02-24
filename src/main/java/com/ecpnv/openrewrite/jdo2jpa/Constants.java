@@ -87,4 +87,6 @@ public final class Constants {
     public static final String LOMBOK_CLASS_PATH = "lombok";
     public static final String SPRING_CONTEXT_CLASS_PATH = "spring-context";
     public static final String SPRING_BOOT_AUTOCONFIGURATION_CLASS_PATH = "spring-boot-autoconfigure";
+    public static final String JAVAX_INJECT = "javax.inject";
+
 }
