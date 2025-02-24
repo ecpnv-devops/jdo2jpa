@@ -395,6 +395,11 @@ recipeList:
   - com.ecpnv.openrewrite.java.RemoveInheritedAnnotations:
       nonInheritedAnnotationTypes:
         - javax.jdo.annotations.Inheritance
+  # Copy javax.jdo.annotations.Inheritance#strategy to base class of inheritance hierarchy
+  - com.ecpnv.openrewrite.java.CopyAnnotationAttributeFromSubclassToParentClass:
+      annotationType: javax.jdo.annotations.Inheritance
+      attributeToCopyToParent: strategy
+      copyToBaseClassOnly: true
   # Change type of @Inheritance
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Inheritance
