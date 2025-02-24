@@ -249,6 +249,30 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void noManyToOneWhenNotEntity() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                @Entity
+                                public class Person {}
+                                public class SomeEntity {
+                                    private Person person;
+                                    public void setPerson( Person person){
+                                        this.person = person;
+                                    }
+                                }
+                                """
+                )
+        );
+    }
+
     /**
      * Tests the transformation of a `@Persistent` annotation, paired with a `@Column` annotation
      * that includes the `allowsNull` attribute, to a `@ManyToOne` annotation in a JPA-annotated Java class.
