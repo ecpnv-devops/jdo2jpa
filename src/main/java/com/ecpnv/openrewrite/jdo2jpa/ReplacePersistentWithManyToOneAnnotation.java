@@ -1,8 +1,10 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
@@ -17,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
@@ -56,7 +58,7 @@ import lombok.Value;
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
+public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set<String>> {
 
     public static final String SOURCE_ANNOTATION_TYPE = "@" + Constants.Jdo.PERSISTENT_ANNOTATION_FULL;
     public static final String TARGET_TYPE_NAME = Constants.Jpa.MANY_TO_ONE_ANNOTATION_NAME;
@@ -88,19 +90,53 @@ public class ReplacePersistentWithManyToOneAnnotation extends Recipe {
     }
 
     @Override
-    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    public Set<String> getInitialValue(ExecutionContext ctx) {
+        return new HashSet<>();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<String> entityClasses) {
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
+                RewriteUtils.findLeadingAnnotations(cd, Constants.Jpa.ENTITY_ANNOTATION_FULL).stream()
+                        .findFirst()
+                        .or(() -> RewriteUtils.findLeadingAnnotations(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL).stream()
+                                .findFirst()).ifPresent(annotation -> {
+                            if (cd.getType() != null) {
+                                entityClasses.add(cd.getType().getFullyQualifiedName());
+                            }
+                        });
+                return cd;
+            }
+        };
+    }
+
+    @Override
+    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor(Set<String> entityClasses) {
 
         return Preconditions.check(Preconditions.or(
                         new UsesType<>(Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL, false),
                         new UsesType<>(Constants.Jpa.ENTITY_ANNOTATION_FULL, false)),
-                new ReplacePersistentWithManyToOneAnnotationVisitor());
+                new ReplacePersistentWithManyToOneAnnotationVisitor(entityClasses));
     }
 
     public class ReplacePersistentWithManyToOneAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
 
+        private final Set<String> entityClasses;
+
+        public ReplacePersistentWithManyToOneAnnotationVisitor(Set<String> entityClasses) {
+            this.entityClasses = entityClasses;
+        }
+
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariableOrg, ExecutionContext ctx) {
             J.VariableDeclarations multiVariable = super.visitVariableDeclarations(multiVariableOrg, ctx);
+            // Exit if owner has no @Entity or @PersistenceCapable annotation
+            if (RewriteUtils.ownerOfFirstVarToFullyQualifiedName(multiVariable).stream().noneMatch(entityClasses::contains)) {
+                return multiVariable;
+            }
             // Exit if Collection
             if (multiVariable.getType() == null || multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))) {
                 return multiVariable;

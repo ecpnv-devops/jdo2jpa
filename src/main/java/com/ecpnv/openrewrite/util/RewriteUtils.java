@@ -1,6 +1,7 @@
 package com.ecpnv.openrewrite.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -277,6 +278,35 @@ public class RewriteUtils {
         return variable.getVariableType().getOwner() + "#" + variable.getSimpleName();
     }
 
+    /**
+     * Retrieves the fully qualified name of the owner of the first variable
+     * in the given variable declarations. If the owner is not resolvable or not
+     * present, an empty Optional is returned.
+     *
+     * @param mv the variable declarations containing multiple variables. Can be null.
+     * @return an Optional containing the fully qualified name of the owner of the first
+     * variable, or an empty Optional if no owner can be resolved.
+     */
+    public static Optional<String> ownerOfFirstVarToFullyQualifiedName(J.VariableDeclarations mv) {
+        return Optional.ofNullable(mv).stream()
+                .map(J.VariableDeclarations::getVariables)
+                .flatMap(Collection::stream)
+                .map(J.VariableDeclarations.NamedVariable::getVariableType)
+                .filter(Objects::nonNull)
+                .map(JavaType.Variable::getOwner)
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .findFirst();
+    }
+
+    /**
+     * Retrieves the parameter type of a variable declaration at a specified variable index and parameter index.
+     *
+     * @param multiVariable the variable declarations containing multiple variables. Must not be null.
+     * @param varIndex      the index of the variable within the variable declarations. Must be a non-negative integer.
+     * @param paramIndex    the index of the parameter within the type parameters of the variable's type. Must be a non-negative integer.
+     * @return an Optional containing the fully qualified parameter type if found, or an empty Optional if the parameter type cannot be determined.
+     */
     public Optional<JavaType.FullyQualified> getParameterType(J.VariableDeclarations multiVariable, int varIndex, int paramIndex) {
         if (varIndex >= multiVariable.getVariables().size()) {
             return Optional.empty();
