@@ -28,6 +28,8 @@
         <jsr305.version>3.0.2</jsr305.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -195,13 +197,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${maven-surefire-plugin.version}</version>
             </plugin>
             <!-- lombok is optional, but recommended for authoring recipes -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
@@ -238,7 +240,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.5.2</version>
+                        <version>${maven-surefire-plugin.version}</version>
                         <configuration>
                             <excludedGroups>broken</excludedGroups>
                         </configuration>
