@@ -25,6 +25,8 @@ public final class Constants {
         public static final String DISCRIMINATOR_STRATEGY_ANNOTATION_FULL = BASE_PACKAGE + DISCRIMINATOR_STRATEGY_ANNOTATION_NAME;
         public static final String ELEMENT_ANNOTATION_NAME = "Element";
         public static final String ELEMENT_ANNOTATION_FULL = BASE_PACKAGE + ELEMENT_ANNOTATION_NAME;
+        public static final String INDEX_ANNOTATION_NAME = "Index";
+        public static final String INDEX_ANNOTATION_FULL = BASE_PACKAGE + INDEX_ANNOTATION_NAME;
         public static final String INHERITANCE_ANNOTATION_NAME = "Inheritance";
         public static final String INHERITANCE_ANNOTATION_FULL = BASE_PACKAGE + INHERITANCE_ANNOTATION_NAME;
         public static final String INHERITANCE_ARGUMENT_STRATEGY = "strategy";

@@ -395,9 +395,10 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Index;
                                 
                                 @PersistenceCapable(schema = "schemaName")
-                                @Indices(
+                                @Indices({
                                   @Index(name = "Person__name__IDX", members = {"firstName", "lastName"}),
-                                  @Index(name = "Person__email__IDX", members = {"email"}))
+                                  @Index(name = "Person__email__IDX", members = {"email"}),
+                                })
                                 public class SomeEntity {
                                         private int id;
                                         private String firstName, lastName, email;
@@ -415,6 +416,56 @@ class IndexesTest extends BaseRewriteTest {
                                 columnList = "firstName, lastName"), @Index( name = "Person__email__IDX",
                                 columnList = "email")})
                                 public class SomeEntity extends EntityAbstract {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void moveMultipleIndexAnnotationsFromIndices2() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Index"),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Indices;
+                                import javax.jdo.annotations.Index;
+                                
+                                @Indices({
+                                        @Index(
+                                                name = "CommChannelRole_comm_channel_type_IDX",
+                                                members = { "communication", "channel", "type" }
+                                        ),
+                                        @Index(
+                                                name = "Communication_channel_comm_type_IDX",
+                                                members = { "channel", "communication", "type" }
+                                        ),
+                                        @Index(
+                                                name = "CommChannelRole_comm_type_channel_IDX",
+                                                members = { "communication", "type", "channel" }
+                                        ),
+                                        @Index(
+                                                name = "Communication_channel_type_comm_IDX",
+                                                members = { "channel", "type", "communication" }
+                                        ),
+                                })
+                                public class SomeEntity {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """,
+                        """
+                                import javax.persistence.Index;
+                                import javax.persistence.Table;
+                                
+                                @javax.persistence.Table(indexes = {@javax.persistence.Index(name = "Person__name__IDX",
+                                        columnList = "firstName, lastName"), @javax.persistence.Index(name = "Person__email__IDX",
+                                        columnList = "email")})
+                                public class SomeEntity {
                                         private int id;
                                         private String firstName, lastName, email;
                                 }
