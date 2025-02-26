@@ -26,6 +26,9 @@ tags:
 preconditions:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 recipeList:
+  # Pre code changes
+  - com.ecpnv.openrewrite.java.RemoveTrailingComma
+  # JDO to JPA migration
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
@@ -35,8 +38,6 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
-  # NOTE: recipes without parameters are always run before recipes with parameters, hence when one depends on ordering
-  #       one should wrap the recipes with parameters in a declarative one!
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
@@ -69,6 +70,8 @@ tags:
   - persistence
   - PersistenceCapable
 recipeList:
+  # NOTE: recipes without parameters are always run before recipes with parameters, hence when one depends on ordering
+  #       one should wrap the recipes with parameters in a declarative one!
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap1
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap2
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap3
