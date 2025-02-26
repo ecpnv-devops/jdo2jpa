@@ -447,6 +447,68 @@ recipeList:
       type: javax.jdo.annotations.InheritanceStrategy
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Query
+displayName: Migrate JDO > JPA-v2.x for @Query
+description: Migrate @Queries and @Query.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - query
+recipeList:
+  # Change type @Queries to @NamedQueries
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Queries
+      newFullyQualifiedTypeName: javax.persistence.NamedQueries
+  # Rename attribute value to query
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: javax.jdo.annotations.Query
+      oldAttributeName: value
+      newAttributeName: query
+  # Change type of @Query for JDO to @Query for JPA
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.Query
+      newFullyQualifiedTypeName: javax.persistence.NamedQuery
+  # Remove all unsupported attributes: unmodifiable, unique, fetchPlan, extensions
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.NamedQuery
+      attributeName: unmodifiable
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.NamedQuery
+      attributeName: unique
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.NamedQuery
+      attributeName: fetchPlan
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.NamedQuery
+      attributeName: extensions
+  # Replace @NamedQuery with language=SQL with @NamedNativeQuery
+  - com.ecpnv.openrewrite.java.ReplaceAnnotationConditionally:
+      matchByRegularExpression: '@.*NamedQuery\((.|\s|\n)*language\s*=\s*"SQL"(.|\s|\n)*\)'
+      annotationTemplateToInsert: '@javax.persistence.NamedNativeQuery'
+  # Remove unsupported attribute language
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@.*NamedQuery\((.|\s|\n)*(language\s*=\s*"JDOQL")?(.|\s|\n)*\)'
+      annotationType: javax.persistence.NamedQuery
+      attributeName: language
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@.*NamedNativeQuery\((.|\s|\n)*language\s*=\s*"SQL"(.|\s|\n)*\)'
+      annotationType: javax.persistence.NamedNativeQuery
+      attributeName: language
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.persistence.NamedQuery
+      attributeName: resultClass
+  # Move @NamedNativeQuery
+  - com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute:
+      sourceAnnotationType: javax.persistence.NamedNativeQuery
+      targetAnnotationType: javax.persistence.NamedNativeQueries
+      targetAttributeName: value
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
 displayName: Cleanup
 description: Run cleanup.

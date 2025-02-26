@@ -5,10 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -20,11 +17,16 @@ import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -84,6 +86,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
 
     @Option(displayName = "Attribute name to create",
             description = "The name of attribute to create in the target.",
+            required = false,
             example = "timeout")
     String targetAttributeName;
 
@@ -91,7 +94,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
     public MoveAnnotationsToAttribute(
             @NonNull @JsonProperty("sourceAnnotationType") String sourceAnnotationType,
             @Nullable @JsonProperty("targetAnnotationType") String targetAnnotationType,
-            @NonNull @JsonProperty("targetAttributeName") String targetAttributeName) {
+            @Nullable @JsonProperty("targetAttributeName") String targetAttributeName) {
         this.sourceAnnotationType = sourceAnnotationType;
         this.targetAnnotationType = targetAnnotationType;
         this.targetAttributeName = targetAttributeName;
@@ -110,15 +113,16 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 if (annotations.isEmpty()) {
                     return classDeclaration;
                 }
+                String shortTargetType = targetAnnotationType.substring(targetAnnotationType.lastIndexOf('.') + 1);
                 StringBuilder template = new StringBuilder("@")
-                        .append(targetAnnotationType)
+                        .append(shortTargetType)
                         .append("( ");
                 // Find target annotation
                 Optional<J.Annotation> targetAnnotation = FindAnnotations.find(classDeclaration, targetAnnotationType)
                         .stream()
                         .findFirst();
                 // Exit when target attribute already exist
-                if (targetAnnotation.isPresent() && RewriteUtils.findArgumentAssignment(targetAnnotation.get(), targetAttributeName).isPresent()) {
+                if (targetAnnotation.isPresent() && RewriteUtils.findArgument(targetAnnotation.get(), targetAttributeName).isPresent()) {
                     return classDeclaration;
                 }
                 // Add existing attributes
@@ -126,10 +130,14 @@ public class MoveAnnotationsToAttribute extends Recipe {
                         .filter(Objects::nonNull)
                         .ifPresent(l -> l.forEach(e -> template.append(e).append(", ")));
                 // Add target attribute to target annotation
-                template.append(targetAttributeName).append(" = {");
+                if (targetAttributeName != null && !"value".equals(targetAttributeName)) {
+                    template.append(targetAttributeName).append(" = ");
+                }
+                template.append("{");
+                String shortSourceType = sourceAnnotationType.substring(sourceAnnotationType.lastIndexOf('.') + 1);
                 for (Iterator<J.Annotation> it = annotations.iterator(); it.hasNext(); ) {
                     J.Annotation annotation = it.next();
-                    template.append("@").append(sourceAnnotationType);
+                    template.append("@").append(shortSourceType);
                     if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                         template
                                 .append("( ")
@@ -152,9 +160,11 @@ public class MoveAnnotationsToAttribute extends Recipe {
                                 // When target annotation does not exist then add annotation
                                 .orElseGet(() -> classDecl.getCoordinates().addAnnotation(
                                         Comparator.comparing(J.Annotation::getSimpleName))));
-                // Remove existing annotation
-                Pattern pattern = Pattern.compile(sourceAnnotationType);
-                classDeclaration.getLeadingAnnotations().removeIf(annotation -> annotation.getType().isAssignableFrom(pattern));
+                // Remove existing annotations
+                for (J.Annotation a : annotations) {HIer GEBleven
+                    classDeclaration = new RemoveAnnotationVisitor(new AnnotationMatcher(sourceAnnotationType))
+                            .visitClassDeclaration(classDeclaration, ctx);
+                }
                 maybeAutoFormat(classDecl, classDeclaration, ctx);
                 return classDeclaration;
             }

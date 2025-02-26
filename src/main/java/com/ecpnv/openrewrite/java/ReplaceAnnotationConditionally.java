@@ -13,7 +13,6 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.service.ImportService;
@@ -29,7 +28,7 @@ import lombok.Value;
 
 /**
  * Conditional version of {@link org.openrewrite.java.ReplaceAnnotation} where the condition of replacing an annotation is
- * if the annotation to replace starts with the packageName parameter.
+ * if the annotation to replace starts with the packageName parameter OR the annotation matches the given regular expression.
  * <p>
  * Main use of this class is to replace annotations of attributes of classes that are not basic java classes but part
  * of the Java module.
@@ -41,10 +40,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class ReplaceAnnotationConditionally extends Recipe {
 
-    @Option(displayName = "Annotation to replace",
-            description = "An annotation matcher, expressed as a method pattern to replace.",
-            example = "@org.jetbrains.annotations.NotNull(\"Test\")")
-    String annotationPatternToReplace;
+    @Option(displayName = "Regular expression to match",
+            description = "Only annotations that match the regular expression will be changed.",
+            example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
+    String matchByRegularExpression;
 
     @Option(displayName = "Annotation template to insert",
             description = "An annotation template to add instead of original one, will be parsed with `JavaTemplate`.",
@@ -61,10 +60,10 @@ public class ReplaceAnnotationConditionally extends Recipe {
 
     @JsonCreator
     public ReplaceAnnotationConditionally(
-            @NonNull @JsonProperty("annotationPatternToReplace") String annotationPatternToReplace,
+            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("annotationTemplateToInsert") String annotationTemplateToInsert,
-            @Nullable @JsonProperty("classpathResourceName") String packageName) {
-        this.annotationPatternToReplace = annotationPatternToReplace;
+            @Nullable @JsonProperty("packageName") String packageName) {
+        this.matchByRegularExpression = matchByRegularExpression;
         this.annotationTemplateToInsert = annotationTemplateToInsert;
         this.packageName = packageName;
     }
@@ -86,7 +85,7 @@ public class ReplaceAnnotationConditionally extends Recipe {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
                 JavaTemplate.Builder templateBuilder = JavaTemplate.builder(annotationTemplateToInsert).javaParser(JavaParserFactory.create(ctx));
-                return new ReplaceAnnotationVisitor(new AnnotationMatcher(annotationPatternToReplace), templateBuilder.build(), packageName)
+                return new ReplaceAnnotationVisitor(matchByRegularExpression, templateBuilder.build(), packageName)
                         .visit(tree, ctx);
             }
         };
@@ -94,14 +93,14 @@ public class ReplaceAnnotationConditionally extends Recipe {
 
     @EqualsAndHashCode(callSuper = false)
     public final class ReplaceAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final AnnotationMatcher matcher;
+        private final String matchByRegularExpression;
         private final JavaTemplate replacement;
         @Nullable private final String packageName;
 
         private Boolean variableStartsWithPackageName = false;
 
-        public ReplaceAnnotationVisitor(AnnotationMatcher matcher, JavaTemplate replacement, @Nullable String packageName) {
-            this.matcher = matcher;
+        public ReplaceAnnotationVisitor(String matchByRegularExpression, JavaTemplate replacement, @Nullable String packageName) {
+            this.matchByRegularExpression = matchByRegularExpression;
             this.replacement = replacement;
             this.packageName = packageName;
         }
@@ -122,7 +121,7 @@ public class ReplaceAnnotationConditionally extends Recipe {
         public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             J.Annotation a = super.visitAnnotation(annotation, ctx);
 
-            if (!(matcher.matches(a) && variableStartsWithPackageName)) {
+            if (!variableStartsWithPackageName && !a.toString().matches(matchByRegularExpression)) {
                 return a;
             }
 
