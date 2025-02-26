@@ -458,3 +458,23 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.causeway
+displayName: Causeway specific migrations
+description: Causeway specific migrations to support JPA.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - causeway
+recipeList:
+  # Causeway uses the CausewayEntityListener to support JPA lifecycles
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@.*Entity.*'
+      annotationType: javax.persistence.EntityListeners
+      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
+      declarationType: CLASS
