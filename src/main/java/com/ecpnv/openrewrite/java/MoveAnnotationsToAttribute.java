@@ -1,11 +1,9 @@
 package com.ecpnv.openrewrite.java;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
@@ -20,11 +18,14 @@ import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Space;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -84,17 +85,28 @@ public class MoveAnnotationsToAttribute extends Recipe {
 
     @Option(displayName = "Attribute name to create",
             description = "The name of attribute to create in the target.",
+            required = false,
             example = "timeout")
     String targetAttributeName;
+
+    @Option(displayName = "Skip when no target and all on class",
+            description = "When true and the target is not found and all of the source annotations are " +
+                    "already on the class. The default is false.",
+            required = false,
+            example = "true")
+    Boolean skipWhenNoTargetAndAllOnClass;
 
     @JsonCreator
     public MoveAnnotationsToAttribute(
             @NonNull @JsonProperty("sourceAnnotationType") String sourceAnnotationType,
-            @Nullable @JsonProperty("targetAnnotationType") String targetAnnotationType,
-            @NonNull @JsonProperty("targetAttributeName") String targetAttributeName) {
+            @NonNull @JsonProperty("targetAnnotationType") String targetAnnotationType,
+            @Nullable @JsonProperty("targetAttributeName") String targetAttributeName,
+            @Nullable @JsonProperty("skipWhenNoTargetAndAllOnClass") Boolean skipWhenNoTargetAndAllOnClass
+    ) {
         this.sourceAnnotationType = sourceAnnotationType;
         this.targetAnnotationType = targetAnnotationType;
         this.targetAttributeName = targetAttributeName;
+        this.skipWhenNoTargetAndAllOnClass = skipWhenNoTargetAndAllOnClass != null && skipWhenNoTargetAndAllOnClass;
     }
 
     @Override
@@ -110,15 +122,21 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 if (annotations.isEmpty()) {
                     return classDeclaration;
                 }
+                String shortTargetType = targetAnnotationType.substring(targetAnnotationType.lastIndexOf('.') + 1);
                 StringBuilder template = new StringBuilder("@")
-                        .append(targetAnnotationType)
+                        .append(shortTargetType)
                         .append("( ");
                 // Find target annotation
                 Optional<J.Annotation> targetAnnotation = FindAnnotations.find(classDeclaration, targetAnnotationType)
                         .stream()
                         .findFirst();
                 // Exit when target attribute already exist
-                if (targetAnnotation.isPresent() && RewriteUtils.findArgumentAssignment(targetAnnotation.get(), targetAttributeName).isPresent()) {
+                if (targetAnnotation.isPresent() && RewriteUtils.findArgument(targetAnnotation.get(), targetAttributeName).isPresent()) {
+                    return classDeclaration;
+                }
+                // Exit when skip is enabled and the target is not found and all of the source annotations are already on the class
+                if (Boolean.TRUE.equals(skipWhenNoTargetAndAllOnClass) && targetAnnotation.isEmpty()
+                        && classDeclaration.getLeadingAnnotations().containsAll(annotations)) {
                     return classDeclaration;
                 }
                 // Add existing attributes
@@ -126,14 +144,18 @@ public class MoveAnnotationsToAttribute extends Recipe {
                         .filter(Objects::nonNull)
                         .ifPresent(l -> l.forEach(e -> template.append(e).append(", ")));
                 // Add target attribute to target annotation
-                template.append(targetAttributeName).append(" = {");
+                if (targetAttributeName != null && !"value".equals(targetAttributeName)) {
+                    template.append(targetAttributeName).append(" = ");
+                }
+                template.append("{");
+                String shortSourceType = sourceAnnotationType.substring(sourceAnnotationType.lastIndexOf('.') + 1);
                 for (Iterator<J.Annotation> it = annotations.iterator(); it.hasNext(); ) {
                     J.Annotation annotation = it.next();
-                    template.append("@").append(sourceAnnotationType);
+                    template.append("\n@").append(shortSourceType);
                     if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                         template
                                 .append("( ")
-                                .append(String.join(",\n", annotation.getArguments().stream().map(Objects::toString).toList()))
+                                .append(String.join(", ", annotation.getArguments().stream().map(Objects::toString).toList()))
                                 .append(")");
                     }
                     if (it.hasNext()) template.append(", ");
@@ -141,20 +163,23 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 template.append("})");
                 // Imports when needed
                 maybeAddImport(targetAnnotationType);
+                // Remove existing annotations
+                classDeclaration = new RemoveAnnotationVisitor(new AnnotationMatcher(sourceAnnotationType))
+                        .visitClassDeclaration(classDeclaration, ctx);
+                // When target annotation exists then add or replace attribute
+                var annos = classDeclaration.getLeadingAnnotations();
+                targetAnnotation.ifPresent(annos::remove);
                 // Add annotation as attribute
-                classDeclaration = JavaTemplate.builder(template.toString())
+                annos.add(((J.ClassDeclaration) JavaTemplate.builder(template.toString())
                         .javaParser(JavaParserFactory.create(ctx))
                         .imports(targetAnnotationType)
                         .build()
-                        .apply(getCursor(), targetAnnotation
-                                // When target annotation exists then add or replace attribute
-                                .map(ta -> ta.getCoordinates().replace())
-                                // When target annotation does not exist then add annotation
-                                .orElseGet(() -> classDecl.getCoordinates().addAnnotation(
-                                        Comparator.comparing(J.Annotation::getSimpleName))));
-                // Remove existing annotation
-                Pattern pattern = Pattern.compile(sourceAnnotationType);
-                classDeclaration.getLeadingAnnotations().removeIf(annotation -> annotation.getType().isAssignableFrom(pattern));
+                        .apply(getCursor(), classDeclaration.getCoordinates().replaceAnnotations()))
+                        .getLeadingAnnotations()
+                        .get(0)
+                        .withPrefix(Space.format("\n")));
+                classDeclaration = classDeclaration
+                        .withLeadingAnnotations(annos);
                 maybeAutoFormat(classDecl, classDeclaration, ctx);
                 return classDeclaration;
             }

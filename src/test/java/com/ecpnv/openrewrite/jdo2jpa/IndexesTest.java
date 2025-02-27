@@ -71,7 +71,7 @@ class IndexesTest extends BaseRewriteTest {
     @Test
     void moveIndexConstraintAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.INDEX_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES, false)),
                 //language=java
                 //language=java
                 java(
@@ -91,8 +91,8 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.persistence.Index;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = {"name"})})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(name = "SomeEntityNameIndex", columnList = {"name"})})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -138,7 +138,7 @@ class IndexesTest extends BaseRewriteTest {
     @Test
     void moveIndexConstraintAnnotationWithNoPreexistingTableAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.INDEX_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES, false)),
                 //language=java
                 java(
                         """
@@ -156,9 +156,8 @@ class IndexesTest extends BaseRewriteTest {
                                 
                                 
                                 
-                                @javax.persistence.Table(indexes = {@javax.persistence.Index(name = "SomeEntityNameIndex",
-                                        columnList = {"name"})})
-                                public class SomeEntity {
+                                @Table(indexes = {
+                                        @Index(name = "SomeEntityNameIndex", columnList = {"name"})})public class SomeEntity {
                                         private int id;
                                         private String name;
                                 }
@@ -199,7 +198,7 @@ class IndexesTest extends BaseRewriteTest {
     @Test
     void moveMultipleIndexConstraintAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.INDEX_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES, false)),
                 //language=java
                 //language=java
                 java(
@@ -220,9 +219,9 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.persistence.Index;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityIdIndex",
-                                columnList = {"id"}), @javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = {"name"})})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(name = "SomeEntityIdIndex", columnList = {"id"}),
+                                        @Index(name = "SomeEntityNameIndex", columnList = {"name"})})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -282,8 +281,8 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.persistence.Table;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = "name")})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(name = "SomeEntityNameIndex", columnList = "name")})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -351,9 +350,9 @@ class IndexesTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table( schema = "schemaName", indexes = {@Index( name = "Person__name__IDX",
-                                columnList = "firstName, lastName"), @Index( name = "Person__email__IDX",
-                                columnList = "email")})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(name = "Person__name__IDX", columnList = "firstName, lastName"),
+                                        @Index(name = "Person__email__IDX", columnList = "email")})
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
@@ -412,9 +411,9 @@ class IndexesTest extends BaseRewriteTest {
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
-                                @Table( schema = "schemaName", indexes = {@Index( name = "Person__name__IDX",
-                                columnList = "firstName, lastName"), @Index( name = "Person__email__IDX",
-                                columnList = "email")})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(name = "Person__name__IDX", columnList = "firstName, lastName"), 
+                                        @Index(name = "Person__email__IDX", columnList = "email")})
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
@@ -474,11 +473,10 @@ class IndexesTest extends BaseRewriteTest {
                                 import java.util.Date;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", indexes = {@javax.persistence.Index( columnList = "id",
-                                name = "SomeEntityIdIndex",
-                                unique = "true"), @javax.persistence.Index( columnList = "birthDate",
-                                name = "SomeEntityDateIndex"), @javax.persistence.Index( name = "SomeEntityNameIndex",
-                                columnList = "name")})
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(columnList = "id", name = "SomeEntityIdIndex", unique = "true"), 
+                                        @Index(columnList = "birthDate", name = "SomeEntityDateIndex"), 
+                                        @Index(name = "SomeEntityNameIndex", columnList = "name")})
                                 public class SomeEntity {
                                 """ + "        " + """
                                 

@@ -86,7 +86,7 @@ public class RemoveAnnotationAttributeConditionally extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>(annotationType, false), new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>(annotationType, true), new JavaIsoVisitor<ExecutionContext>() {
             private final AnnotationMatcher annotationMatcher = new AnnotationMatcher(annotationType);
 
             @Override

@@ -15,13 +15,13 @@
  */
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute;
+
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
-
-import com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute;
 
 
 /**
@@ -64,7 +64,7 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
     @Test
     void moveUniqueConstraintAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.UNIQUE_CONSTRAINT_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS, null)),
                 //language=java
                 //language=java
                 java(
@@ -84,8 +84,8 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.persistence.UniqueConstraint;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", uniqueConstraints = {@javax.persistence.UniqueConstraint( name = "SomeEntityNameUnique",
-                                columnNames = {"name"})})
+                                @Table(schema = "schemaName", uniqueConstraints = {
+                                        @UniqueConstraint(name = "SomeEntityNameUnique", columnNames = {"name"})})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -128,7 +128,7 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
     @Test
     void moveUniqueConstraintAnnotationWithNoPreexistingTableAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.UNIQUE_CONSTRAINT_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS, null)),
                 //language=java
                 java(
                         """
@@ -144,9 +144,10 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.persistence.Table;
                                 import javax.persistence.UniqueConstraint;
                                 
-                                @javax.persistence.Table(uniqueConstraints = {@javax.persistence.UniqueConstraint(name = "SomeEntityNameUnique",
-                                        columnNames = {"name"})})
-                                public class SomeEntity {
+                                
+                                
+                                @Table(uniqueConstraints = {
+                                        @UniqueConstraint(name = "SomeEntityNameUnique", columnNames = {"name"})})public class SomeEntity {
                                         private int id;
                                         private String name;
                                 }
@@ -186,7 +187,7 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
     @Test
     void moveMultipleUniqueConstraintAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.UNIQUE_CONSTRAINT_ANNOTATION_FULL,
-                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS)),
+                        Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_UNIQUE_CONSTRAINTS, null)),
                 //language=java
                 //language=java
                 java(
@@ -207,9 +208,9 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.persistence.UniqueConstraint;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", uniqueConstraints = {@javax.persistence.UniqueConstraint( name = "SomeEntityIdUnique",
-                                columnNames = {"id"}), @javax.persistence.UniqueConstraint( name = "SomeEntityNameUnique",
-                                columnNames = {"name"})})
+                                @Table(schema = "schemaName", uniqueConstraints = {
+                                        @UniqueConstraint(name = "SomeEntityIdUnique", columnNames = {"id"}),
+                                        @UniqueConstraint(name = "SomeEntityNameUnique", columnNames = {"name"})})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -270,8 +271,8 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.persistence.UniqueConstraint;
                                 
                                 
-                                @javax.persistence.Table( schema = "schemaName", uniqueConstraints = {@javax.persistence.UniqueConstraint( name = "SomeEntityNameUnique",
-                                columnNames = {"name"})})
+                                @Table(schema = "schemaName", uniqueConstraints = {
+                                        @UniqueConstraint(name = "SomeEntityNameUnique", columnNames = {"name"})})
                                 public class SomeEntity {
                                         private int id;
                                         private String name;
@@ -339,9 +340,9 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.persistence.UniqueConstraint;
                                 
                                 @Entity
-                                @Table( schema = "schemaName", uniqueConstraints = {@UniqueConstraint( name = "Person__name__UNQ",
-                                columnNames = {"firstName", "lastName"}), @UniqueConstraint( name = "Person__email__UNQ",
-                                columnNames = {"email"})})
+                                @Table(schema = "schemaName", uniqueConstraints = {
+                                        @UniqueConstraint(name = "Person__name__UNQ", columnNames = {"firstName", "lastName"}),
+                                        @UniqueConstraint(name = "Person__email__UNQ", columnNames = {"email"})})
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
