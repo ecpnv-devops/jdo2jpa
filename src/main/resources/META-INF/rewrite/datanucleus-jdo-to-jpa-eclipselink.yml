@@ -36,6 +36,7 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Index
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
   - org.openrewrite.java.ReplaceAnnotation:
@@ -507,6 +508,7 @@ recipeList:
       sourceAnnotationType: javax.persistence.NamedNativeQuery
       targetAnnotationType: javax.persistence.NamedNativeQueries
       targetAttributeName: value
+      skipWhenNoTargetAndAllOnClass: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
@@ -536,7 +538,7 @@ tags:
 recipeList:
   # Causeway uses the CausewayEntityListener to support JPA lifecycles
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@.*Entity.*'
+      matchByRegularExpression: '@.*\bEntity\b.*'
       annotationType: javax.persistence.EntityListeners
       annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
       declarationType: CLASS
