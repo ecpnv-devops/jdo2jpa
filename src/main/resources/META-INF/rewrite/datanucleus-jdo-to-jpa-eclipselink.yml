@@ -542,3 +542,21 @@ recipeList:
       annotationType: javax.persistence.EntityListeners
       annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
       declarationType: CLASS
+  # Remove the properties with id one of [datanucleusVersionLong, datanucleusVersionTimestamp, datanucleusId]
+  - com.ecpnv.openrewrite.xml.RemoveXmlTag:
+      matchByRegularExpression: '.*property(.|\s|\n)*id(.|\s|\n)*datanucleusVersionLong(.|\s|\n)*'
+      fileMatcher: '**/*.layout.xml'
+  - com.ecpnv.openrewrite.xml.RemoveXmlTag:
+      matchByRegularExpression: '.*property(.|\s|\n)*id(.|\s|\n)*datanucleusVersionTimestamp(.|\s|\n)*'
+      fileMatcher: '**/*.layout.xml'
+  - com.ecpnv.openrewrite.xml.RemoveXmlTag:
+      matchByRegularExpression: '.*property(.|\s|\n)*id(.|\s|\n)*datanucleusId(.|\s|\n)*'
+      fileMatcher: '**/*.layout.xml'
+  # Remove the action with id downloadJdoMetadata
+  - com.ecpnv.openrewrite.xml.RemoveXmlTag:
+      matchByRegularExpression: '.*action(.|\s|\n)*id(.|\s|\n)*downloadJdoMetadata(.|\s|\n)*'
+      fileMatcher: '**/*.layout.xml'
+  # Remove the menu action JdoMetamodelMenu#downloadMetamodels
+  - com.ecpnv.openrewrite.xml.RemoveXmlTag:
+      matchByRegularExpression: '.*serviceAction(.|\s|\n)*objectType(.|\s|\n)*JdoMetamodelMenu(.|\s|\n)*'
+      fileMatcher: '**/*.layout.xml'
