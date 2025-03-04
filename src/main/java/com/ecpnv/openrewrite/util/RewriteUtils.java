@@ -99,7 +99,8 @@ public class RewriteUtils {
                 .map(a -> {
                     // Test if assignment
                     if (a instanceof J.Assignment assignment) {
-                        if (assignment.getVariable().toString().equals(varName)) {
+                        if (assignment.getVariable().toString().equals(varName)
+                                || ((varName == null || "null".equals(varName)) && "value".equals(assignment.getVariable().toString()))) {
                             return assignment;
                         }
                     } else

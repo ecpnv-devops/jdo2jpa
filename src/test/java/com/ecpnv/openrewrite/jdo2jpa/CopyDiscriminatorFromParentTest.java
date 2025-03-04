@@ -130,6 +130,61 @@ class CopyDiscriminatorFromParentTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Verifies that there is no change in the `@Discriminator` annotation when a discriminator
+     * value is explicitly assigned in the derived class as a static final field.
+     * <p>
+     * This test ensures the integrity of the explicitly defined discriminator value in the child class,
+     * preventing it from being altered or overridden during any transformation or processing.
+     * <p>
+     * Key aspects verified:
+     * - The child class retains the explicitly defined `@Discriminator` annotation value.
+     * - Existing annotations and their specified attributes, such as `@Persistent`, remain unchanged.
+     * - Proper handling and differentiation of annotations between parent and child classes during the process.
+     */
+    @DocumentExample
+    @Test
+    void noChangeWithDiscriminatorValueAssignment() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Discriminator;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                @Discriminator(value="Person_discriminator")
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                @Discriminator( value = Manager.DISCRIMINATOR_VALUE)
+                                public class Manager extends Person {
+                                        public static final String DISCRIMINATOR_VALUE = "Manager_discriminator";
+                                        @Persistent( mappedBy = "person")
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Ensures that non-inherited annotations are correctly copied from a parent class
+     * to a derived class when using a specific discriminator strategy.
+     * <p>
+     * In this test, the focus is on the `@Discriminator` annotation with a `DiscriminatorStrategy.CLASS_NAME`
+     * applied in the parent class. The derived class should then explicitly receive a `@Discriminator` annotation
+     * with a specific value representing its own class name, while maintaining the parent strategy.
+     * <p>
+     * Core aspects verified by this test:
+     * - Correct replication of the `@Discriminator` annotation from the parent class to the derived class.
+     * - Transformation of the derived class to assign an explicit discriminator value representing its class.
+     * - Preservation of other existing annotations (e.g., `@Persistent`) in the derived class without modification.
+     * <p>
+     * This ensures proper annotation inheritance behavior in source code transformations,
+     * especially when dealing with annotations that are not natively inherited in Java.
+     */
     @DocumentExample
     @Test
     void copyNonInheritedAnnotationsUsingClassnameWithStrategy() {
