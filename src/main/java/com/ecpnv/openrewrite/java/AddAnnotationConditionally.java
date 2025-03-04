@@ -19,6 +19,7 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaCoordinates;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypedTree;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 
@@ -117,7 +118,11 @@ public class AddAnnotationConditionally extends Recipe {
                 }
                 Pattern pattern = Pattern.compile(annotationType);
                 if (classD.getLeadingAnnotations().isEmpty() || classD.getLeadingAnnotations().stream()
-                        .anyMatch(a -> a.getAnnotationType().getType().isAssignableFrom(pattern))) {
+                        .anyMatch(a -> Optional.ofNullable(a)
+                                .map(J.Annotation::getAnnotationType)
+                                .map(TypedTree::getType)
+                                .map(type -> type.isAssignableFrom(pattern))
+                                .orElse(Boolean.FALSE))) {
                     // Do nothing when the annotation already is present
                     return classD;
                 }
