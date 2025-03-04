@@ -3,14 +3,14 @@ package com.ecpnv.openrewrite.jdo2jpa;
 import java.util.List;
 import java.util.Set;
 
-import com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute;
-import com.ecpnv.openrewrite.java.CopyNonInheritedAnnotations;
-import com.ecpnv.openrewrite.util.RewriteUtils;
-
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.tree.J;
+
+import com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute;
+import com.ecpnv.openrewrite.java.CopyNonInheritedAnnotations;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -46,7 +46,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
         return new CopyAnnoVisitor(acc.getParentAnnotationsByType()) {
 
             @Override
-            protected J.Annotation processExistingAnnotation(J.ClassDeclaration classDeclaration, J.Annotation annotation, ExecutionContext ctx) {
+            protected J.ClassDeclaration processExistingAnnotation(J.ClassDeclaration classDeclaration, J.Annotation annotation, ExecutionContext ctx) {
                 if (classDeclaration.getType() != null) {
                     String classFgn = classDeclaration.getType().getFullyQualifiedName();
                     List<J.Annotation> foundAnnotations = parentAnnotationsByType.get(classFgn);
@@ -62,7 +62,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
             }
 
             @Override
-            protected J.Annotation processAddedAnnotation(
+            protected J.ClassDeclaration processAddedAnnotation(
                     J.ClassDeclaration classDeclaration, J.Annotation annotation, ExecutionContext ctx) {
                 // When no discriminator value exist then strategy is class name, hence the class name has to be added explicitly for JPA
                 J.Annotation newAnno = (J.Annotation) new AddOrUpdateAnnotationAttribute(
@@ -70,10 +70,14 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                         null, classDeclaration.getType().getFullyQualifiedName(), "null",
                         AddOrUpdateAnnotationAttribute.Operation.BOTH)
                         .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx,
-                        new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
-                classDeclaration.getLeadingAnnotations().remove(annotation);
-                classDeclaration.getLeadingAnnotations().add(newAnno);
-                return newAnno;
+                                new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
+                if (newAnno == null) {
+                    return classDeclaration;
+                }
+                var annos = classDeclaration.getLeadingAnnotations();
+                annos.remove(annotation);
+                annos.add(newAnno);
+                return classDeclaration.withLeadingAnnotations(annos);
             }
         };
     }

@@ -167,7 +167,7 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
                             annotationsFromParentClass.add(annotation);
                             existingAnnotations.add(annotationName.getFullyQualifiedName());
                         } else {
-                            processExistingAnnotation(cd, annotation, ctx);
+                            cd = processExistingAnnotation(cd, annotation, ctx);
                         }
                     }
                 }
@@ -178,7 +178,7 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
                 cd = cd.withLeadingAnnotations(afterAnnotationList);
                 cd = autoFormat(cd, cd.getName(), ctx, getCursor().getParentTreeCursor());
                 for (J.Annotation annotation : annotationsFromParentClass) {
-                    annotation = processAddedAnnotation(cd, annotation, ctx);
+                    cd = processAddedAnnotation(cd, annotation, ctx);
                     JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(annotation.getType());
                     if (fullyQualified != null) {
                         maybeAddImport(fullyQualified.getFullyQualifiedName());
@@ -196,13 +196,13 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
          * @param classDeclaration the class declaration that contains the annotation being processed
          * @param annotation       the specific annotation being processed
          * @param ctx              the execution context in which the processing occurs
-         * @return the processed annotation, which can be the same as the input annotation or a modified version
+         * @return the processed classDeclaration, which can be the same as the input classDeclaration or a modified version
          */
-        protected J.Annotation processExistingAnnotation(
+        protected J.ClassDeclaration processExistingAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,
                 ExecutionContext ctx) {
-            return annotation;
+            return classDeclaration;
         }
 
         /**
@@ -211,15 +211,15 @@ public class CopyNonInheritedAnnotations extends ScanningRecipe<CopyNonInherited
          * during the visitation process.
          *
          * @param classDeclaration the class declaration to which the annotation is being added
-         * @param annotation the annotation being added
-         * @param ctx the execution context in which the processing occurs
-         * @return the processed annotation, which can either be the same annotation or a modified version
+         * @param annotation       the annotation being added
+         * @param ctx              the execution context in which the processing occurs
+         * @return the processed classDeclaration, which can either be the same classDeclaration or a modified version
          */
-        protected J.Annotation processAddedAnnotation(
+        protected J.ClassDeclaration processAddedAnnotation(
                 J.ClassDeclaration classDeclaration,
                 J.Annotation annotation,
                 ExecutionContext ctx) {
-            return annotation;
+            return classDeclaration;
         }
     }
 
