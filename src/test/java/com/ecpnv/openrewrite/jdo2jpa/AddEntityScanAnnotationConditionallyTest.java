@@ -27,7 +27,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class SomeConfiguration {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa;
                                 
@@ -64,7 +64,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class SomeConfiguration {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa.config;
                                 
@@ -101,7 +101,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class SomeConfiguration {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa.config;
                                 
@@ -138,7 +138,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class SomeConfiguration {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa;
                                 
@@ -175,7 +175,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class SomeConfiguration {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa;
                                 

@@ -121,8 +121,8 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
     @Test
     void addEntityReplaceWithTableAnnotationForDatastore() {
         rewriteRun(spec -> spec.recipeFromResources(
-        "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable",
-        "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup"),
+                        "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable",
+                        "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup"),
                 //language=java
                 java(
                         """

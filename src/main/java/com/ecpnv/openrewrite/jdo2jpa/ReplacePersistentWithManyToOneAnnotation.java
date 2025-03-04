@@ -70,7 +70,8 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                     " is applied, then these optional cascade type default is applied.",
             required = false,
             example = "CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")
-    @Nullable String defaultCascade;
+    @Nullable
+    String defaultCascade;
 
     @JsonCreator
     public ReplacePersistentWithManyToOneAnnotation(@NonNull @JsonProperty("defaultCascade") String defaultCascade) {
@@ -104,10 +105,10 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                         .findFirst()
                         .or(() -> RewriteUtils.findLeadingAnnotations(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL).stream()
                                 .findFirst()).ifPresent(annotation -> {
-                            if (cd.getType() != null) {
-                                entityClasses.add(cd.getType().getFullyQualifiedName());
-                            }
-                        });
+                    if (cd.getType() != null) {
+                        entityClasses.add(cd.getType().getFullyQualifiedName());
+                    }
+                });
                 return cd;
             }
         };
@@ -240,11 +241,11 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                             .append("fetch = FetchType.");
                     RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                             .ifPresentOrElse(isDefault -> {
-                                        if (Boolean.TRUE.equals(isDefault))
-                                            template.append("EAGER");
-                                        else
-                                            template.append("LAZY");
-                                    }, () -> template.append("LAZY")
+                                if (Boolean.TRUE.equals(isDefault))
+                                    template.append("EAGER");
+                                else
+                                    template.append("LAZY");
+                            }, () -> template.append("LAZY")
                             );
                 });
 
@@ -267,12 +268,12 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                 // Only add @JoinColumn when the relation is UNIdirectional and NOT bidirectional
                 if (!colTemplate.isEmpty() && !RewriteUtils.hasCollectionMemberOfSameTypeAsOwner(multiVariable)) {
                     leadAnnosResult = ListUtils.concat(leadAnnosResult, columnAnnoIfAny.map(colAnno ->
-                                    ((J.VariableDeclarations) JavaTemplate.builder(colTemplate.toString())
-                                            .javaParser(JavaParserFactory.create(ctx))
-                                            .imports(TARGET_TYPE, Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL)
-                                            .build()
-                                            .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
-                                            .getLeadingAnnotations().get(0))
+                            ((J.VariableDeclarations) JavaTemplate.builder(colTemplate.toString())
+                                    .javaParser(JavaParserFactory.create(ctx))
+                                    .imports(TARGET_TYPE, Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL)
+                                    .build()
+                                    .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
+                                    .getLeadingAnnotations().get(0))
                             .orElse(null));
                 }
                 return maybeAutoFormat(multiVariableOrg, multiVariable.withLeadingAnnotations(leadAnnosResult), ctx);

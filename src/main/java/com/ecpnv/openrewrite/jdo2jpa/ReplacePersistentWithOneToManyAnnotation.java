@@ -70,7 +70,8 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     " is applied, then these optional cascade type default is applied.",
             required = false,
             example = "CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")
-    @Nullable String defaultCascade;
+    @Nullable
+    String defaultCascade;
 
     @JsonCreator
     public ReplacePersistentWithOneToManyAnnotation(@NonNull @JsonProperty("defaultCascade") String defaultCascade) {
@@ -229,11 +230,11 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 template.append("fetch = FetchType.");
                 RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                         .ifPresentOrElse(isDefault -> {
-                                    if (Boolean.TRUE.equals(isDefault))
-                                        template.append("EAGER");
-                                    else
-                                        template.append("LAZY");
-                                }, () -> template.append("LAZY")
+                            if (Boolean.TRUE.equals(isDefault))
+                                template.append("EAGER");
+                            else
+                                template.append("LAZY");
+                        }, () -> template.append("LAZY")
                         );
 
                 template.append(")");
@@ -262,11 +263,11 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                 .map(pt -> pt.getFullyQualifiedName() + "#" + mappedBy.get().getAssignment())
                                 .map(key -> acc.varColumnWithName.get(key))
                                 .map(name -> new StringBuilder("@")
-                                        .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
-                                        .append("(name = \"")
-                                        .append(name)
-                                        .append("\")\n")
-                                        .toString()
+                                                .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
+                                                .append("(name = \"")
+                                                .append(name)
+                                                .append("\")\n")
+                                                .toString()
                                 );
                         if (templateJC.isPresent()) {
                             multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(

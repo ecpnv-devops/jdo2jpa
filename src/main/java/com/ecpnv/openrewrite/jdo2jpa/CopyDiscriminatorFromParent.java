@@ -7,6 +7,7 @@ import com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute;
 import com.ecpnv.openrewrite.java.CopyNonInheritedAnnotations;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.tree.J;
@@ -68,7 +69,8 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                         Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL, false,
                         null, classDeclaration.getType().getFullyQualifiedName(), "null",
                         AddOrUpdateAnnotationAttribute.Operation.BOTH)
-                        .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx, getCursor());
+                        .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx,
+                        new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
                 classDeclaration.getLeadingAnnotations().remove(annotation);
                 classDeclaration.getLeadingAnnotations().add(newAnno);
                 return newAnno;

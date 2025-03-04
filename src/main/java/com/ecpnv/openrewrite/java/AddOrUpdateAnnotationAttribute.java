@@ -121,7 +121,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     Boolean appendArray;
 
     @JsonIgnore
-    @Getter AddOrUpdateAnnotationAttributeVisitor addOrUpdateAnnotationAttributeVisitor;
+    @Getter
+    AddOrUpdateAnnotationAttributeVisitor addOrUpdateAnnotationAttributeVisitor;
 
     @JsonCreator
     public AddOrUpdateAnnotationAttribute(
