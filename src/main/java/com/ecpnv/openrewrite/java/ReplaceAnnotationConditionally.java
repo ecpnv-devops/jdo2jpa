@@ -95,7 +95,8 @@ public class ReplaceAnnotationConditionally extends Recipe {
     public final class ReplaceAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
         private final String matchByRegularExpression;
         private final JavaTemplate replacement;
-        @Nullable private final String packageName;
+        @Nullable
+        private final String packageName;
 
         private Boolean variableStartsWithPackageName = false;
 

@@ -45,7 +45,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                     private Country country;
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package module.country.dom;
                                 
@@ -115,7 +115,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                     private Country country;
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package module.country.dom;
                                 

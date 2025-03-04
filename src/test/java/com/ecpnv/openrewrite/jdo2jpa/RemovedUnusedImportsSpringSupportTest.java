@@ -8,7 +8,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import static com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport.RemoveUnusedImportsVisitor.stripClass;
 
-class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest{
+class RemovedUnusedImportsSpringSupportTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test

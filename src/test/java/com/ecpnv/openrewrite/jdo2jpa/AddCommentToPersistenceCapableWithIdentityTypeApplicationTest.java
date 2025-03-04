@@ -22,7 +22,7 @@ class AddCommentToPersistenceCapableWithIdentityTypeApplicationTest extends Base
                                 public class SomeEntity {
                                 }
                                 """
-                        ,
+                ,
                         """
                                 import javax.jdo.annotations.PersistenceCapable;
                                 import javax.jdo.annotations.IdentityType;
