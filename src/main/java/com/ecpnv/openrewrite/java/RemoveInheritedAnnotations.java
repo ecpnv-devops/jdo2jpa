@@ -16,11 +16,8 @@
 package com.ecpnv.openrewrite.java;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -29,14 +26,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
-import org.openrewrite.ScanningRecipe;
+import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
@@ -58,7 +54,7 @@ import lombok.EqualsAndHashCode;
  * @author Patrick Deenen @ Open Circle Solutions
  */
 @EqualsAndHashCode(callSuper = false)
-public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAnnotations.Accumulator> {
+public class RemoveInheritedAnnotations extends Recipe {
 
     @Option(displayName = "Set of annotations to match",
             description = "Only annotations that match this set will be removed.",
@@ -81,46 +77,13 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
         return "This recipe removes inherited annotations from sub classes.";
     }
 
-    @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
-        return new Accumulator();
-    }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                if (cd.getType() != null) {
-                    String classFqn = cd.getType().getFullyQualifiedName();
-                    for (J.Annotation annotation : cd.getLeadingAnnotations()) {
-                        JavaType.FullyQualified annoFq = TypeUtils.asFullyQualified(annotation.getType());
-                        if (annoFq != null && nonInheritedAnnotationTypes.stream().anyMatch(fqn -> fqn.equals(annoFq.getFullyQualifiedName()))) {
-                            acc.getParentAnnotationsByType().computeIfAbsent(classFqn, v -> new ArrayList<>()).add(annotation);
-                        }
-                    }
-                }
-                return cd;
-            }
-        };
-    }
-
-    @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        if (acc.getParentAnnotationsByType().isEmpty()) {
-            return TreeVisitor.noop();
-        }
-
-        return new RemoveAnnoVisitor(acc.getParentAnnotationsByType());
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return new RemoveAnnoVisitor();
     }
 
     public static class RemoveAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
-        protected final Map<String, List<J.Annotation>> parentAnnotationsByType;
-
-        public RemoveAnnoVisitor(Map<String, List<J.Annotation>> parentAnnotationsByType) {
-            this.parentAnnotationsByType = parentAnnotationsByType;
-        }
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -129,18 +92,16 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
             JavaType.FullyQualified currentFq = cd.getType();
 
             // Collect the names of all super classes and interfaces.
-            Set<String> parentTypes = new HashSet<>();
+            Set<JavaType.FullyQualified> parentTypes = new HashSet<>();
             while (currentFq != null) {
                 currentFq = currentFq.getSupertype();
                 if (currentFq != null) {
                     if (currentFq.getFullyQualifiedName().equals("java.lang.Object")
-                            || parentTypes.contains(currentFq.getFullyQualifiedName())) {
+                            || parentTypes.contains(currentFq)) {
                         break;
                     }
-                    parentTypes.add(currentFq.getFullyQualifiedName());
-                    for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
-                        parentTypes.add(i.getFullyQualifiedName());
-                    }
+                    parentTypes.add(currentFq);
+                    parentTypes.addAll(currentFq.getInterfaces());
                 }
             }
 
@@ -150,11 +111,10 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
                     // Is there any parent type
                     .filter(ca -> parentTypes.stream()
                             // That has candidate annotations
-                            .map(parentAnnotationsByType::get)
-                            .filter(Objects::nonNull)
+                            .map(JavaType.FullyQualified::getAnnotations)
                             .flatMap(List::stream)
                             // Matching annotations in the current class?
-                            .anyMatch(pa -> ca.getType() != null && ca.getType().equals(pa.getType())))
+                            .anyMatch(pa -> ca.getType() != null && ca.getType().equals(pa)))
                     .filter(atr -> processAnnotationBeforeRemoval(finalCd, atr, ctx))
                     .toList();
 
@@ -184,10 +144,5 @@ public class RemoveInheritedAnnotations extends ScanningRecipe<RemoveInheritedAn
                 ExecutionContext ctx) {
             return true;
         }
-    }
-
-    @Data
-    protected static class Accumulator {
-        final Map<String, List<J.Annotation>> parentAnnotationsByType = new HashMap<>();
     }
 }

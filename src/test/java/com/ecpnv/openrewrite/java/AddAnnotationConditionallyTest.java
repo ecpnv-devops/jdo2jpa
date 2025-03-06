@@ -88,7 +88,6 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     void addLobForClass() {
         rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "CLASS")),
                 //language=java
-                //language=java
                 java(
                         """
                                 import javax.jdo.annotations.Column;
@@ -247,6 +246,26 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 import javax.persistence.Lob;
                                 
                                 @Column(length = Notes.MAX_LEN)
+                                @Lob
+                                public @interface Notes {
+                                    int MAX_LEN = 4000;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void noChangeWhenTargetAlreadyExist() {
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "CLASS")),
+                //language=java
+                java(
+                        """
+                                import javax.persistence.Column;
+                                import javax.persistence.Lob;
+                                
+                                @Column(jdbcType = "CLOB", sqlType = "LONGVARCHAR")
                                 @Lob
                                 public @interface Notes {
                                     int MAX_LEN = 4000;
