@@ -3,6 +3,7 @@ package com.ecpnv.openrewrite.java;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -125,16 +127,9 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                     while (currentFq != null) {
                         JavaType.FullyQualified supertype = currentFq.getSupertype();
                         for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
-                            // When copyToBaseClassOnly == true, then only register class when it has the given annotation
-                            if (!copyToBaseClassOnly || i.getAnnotations().stream()
-                                    .anyMatch(a -> annotationType.equals(a.getFullyQualifiedName()))) {
-                                acc.childrenByParent.computeIfAbsent(i, v -> new HashSet<>()).add(currentFq);
-                            }
+                            acc.childrenByParent.computeIfAbsent(i, v -> new HashSet<>()).add(currentFq);
                         }
-                        if (supertype != null && !"java.lang.Object".equals(supertype.getFullyQualifiedName())
-                                // When copyToBaseClassOnly == true, then only register class when it has the given annotation
-                                && (!copyToBaseClassOnly || supertype.getAnnotations().stream()
-                                .anyMatch(a -> annotationType.equals(a.getFullyQualifiedName())))) {
+                        if (supertype != null && !"java.lang.Object".equals(supertype.getFullyQualifiedName())) {
                             acc.childrenByParent.computeIfAbsent(supertype, v -> new HashSet<>()).add(currentFq);
                         }
                         currentFq = supertype;
@@ -157,7 +152,11 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                 JavaType.FullyQualified currentFq = cd.getType();
                 if (currentFq != null && acc.childrenByParent.containsKey(currentFq)
                         // When copyToBaseClassOnly == true then current class should be the base class for given annotation
-                        && (!copyToBaseClassOnly || currentFq.getSupertype() == null || !acc.childrenByParent.containsKey(currentFq.getSupertype()))) {
+                        && (!copyToBaseClassOnly || currentFq.getSupertype() == null || !acc.childrenByParent.containsKey(currentFq.getSupertype()))
+                        // When copyToBaseClassOnly == true, then only process class when it has the given annotation
+                        && (!copyToBaseClassOnly || cd.getLeadingAnnotations().stream()
+                        .anyMatch(a -> annotationType.equals(TypeUtils.asFullyQualified(a.getType()).getFullyQualifiedName())))
+                ) {
                     // Match every annotation of this class with the specified type
                     var curAnnos = new ArrayList<>(cd.getLeadingAnnotations());
                     var newAnnos = RewriteUtils.findLeadingAnnotations(cd, annotationType).stream()
@@ -167,6 +166,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                                     // Filter annotations in the child
                                     acc.childrenByParent.get(currentFq).stream()
                                             .map(acc.annotationsByType::get)
+                                            .filter(Objects::nonNull)
                                             .flatMap(Set::stream)
                                             // That have a value in the specified attribute
                                             .map(a -> RewriteUtils.findArgumentAssignment(a, attributeToCopyToParent))
@@ -174,15 +174,31 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                                             .map(Optional::get)
                                             // Use the first found assignment
                                             .findFirst()
-                                            .filter(assignmentOfChild -> !ac.getArguments().contains(assignmentOfChild))
+                                            .filter(assignmentOfChild -> ac.getArguments() == null || !ac.getArguments().contains(assignmentOfChild))
                                             // Update current (parent) annotation with the value found in one of the children
                                             .map(assignmentOfChild -> {
-                                                curAnnos.remove(ac);
-                                                var newArg = ac.getArguments();
-                                                RewriteUtils.findArgumentAssignment(ac, attributeToCopyToParent)
-                                                        .ifPresent(newArg::remove);
-                                                newArg.add(assignmentOfChild);
-                                                return ac.withArguments(newArg);
+                                                List<Expression> newArg = new ArrayList<>();
+                                                // Only if current has no arguments
+                                                boolean add = ac.getArguments() == null;
+                                                if (!add) {
+                                                    newArg.addAll(ac.getArguments());
+                                                    var argIfAny = RewriteUtils.findArgumentAssignment(ac, attributeToCopyToParent);
+                                                    // Or has different argument
+                                                    if (argIfAny.filter(assignment -> !assignment.getAssignment()
+                                                            .equals(assignmentOfChild.getAssignment())).isPresent()) {
+                                                        newArg.remove(argIfAny.get());
+                                                        add = true;
+                                                    } else if (!argIfAny.isPresent()) {
+                                                        // Or doesn't have this argument
+                                                        add = true;
+                                                    }
+                                                }
+                                                if (add) {
+                                                    curAnnos.remove(ac);
+                                                    newArg.add(assignmentOfChild);
+                                                    return ac.withArguments(newArg);
+                                                }
+                                                return null;
                                             })
                                             .orElse(null)
                             )
