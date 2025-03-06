@@ -243,7 +243,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL);
-                maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME);
+                maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
