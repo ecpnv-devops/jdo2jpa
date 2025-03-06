@@ -87,7 +87,9 @@ type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap2
 displayName: Wrap recipes with parameters to maintain execution order
 recipeList:
-  - com.ecpnv.openrewrite.jdo2jpa.ExtendWithAbstractEntityForPersistenceCapableAnnotation:
+  - com.ecpnv.openrewrite.java.ExtendWithClassForAnnotationConditionally:
+      annotationPattern: '@javax.jdo.annotations.PersistenceCapable'
+      annotationCondition: 'identityType = IdentityType.DATASTORE'
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@javax.jdo.annotations.DatastoreIdentity'

@@ -334,7 +334,7 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.PersistenceCapable;
                                 import javax.jdo.annotations.Index;
                                 
-                                @PersistenceCapable(schema = "schemaName")
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
                                 @Index(name = "Person__name__IDX", members = {"firstName", "lastName"})
                                 @Index(name = "Person__email__IDX", members = {"email"})
                                 public class SomeEntity {
@@ -393,7 +393,7 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Indices;
                                 import javax.jdo.annotations.Index;
                                 
-                                @PersistenceCapable(schema = "schemaName")
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
                                 @Indices({
                                   @Index(name = "Person__name__IDX", members = {"firstName", "lastName"}),
                                   @Index(name = "Person__email__IDX", members = {"email"}),

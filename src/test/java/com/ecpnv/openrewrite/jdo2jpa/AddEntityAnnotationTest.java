@@ -58,9 +58,10 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                 java(
                         """
                                 import java.util.List;
+                                import javax.jdo.annotations.IdentityType;
                                 import javax.jdo.annotations.PersistenceCapable;
                                 
-                                @PersistenceCapable
+                                @PersistenceCapable(identityType = IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
@@ -69,10 +70,9 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 
+                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.Entity;
                                 import javax.persistence.Table;
-                                
-                                import org.estatio.base.prod.dom.EntityAbstract;
                                 
                                 @Entity
                                 @Table
@@ -103,7 +103,8 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                                 
                                 @PersistenceCapable(
                                         schema = "schemaName", 
-                                        table = "tableName")
+                                        table = "tableName",
+                                        identityType = IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
@@ -143,7 +144,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 
-                                @javax.jdo.annotations.PersistenceCapable
+                                @javax.jdo.annotations.PersistenceCapable(identityType = IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;

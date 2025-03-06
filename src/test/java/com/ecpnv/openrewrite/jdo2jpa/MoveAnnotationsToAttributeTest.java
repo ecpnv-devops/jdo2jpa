@@ -322,7 +322,7 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Uniques;
                                 import javax.jdo.annotations.Unique;
                                 
-                                @PersistenceCapable(schema = "schemaName")
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
                                 @Uniques({
                                         @Unique(name = "Person__name__UNQ", members = {"firstName", "lastName"}),
                                         @Unique(name = "Person__email__UNQ", members = {"email"})
