@@ -1,4 +1,4 @@
-package com.ecpnv.openrewrite.jdo2jpa;
+package com.ecpnv.openrewrite.java;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,10 +17,12 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.FindAnnotations;
@@ -33,6 +35,7 @@ import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
@@ -45,28 +48,25 @@ import static org.openrewrite.java.tree.TypeUtils.toFullyQualifiedName;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * A recipe that removes unused imports to a certain extent.
- * Based on {@link org.openrewrite.java.RemoveUnusedImports} and
- * added scanning of usage of classes in {@link org.springframework.context.annotation.Import} annotations.
- * Because of the complexity of scanning usage of classes in enum type classes these enum classes are not processed.
- * There may be several other edge-cases where scanning of usage in a class description is incomplete and will result in
- * removal of imports of classes that are being used.
+ * Based on {@link org.openrewrite.java.RemoveUnusedImports} and added deep scanning of usage of classes in annotations and methods.
  * <p>
  * This recipe will remove any imports for types that are not referenced within the compilation unit. This recipe
  * is aware of the import layout style and will correctly handle unfolding of wildcard imports if the import counts
  * drop below the configured values.
  * <p>
- * Because unit testing requires full qualified names testing using simple class name in spring imports cannot be fully
+ * Because unit testing requires full qualified names testing using simple class name in annotation imports cannot be fully
  * tested.
  *
  * @author Wouter Veltmaat @ Open Circle Solutions
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class RemovedUnusedImportsSpringSupport extends Recipe {
+public class RemovedUnusedImports extends Recipe {
 
-    public static final String SPRING_IMPORT_ANNOTATION = "org.springframework.context.annotation.Import";
     public static final String CLASS = ".class";
     public static final String COMMENT_SINGLE_LINE = "//";
 
@@ -94,7 +94,7 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new NoMissingTypes(), new RemovedUnusedImportsSpringSupport.RemoveUnusedImportsVisitor());
+        return Preconditions.check(new NoMissingTypes(), new RemovedUnusedImports.RemoveUnusedImportsVisitor());
     }
 
     public static class RemoveUnusedImportsVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -149,42 +149,45 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
             boolean changed = false;
 
             // the key is a list because a star import may get replaced with multiple unfolded imports
-            List<RemovedUnusedImportsSpringSupport.ImportUsage> importUsage = new ArrayList<>(cu.getPadding().getImports().size());
+            List<RemovedUnusedImports.ImportUsage> importUsage = new ArrayList<>(cu.getPadding().getImports().size());
             for (JRightPadded<J.Import> anImport : cu.getPadding().getImports()) {
                 // assume initially that all imports are unused
-                RemovedUnusedImportsSpringSupport.ImportUsage singleUsage = new RemovedUnusedImportsSpringSupport.ImportUsage();
+                RemovedUnusedImports.ImportUsage singleUsage = new RemovedUnusedImports.ImportUsage();
                 singleUsage.imports.add(anImport);
                 importUsage.add(singleUsage);
             }
 
-            // Collects all spring imports and translates them to full name qualifiers using the imports collection
-            final Set<String> springImports = new HashSet<>();
-            final Set<J.Annotation> annotations = FindAnnotations.find(cu, SPRING_IMPORT_ANNOTATION);
+            // Collects all annotation imports and translates them to full name qualifiers using the imports collection
+            final Set<String> annotationImports = new HashSet<>();
+            final Set<J.Annotation> annotations = findAllAnnotations(cu);
+
             if (!annotations.isEmpty()) {
                 for (J.Annotation annotation : annotations) {
-                    for (Expression expression : annotation.getArguments()) {
-                        if (expression instanceof J.NewArray newArray) {
-                            for (Expression initializer : newArray.getInitializer()) {
-                                String className;
-                                if (initializer instanceof J.FieldAccess fieldAccess) {
-                                    className = fieldAccess.getTarget().print(getCursor());
-                                } else {
-                                    className = stripClass(initializer.print(getCursor()));
-                                }
-                                final String member = JavaType.ShallowClass.build(className).getClassName();
-                                final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
-                                if (!packageName.isEmpty()) {
-                                    try {
-                                        final J.Import importToAdd = new J.Import(randomId(),
-                                                Space.EMPTY,
-                                                Markers.EMPTY,
-                                                new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
-                                                TypeTree.build(packageName + "." + member).withPrefix(Space.SINGLE_SPACE),
-                                                null);
+                    if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
+                        for (Expression expression : annotation.getArguments()) {
+                            if (expression instanceof J.NewArray newArray) {
+                                for (Expression initializer : newArray.getInitializer()) {
+                                    String className;
+                                    if (initializer instanceof J.FieldAccess fieldAccess) {
+                                        className = fieldAccess.getTarget().print(getCursor());
+                                    } else {
+                                        className = stripClass(initializer.print(getCursor()));
+                                    }
+                                    final String member = JavaType.ShallowClass.build(className).getClassName();
+                                    final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
+                                    if (!packageName.isEmpty()) {
+                                        try {
+                                            final J.Import importToAdd = new J.Import(randomId(),
+                                                    Space.EMPTY,
+                                                    Markers.EMPTY,
+                                                    new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
+                                                    TypeTree.build(packageName + "." + member).withPrefix(Space.SINGLE_SPACE),
+                                                    null);
 
-                                        springImports.add(importToAdd.toString());
-                                    } catch (Exception e) {
-                                        // keep calm and move on
+                                            annotationImports.add(importToAdd.toString());
+                                        } catch (Exception e) {
+                                            // keep calm and move on
+                                        }
                                     }
                                 }
                             }
@@ -193,20 +196,11 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                 }
             }
 
-            /**
-             * For enums there are several ways you can use imported classes.
-             * For now processing that and make a list of used imports it too much work.
-             * So removal of imports for enum classes is skipped.
-             */
-            // skill removal of imports for all enums
-            boolean isEnum = cu.getClasses().stream()
-                    .anyMatch(aClass -> aClass.getType().getKind().equals(JavaType.FullyQualified.Kind.Enum));
-
             // whenever an import statement is found to be used and not already in use it should be marked true
             Set<String> checkedImports = new HashSet<>();
             Set<String> usedWildcardImports = new HashSet<>();
             Set<String> usedStaticWildcardImports = new HashSet<>();
-            for (RemovedUnusedImportsSpringSupport.ImportUsage anImport : importUsage) {
+            for (RemovedUnusedImports.ImportUsage anImport : importUsage) {
                 J.Import elem = anImport.imports.get(0).getElement();
                 J.FieldAccess qualid = elem.getQualid();
                 J.Identifier name = qualid.getName();
@@ -214,9 +208,8 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                 if (checkedImports.contains(elem.toString())) {
                     anImport.used = false;
                     changed = true;
-                } else if (springImports.contains(elem.toString()) || isEnum) {
+                } else if (annotationImports.contains(elem.toString())) {
                     anImport.used = true;
-                    changed = false;
                 } else if (elem.isStatic()) {
                     String outerType = elem.getTypeName();
                     SortedSet<String> methodsAndFields = methodsAndFieldsByTypeName.get(outerType);
@@ -292,7 +285,11 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
                     Set<JavaType.FullyQualified> combinedTypes = Stream.concat(types.stream(), typesByFullyQualifiedClassPath.stream())
                             .collect(Collectors.toSet());
                     JavaType.FullyQualified qualidType = TypeUtils.asFullyQualified(elem.getQualid().getType());
-                    if (combinedTypes.isEmpty() || sourcePackage.equals(elem.getPackageName()) && qualidType != null && !qualidType.getFullyQualifiedName().contains("$")) {
+
+                    // look into methods and check if a qualifier is used
+                    if (cu.getClasses().stream().anyMatch(classDeclaration -> scanStatement(classDeclaration, qualid.getSimpleName()))) {
+                        anImport.used = true;
+                    } else if (combinedTypes.isEmpty() || sourcePackage.equals(elem.getPackageName()) && qualidType != null && !qualidType.getFullyQualifiedName().contains("$")) {
                         anImport.used = false;
                         changed = true;
                     } else if ("*".equals(elem.getQualid().getSimpleName())) {
@@ -333,7 +330,7 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
 
             // Do not use direct imports that are imported by a wildcard import
             Set<String> ambiguousStaticImportNames = getAmbiguousStaticImportNames(cu);
-            for (RemovedUnusedImportsSpringSupport.ImportUsage anImport : importUsage) {
+            for (RemovedUnusedImports.ImportUsage anImport : importUsage) {
                 J.Import elem = anImport.imports.get(0).getElement();
                 if (!"*".equals(elem.getQualid().getSimpleName())) {
                     if (elem.isStatic()) {
@@ -354,7 +351,7 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
             if (changed) {
                 List<JRightPadded<J.Import>> imports = new ArrayList<>();
                 Space lastUnusedImportSpace = null;
-                for (RemovedUnusedImportsSpringSupport.ImportUsage anImportGroup : importUsage) {
+                for (RemovedUnusedImports.ImportUsage anImportGroup : importUsage) {
                     if (anImportGroup.used) {
                         List<JRightPadded<J.Import>> importGroup = anImportGroup.imports;
                         for (int i = 0; i < importGroup.size(); i++) {
@@ -378,6 +375,80 @@ public class RemovedUnusedImportsSpringSupport extends Recipe {
             }
 
             return cu;
+        }
+
+        private static Set<J.Annotation> findAllAnnotations(J.CompilationUnit cu) {
+            Set<J.Annotation> annotations = new HashSet<>();
+            cu.getClasses().stream()
+                    .map(cl -> cl.getLeadingAnnotations())
+                    .flatMap(List::stream)
+                    .forEach(annotations::add);
+            cu.getTypesInUse().getTypesInUse().stream().forEach(type -> {
+                if (type instanceof JavaType.Class aClass && aClass.getKind().equals(JavaType.FullyQualified.Kind.Annotation)) {
+                    FindAnnotations.find(cu, aClass.getFullyQualifiedName()).forEach(annotations::add);
+                }
+            });
+            return annotations;
+        }
+
+        // There may be more statement types that needs to be scanned
+        public static boolean scanStatement(@Nullable Statement statement, String simpleName) {
+            if (statement == null || StringUtils.isBlank(simpleName)) {
+                return false;
+            }
+
+            switch (statement) {
+                case J.ClassDeclaration classDeclaration -> {
+                    return scanStatement(classDeclaration.getBody(), simpleName);
+                }
+                case J.Block jBlock -> {
+                    return scanStatements(jBlock.getStatements(), simpleName);
+                }
+                case J.Switch switchStatement -> {
+                    return scanStatements(switchStatement.getCases().getStatements(), simpleName);
+                }
+                case J.MethodInvocation methodInvocation when methodInvocation.getSelect() instanceof J.MethodInvocation invocation -> {
+                    if (invocation != null && CollectionUtils.isNotEmpty(invocation.getArguments())) {
+                        return invocation.getArguments().stream().anyMatch(arg -> {
+                            if (arg instanceof J.Lambda lambda && lambda.getBody() instanceof J.Block block) {
+                                return scanStatements(block.getStatements(), simpleName);
+                            }
+                            return false;
+                        });
+                    }
+                    return false;
+                }
+                case J.Try jTry -> {
+                    return scanStatements(jTry.getBody().getStatements(), simpleName);
+                }
+                case J.Lambda lambda when lambda.getBody() instanceof J.Block block -> {
+                    return scanStatements(block.getStatements(), simpleName);
+                }
+                case J.VariableDeclarations variableDeclarations -> {
+                    if (variableDeclarations.getTypeExpression() instanceof J.Identifier identifier) {
+                        return simpleName.equals(identifier.getSimpleName());
+                    } else if (variableDeclarations.getTypeExpression() instanceof J.FieldAccess access) {
+                        return simpleName.equals(access.getSimpleName());
+                    }
+                }
+                case J.Return returnStatement when returnStatement.getExpression() instanceof J.MethodInvocation methodInvocation -> {
+                    return scanStatement(methodInvocation, simpleName);
+                }
+                case J.MethodDeclaration methodDeclaration -> {
+                    if (methodDeclaration.getBody() instanceof J.Block block) {
+                        return scanStatement(block, simpleName);
+                    }
+                    return false;
+                }
+                default -> {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public static boolean scanStatements(List<Statement> statements, String simpleName) {
+            return statements.stream().anyMatch(statement -> scanStatement(statement, simpleName));
         }
 
         public static String stripClass(final String string) {

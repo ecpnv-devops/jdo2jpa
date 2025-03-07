@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,12 +21,16 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -257,6 +259,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                 maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);
+                doAfterVisit(new AddImport<>(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, null, true));
 
                 var leadAnnosResult = ListUtils.concat(leadAnnos, ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
                         .javaParser(JavaParserFactory.create(ctx))
@@ -276,6 +279,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                                     .getLeadingAnnotations().get(0))
                             .orElse(null));
                 }
+
                 return maybeAutoFormat(multiVariableOrg, multiVariable.withLeadingAnnotations(leadAnnosResult), ctx);
             }
             return multiVariable;

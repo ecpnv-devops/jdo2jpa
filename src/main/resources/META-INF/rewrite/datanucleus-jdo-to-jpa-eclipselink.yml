@@ -520,8 +520,8 @@ tags:
   - cleanup
 recipeList:
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
-      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs
-  - com.ecpnv.openrewrite.jdo2jpa.RemovedUnusedImportsSpringSupport
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,javax.persistence
+  - com.ecpnv.openrewrite.java.RemovedUnusedImports
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
 ---
@@ -542,7 +542,9 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@.*\bEntity\b.*'
       annotationType: javax.persistence.EntityListeners
-      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
+# the old causeway name 'iris' is still being used
+      annotationTemplate: '@EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)'
+#      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
       declarationType: CLASS
   # Remove the properties with id one of [datanucleusVersionLong, datanucleusVersionTimestamp, datanucleusId]
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:
