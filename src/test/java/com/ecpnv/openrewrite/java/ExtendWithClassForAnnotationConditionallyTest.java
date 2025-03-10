@@ -21,6 +21,7 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                                 "identityType = IdentityType.DATASTORE",
                                 "org.estatio.base.prod.dom.EntityAbstract",
                                 "jdo2jpa-abstract")),
+                // language=java
                 java(
                         """
                                 import java.util.List;
@@ -71,6 +72,7 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                                 "identityType = IdentityType.DATASTORE",
                                 "org.estatio.base.prod.dom.EntityAbstract",
                                 "jdo2jpa-abstract")),
+                // language=java
                 java(
                         """
                                 import javax.jdo.annotations.PersistenceCapable;
@@ -94,6 +96,7 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                                 "identityType = IdentityType.DATASTORE",
                                 "org.estatio.base.prod.dom.EntityAbstract",
                                 "jdo2jpa-abstract")),
+                // language=java
                 java(
                         """
                                 import javax.jdo.annotations.PersistenceCapable;
