@@ -13,6 +13,7 @@ class AddCommentToPersistenceCapableWithIdentityTypeApplicationTest extends Base
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new AddCommentToPersistenceCapableWithIdentityTypeApplication()),
+                //language=java
                 java(
                         """
                                 import javax.jdo.annotations.PersistenceCapable;
@@ -44,6 +45,7 @@ class AddCommentToPersistenceCapableWithIdentityTypeApplicationTest extends Base
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new AddCommentToPersistenceCapableWithIdentityTypeApplication()),
+                //language=java
                 java(
                         """
                                 import javax.jdo.annotations.PersistenceCapable;

@@ -37,6 +37,7 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
   - org.openrewrite.java.ReplaceAnnotation:
@@ -511,6 +512,27 @@ recipeList:
       targetAnnotationType: javax.persistence.NamedNativeQueries
       targetAttributeName: value
       skipWhenNoTargetAndAllOnClass: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
+displayName: Migrate JDO > JPA-v2.x for @Id
+description: Migrate @Queries and @Query.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - identity
+preconditions:
+  - org.openrewrite.java.search.DoesNotUseType:
+      fullyQualifiedTypeName: org.estatio.base.prod.dom.EntityAbstract
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.jdo.annotations.PrimaryKey
+      newFullyQualifiedTypeName: javax.persistence.Id
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
