@@ -1,14 +1,12 @@
-package com.ecpnv.openrewrite.jdo2jpa;
+package com.ecpnv.openrewrite.java;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static com.ecpnv.openrewrite.jdo2jpa.Constants.Jdo;
-
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,13 +21,17 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
- * A recipe that extends class with an {@link javax.jdo.annotations.PersistenceCapable} annotation with an empty
- * identityType or {@link javax.jdo.annotations.IdentityType#DATASTORE} with a given class name.
+ * A recipe that extends class with an annotation pattern with optional conditions.
  * <p>
+ * The 'annotationPattern' is the full class name of the annotation class it looks for.
+ * The 'annotationCondition' is the regex value that checks if any of the annotation arguments match with. It cannot
+ * handle default values of annotation arguments since openrewrite doesn't include these in the LST.
  * The 'extendsFullClassName' is the full class name of the extension class of the to be extended class.
  * The 'libraryOfAbstractClassName' can be used to host the (abstract) extending class when that class cannot be
  * found on the regular or resource classpath. The library file containing the (abstract) extending class should
@@ -43,9 +45,19 @@ import lombok.Value;
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Recipe {
+public class ExtendWithClassForAnnotationConditionally extends Recipe {
 
-    private static final String SOURCE_ANNOTATION_TYPE = "@" + Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL;
+    @Option(displayName = "Annotation pattern",
+            description = "An annotation pattern, expressed as a method pattern.",
+            example = "@javax.jdo.annotations.PersistenceCapable")
+    @NonNull
+    String annotationPattern;
+
+    @Option(displayName = "Annotation condition",
+            description = "An annotation condition, expressed as regex",
+            example = "identityType = IdentityType.DATASTORE")
+    @Nullable
+    String annotationCondition;
 
     @Option(displayName = "Full extends class name",
             description = "The fully qualified name of the extends class.",
@@ -70,9 +82,13 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
     }
 
     @JsonCreator
-    public ExtendWithAbstractEntityForPersistenceCapableAnnotation(
+    public ExtendWithClassForAnnotationConditionally(
+            @NonNull @JsonProperty("annotationPattern") String annotationPattern,
+            @Nullable @JsonProperty("annotationCondition") String annotationCondition,
             @NonNull @JsonProperty("extendsFullClassName") String extendsFullClassName,
             @Nullable @JsonProperty("libraryOfAbstractClassName") String libraryOfAbstractClassName) {
+        this.annotationPattern = annotationPattern;
+        this.annotationCondition = annotationCondition;
         this.extendsFullClassName = extendsFullClassName;
         this.libraryOfAbstractClassName = libraryOfAbstractClassName;
     }
@@ -85,19 +101,11 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
             public J.ClassDeclaration visitClassDeclaration(
                     J.ClassDeclaration classDecl,
                     ExecutionContext ctx) {
-
-                final Set<J.Annotation> sourceAnnotations = FindAnnotations.find(classDecl, SOURCE_ANNOTATION_TYPE);
+                final Set<J.Annotation> sourceAnnotations = FindAnnotations.find(classDecl, annotationPattern);
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getExtends() == null && !sourceAnnotations.isEmpty()) {
                     final J.Annotation sourceAnnotation = sourceAnnotations.iterator().next();
-                    final String simpleName = RewriteUtils.findArgumentAssignment(sourceAnnotation, Constants.Jdo.IDENTITY_TYPE_ANNOTATION_NAME)
-                            .map(J.Assignment::getAssignment)
-                            .filter(J.FieldAccess.class::isInstance)
-                            .map(J.FieldAccess.class::cast)
-                            .map(J.FieldAccess::getSimpleName)
-                            .orElse(null);
-
-                    if (StringUtils.isBlank(simpleName) || Constants.Jdo.IDENTITY_TYPE_DATASTORE.equals(simpleName)) {
+                    if (checkAnnotationForCondition(sourceAnnotation, annotationCondition)) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
 
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
@@ -116,6 +124,17 @@ public class ExtendWithAbstractEntityForPersistenceCapableAnnotation extends Rec
 
                 return cd;
             }
+
+            private boolean checkAnnotationForCondition(J.Annotation annotation, String annotationCondition) {
+                if (StringUtils.isBlank(annotationCondition) || CollectionUtils.isEmpty(annotation.getArguments())) {
+                    return true;
+                }
+
+                Pattern pattern = Pattern.compile(annotationCondition);
+                return annotation.getArguments().stream().anyMatch(argument -> pattern.matcher(argument.toString()).matches());
+            }
         };
+
+
     }
 }

@@ -17,6 +17,7 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveAnnotation;
@@ -247,6 +248,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
+                doAfterVisit(new AddImport<>(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, null, true));
 
                 // Add @OneToMany
                 multiVariable = JavaTemplate.builder(template.toString())
