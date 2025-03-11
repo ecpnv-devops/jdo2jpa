@@ -46,7 +46,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
-displayName: Filter on spring configurations and entity classes
+displayName: Filter on spring configurations, entity classes and some edge-cases
 recipeList:
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.springframework.context.annotation.Configuration
@@ -54,9 +54,20 @@ recipeList:
       fullyQualifiedTypeName: javax.jdo.annotations.PersistenceCapable
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: javax.persistence.Entity
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.springframework.stereotype.Service
   - org.openrewrite.text.Find:
       find: "@interface"
       filePattern: "**/*.java"
+# isis specific filters
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.isis.applib.annotation.DomainObject
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.isis.applib.annotation.Property
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.isis.applib.annotation.Collection
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.isis.applib.annotation.Action
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable

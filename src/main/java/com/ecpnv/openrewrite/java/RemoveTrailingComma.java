@@ -62,28 +62,30 @@ public class RemoveTrailingComma extends Recipe {
         }
 
         private <T extends J> JContainer<T> handleTrailingComma(JContainer<T> container) {
-            List<JRightPadded<T>> rps = container.getPadding().getElements();
+            if (container != null && container.getPadding() != null) {
+                List<JRightPadded<T>> rps = container.getPadding().getElements();
 
-            if (!rps.isEmpty()) {
-                JRightPadded<T> last = rps.get(rps.size() - 1);
-                JRightPadded<T> updated = last;
-                Markers markers = last.getMarkers();
-                Optional<TrailingComma> maybeTrailingComma = markers.findFirst(TrailingComma.class);
+                if (!rps.isEmpty()) {
+                    JRightPadded<T> last = rps.get(rps.size() - 1);
+                    JRightPadded<T> updated = last;
+                    Markers markers = last.getMarkers();
+                    Optional<TrailingComma> maybeTrailingComma = markers.findFirst(TrailingComma.class);
 
-                if (!useTrailingComma && maybeTrailingComma.isPresent()) {
-                    markers = markers.removeByType(TrailingComma.class);
-                    updated = last.withMarkers(markers).withAfter(merge(last.getAfter(), maybeTrailingComma.get().getSuffix()));
-                }
+                    if (!useTrailingComma && maybeTrailingComma.isPresent()) {
+                        markers = markers.removeByType(TrailingComma.class);
+                        updated = last.withMarkers(markers).withAfter(merge(last.getAfter(), maybeTrailingComma.get().getSuffix()));
+                    }
 
-                if (useTrailingComma && !maybeTrailingComma.isPresent()) {
-                    markers = markers.add(new TrailingComma(UUID.randomUUID(), last.getAfter()));
-                    updated = last.withMarkers(markers).withAfter(Space.EMPTY);
-                }
+                    if (useTrailingComma && !maybeTrailingComma.isPresent()) {
+                        markers = markers.add(new TrailingComma(UUID.randomUUID(), last.getAfter()));
+                        updated = last.withMarkers(markers).withAfter(Space.EMPTY);
+                    }
 
-                if (updated != last) {
-                    JRightPadded<T> finalUpdated = updated;
-                    rps = ListUtils.mapLast(rps, x -> finalUpdated);
-                    container = container.getPadding().withElements(rps);
+                    if (updated != last) {
+                        JRightPadded<T> finalUpdated = updated;
+                        rps = ListUtils.mapLast(rps, x -> finalUpdated);
+                        container = container.getPadding().withElements(rps);
+                    }
                 }
             }
 
