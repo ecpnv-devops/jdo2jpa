@@ -573,11 +573,11 @@ tags:
 recipeList:
   # Causeway uses the CausewayEntityListener to support JPA lifecycles
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@.*\bEntity\b.*'
+      matchByRegularExpression: '@.*\bEntity'
       annotationType: javax.persistence.EntityListeners
-# the old causeway name 'iris' is still being used
+      # the old causeway name 'iris' is still being used
       annotationTemplate: '@EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)'
-#      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
+      #      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
       declarationType: CLASS
   # Remove the properties with id one of [datanucleusVersionLong, datanucleusVersionTimestamp, datanucleusId]
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:

@@ -155,10 +155,11 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                         && (!copyToBaseClassOnly || currentFq.getSupertype() == null || !acc.childrenByParent.containsKey(currentFq.getSupertype()))
                         // When copyToBaseClassOnly == true, then only process class when it has the given annotation
                         && (!copyToBaseClassOnly || cd.getLeadingAnnotations().stream()
-                        .anyMatch(a -> {
-                            JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(a.getType());
-                            return fullyQualified != null && Objects.equals(annotationType, fullyQualified.getFullyQualifiedName());
-                        }))
+                        .map(J.Annotation::getType)
+                        .map(TypeUtils::asFullyQualified)
+                        .filter(Objects::nonNull)
+                        .map(JavaType.FullyQualified::getFullyQualifiedName)
+                        .anyMatch(annotationType::equals))
                 ) {
                     // Match every annotation of this class with the specified type
                     var curAnnos = new ArrayList<>(cd.getLeadingAnnotations());
