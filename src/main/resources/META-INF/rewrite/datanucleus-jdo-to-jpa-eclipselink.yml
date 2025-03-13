@@ -59,6 +59,9 @@ recipeList:
   - org.openrewrite.text.Find:
       find: "@interface"
       filePattern: "**/*.java"
+  - org.openrewrite.text.Find:
+      find: "javax.jdo.annotations"
+      filePattern: "**/*.java"
 # isis specific filters
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.apache.isis.applib.annotation.DomainObject
@@ -597,3 +600,39 @@ recipeList:
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:
       matchByRegularExpression: '.*serviceAction(.|\s|\n)*objectType(.|\s|\n)*JdoMetamodelMenu(.|\s|\n)*'
       fileMatcher: '**/*.layout.xml'
+  # Replace Jdo modules with Jpa modules
+  # Note: that org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleusMixins has to be removed
+  #       manually as there is no Jpa alternative
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.executionlog.jdo.IsisModuleExtExecutionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.executionlog.jpa.IsisModuleExtExecutionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.commandlog.jdo.IsisModuleExtCommandLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.commandlog.jpa.IsisModuleExtCommandLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.IsisModuleExtSecmanPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.IsisModuleExtSecmanPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.util.RegexReplacer
+      newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.util.RegexReplacer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleus
+      newFullyQualifiedTypeName: org.apache.isis.persistence.jpa.eclipselink.IsisModulePersistenceJpaEclipselink
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.executionoutbox.jdo.IsisModuleExtExecutionOutboxPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.executionoutbox.jpa.IsisModuleExtExecutionOutboxPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jdo.IsisModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jpa.IsisModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.sessionlog.jdo.IsisModuleExtSessionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.sessionlog.jpa.IsisModuleExtSessionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jdo.IsisModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jpa.IsisModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.valuetypes.asciidoc.persistence.jdo.IsisModuleValAsciidocPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.valuetypes.asciidoc.persistence.jpa.IsisModuleValAsciidocPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jdo.TeardownFixtureJdoAbstract
+      newFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jpa.TeardownFixtureJpaAbstract
