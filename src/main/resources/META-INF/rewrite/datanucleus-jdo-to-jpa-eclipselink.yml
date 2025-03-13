@@ -59,6 +59,18 @@ recipeList:
   - org.openrewrite.text.Find:
       find: "@interface"
       filePattern: "**/*.java"
+  - org.openrewrite.text.Find:
+      find: "javax.jdo.annotations"
+      filePattern: "**/*.java"
+  # causeway specific filters
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.causeway.applib.annotation.DomainObject
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.causeway.applib.annotation.Property
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.causeway.applib.annotation.Collection
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.apache.causeway.applib.annotation.Action
 # isis specific filters
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.apache.isis.applib.annotation.DomainObject
@@ -553,7 +565,7 @@ tags:
   - cleanup
 recipeList:
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
-      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,javax.persistence
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value,javax.persistence
   - com.ecpnv.openrewrite.java.RemovedUnusedImports
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
@@ -570,6 +582,7 @@ tags:
   - java
   - javax
   - causeway
+  - isis
 recipeList:
   # Causeway uses the CausewayEntityListener to support JPA lifecycles
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
@@ -597,3 +610,84 @@ recipeList:
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:
       matchByRegularExpression: '.*serviceAction(.|\s|\n)*objectType(.|\s|\n)*JdoMetamodelMenu(.|\s|\n)*'
       fileMatcher: '**/*.layout.xml'
+  # Replace Jdo modules with Jpa modules with causeway naming instead of isis
+  # Note: that org.apache.causeway.persistence.jdo.datanucleus.CausewayModulePersistenceJdoDatanucleusMixins has to be removed
+  #       manually as there is no Jpa alternative
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.executionlog.jdo.CausewayModuleExtExecutionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.executionlog.jpa.CausewayModuleExtExecutionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.commandlog.jdo.CausewayModuleExtCommandLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.commandlog.jpa.CausewayModuleExtCommandLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jdo.CausewayModuleExtSecmanPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jpa.CausewayModuleExtSecmanPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jdo.util.RegexReplacer
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jpa.util.RegexReplacer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.persistence.jdo.datanucleus.CausewayModulePersistenceJdoDatanucleus
+      newFullyQualifiedTypeName: org.apache.causeway.persistence.jpa.eclipselink.CausewayModulePersistenceJpaEclipselink
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.persistence.jdo.applib.CausewayModulePersistenceJdoApplib
+      newFullyQualifiedTypeName: org.apache.causeway.persistence.jpa.applib.CausewayModulePersistenceJpaApplib
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.executionoutbox.jdo.CausewayModuleExtExecutionOutboxPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.executionoutbox.jpa.CausewayModuleExtExecutionOutboxPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.audittrail.jdo.CausewayModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.audittrail.jpa.CausewayModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.sessionlog.jdo.CausewayModuleExtSessionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.sessionlog.jpa.CausewayModuleExtSessionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.extensions.audittrail.jdo.CausewayModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.extensions.audittrail.jpa.CausewayModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.valuetypes.asciidoc.persistence.jdo.CausewayModuleValAsciidocPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.causeway.valuetypes.asciidoc.persistence.jpa.CausewayModuleValAsciidocPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.causeway.testing.fixtures.applib.teardown.jdo.TeardownFixtureJdoAbstract
+      newFullyQualifiedTypeName: org.apache.causeway.testing.fixtures.applib.teardown.jpa.TeardownFixtureJpaAbstract
+  # Replace Jdo modules with Jpa modules with isis naming instead of causeway
+  # Note: that org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleusMixins has to be removed
+  #       manually as there is no Jpa alternative
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.executionlog.jdo.IsisModuleExtExecutionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.executionlog.jpa.IsisModuleExtExecutionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.commandlog.jdo.IsisModuleExtCommandLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.commandlog.jpa.IsisModuleExtCommandLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.IsisModuleExtSecmanPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.IsisModuleExtSecmanPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.util.RegexReplacer
+      newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.util.RegexReplacer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleus
+      newFullyQualifiedTypeName: org.apache.isis.persistence.jpa.eclipselink.IsisModulePersistenceJpaEclipselink
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.persistence.jdo.applib.IsisModulePersistenceJdoApplib
+      newFullyQualifiedTypeName: org.apache.isis.persistence.jpa.applib.IsisModulePersistenceJpaApplib
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.executionoutbox.jdo.IsisModuleExtExecutionOutboxPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.executionoutbox.jpa.IsisModuleExtExecutionOutboxPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jdo.IsisModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jpa.IsisModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.sessionlog.jdo.IsisModuleExtSessionLogPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.sessionlog.jpa.IsisModuleExtSessionLogPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jdo.IsisModuleExtAuditTrailPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.extensions.audittrail.jpa.IsisModuleExtAuditTrailPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.valuetypes.asciidoc.persistence.jdo.IsisModuleValAsciidocPersistenceJdo
+      newFullyQualifiedTypeName: org.apache.isis.valuetypes.asciidoc.persistence.jpa.IsisModuleValAsciidocPersistenceJpa
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jdo.TeardownFixtureJdoAbstract
+      newFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jpa.TeardownFixtureJpaAbstract
+  # Remove all types because there are none in Causeway JPA
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@org.apache.causeway.persistence.jdo.applib.types..*'
