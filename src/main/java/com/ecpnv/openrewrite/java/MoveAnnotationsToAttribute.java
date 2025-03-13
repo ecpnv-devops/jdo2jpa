@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.ecpnv.openrewrite.util.JavaParserFactory;
-import com.ecpnv.openrewrite.util.RewriteUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,6 +24,9 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
+
+import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -162,6 +163,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 }
                 template.append("})");
                 // Imports when needed
+                maybeAddImport(sourceAnnotationType);
                 maybeAddImport(targetAnnotationType);
                 // Remove existing annotations
                 classDeclaration = new RemoveAnnotationVisitor(new AnnotationMatcher(sourceAnnotationType))
