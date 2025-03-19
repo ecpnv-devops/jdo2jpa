@@ -48,7 +48,7 @@ public class AddCausewayEntityListenerTest extends BaseRewriteTest {
                                 import javax.persistence.EntityListeners;
                                 
                                 @Entity
-                                @EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)
+                                @EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)
                                 public class SomeEntity {
                                 }
                                 """
