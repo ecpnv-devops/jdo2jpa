@@ -691,3 +691,5 @@ recipeList:
   # Remove all types because there are none in Causeway JPA
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@org.apache.causeway.persistence.jdo.applib.types..*'
+  - org.openrewrite.java.RemoveAnnotation:
+      annotationPattern: '@org.apache.isis.persistence.jdo.applib.types..*'
