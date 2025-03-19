@@ -163,11 +163,11 @@ public class AddMethodToVariableDeclarationConditionally extends Recipe {
                                         .map(p -> (J.VariableDeclarations) p)
                                         .map(p -> p.getTypeExpression().toString())
                                         .toList().equals(
-                                                s2.getParameters().stream()
-                                                        .filter(p -> p instanceof J.VariableDeclarations)
-                                                        .map(p -> (J.VariableDeclarations) p)
-                                                        .map(p -> p.getTypeExpression().toString())
-                                                        .toList())))
+                                        s2.getParameters().stream()
+                                                .filter(p -> p instanceof J.VariableDeclarations)
+                                                .map(p -> (J.VariableDeclarations) p)
+                                                .map(p -> p.getTypeExpression().toString())
+                                                .toList())))
                 ) {
                     classDecl = classDecl.withBody(newBody);
                 }
