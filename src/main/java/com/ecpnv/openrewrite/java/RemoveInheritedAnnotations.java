@@ -108,13 +108,14 @@ public class RemoveInheritedAnnotations extends Recipe {
             // Collect the annotations to remove
             J.ClassDeclaration finalCd = cd;
             List<J.Annotation> annotationsToRemove = cd.getLeadingAnnotations().stream()
+                    .filter(ca -> ca.getAnnotationType().getType() != null)
                     // Is there any parent type
                     .filter(ca -> parentTypes.stream()
                             // That has candidate annotations
                             .map(JavaType.FullyQualified::getAnnotations)
                             .flatMap(List::stream)
                             // Matching annotations in the current class?
-                            .anyMatch(pa -> ca.getType() != null && ca.getType().equals(pa)))
+                            .anyMatch(pa -> ca.getAnnotationType().getType().toString().equals(pa.getFullyQualifiedName())))
                     .filter(atr -> processAnnotationBeforeRemoval(finalCd, atr, ctx))
                     .toList();
 
