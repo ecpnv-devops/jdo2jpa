@@ -18,6 +18,7 @@ package com.ecpnv.openrewrite.java;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -31,18 +32,28 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddMethodToVariableDeclarationConditionally(
-                "@.*Persistent\\(.*mappedBy.*",
-                "*..* addTo$varNameC$($varGType$)",
-                "@Programmatic\npublic void addTo$varNameC$($varGType$ element) {\n" +
-                        "$varName$.add(element);\nelement.set$className$(this);\n}",
-                "org.apache.isis.applib.annotation.Programmatic"));
+        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices");
     }
 
+    /**
+     * Validates the addition of a method to a variable declaration in a Java class if specific conditions are met.
+     * <p>
+     * This test ensures that:
+     * - A new method `addToPersons` is correctly introduced into a target class (`SomeEntity`) when it contains a field
+     * (`persons`) of type `List<Person>` annotated with `@Persistent`.
+     * - The newly added method allows handling the association between a `Person` element and `SomeEntity` by
+     * appending the element to the `persons` list and setting the `SomeEntity` instance as a reference in the
+     * provided `Person` element.
+     * <p>
+     * The rewrite operation verifies that the class retains its original structure alongside the introduced method
+     * while maintaining type validation configurations to resolve missing types dynamically.
+     */
     @DocumentExample
     @Test
     void addMethodToVariableDeclaration() {
-        rewriteRun(//language=java
+        rewriteRun(spec -> spec.typeValidationOptions(
+                        TypeValidation.builder().allowMissingType(o -> true).build()),
+                //language=java
                 java(
                         """
                                 import java.util.List;
@@ -61,7 +72,6 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.persistence.Entity;
                                 import javax.jdo.annotations.Persistent;
-                                import org.apache.isis.applib.annotation.Programmatic;
                                 
                                 public class Person {
                                     public void setSomeEntity(SomeEntity someEntity) {}
@@ -70,10 +80,16 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
                                     @Persistent( mappedBy = "person")
                                     private List<Person> persons;
                                 
-                                    @Programmatic
-                                    public void addPersons(Person element){
+                                    @org.apache.isis.applib.annotation.Programmatic
+                                    public void addToPersons(Person element) {
                                         persons.add(element);
-                                        person.setSomeEntity(this);
+                                        element.setSomeEntity(this);
+                                    }
+                                
+                                    @org.apache.isis.applib.annotation.Programmatic
+                                    public void removeFromPersons(Person element) {
+                                        persons.remove(element);
+                                        element.setSomeEntity(null);
                                     }
                                 }
                                 """
@@ -81,6 +97,21 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Ensures that no method is added to the variable declaration during the rewrite process
+     * in cases where the specified conditions for modification are not met in the input code.
+     * <p>
+     * This test validates the following:
+     * - No additional methods are introduced to the target class (`SomeEntity`) when there is
+     * no indication in the Java source code necessitating such modifications, such as the
+     * absence of applicable fields or annotations like `@Persistent`.
+     * - The structure and content of the original source code remain unchanged during the
+     * rewrite operation.
+     * <p>
+     * The method performs a rewrite process on a given Java code snippet and verifies that the
+     * resulting output matches the initial input, ensuring the correctness and integrity of the
+     * transformation pipeline in non-modification scenarios.
+     */
     @DocumentExample
     @Test
     void doNotAddMethodToVariableDeclaration() {

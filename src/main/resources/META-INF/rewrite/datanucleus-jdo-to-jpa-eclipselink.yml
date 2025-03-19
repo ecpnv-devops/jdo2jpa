@@ -38,6 +38,7 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices
   # Post code changes
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
   - org.openrewrite.java.ReplaceAnnotation:
@@ -71,7 +72,7 @@ recipeList:
       fullyQualifiedTypeName: org.apache.causeway.applib.annotation.Collection
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.apache.causeway.applib.annotation.Action
-# isis specific filters
+  # isis specific filters
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.apache.isis.applib.annotation.DomainObject
   - org.openrewrite.java.search.FindTypes:
@@ -556,6 +557,36 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.PrimaryKey
       newFullyQualifiedTypeName: javax.persistence.Id
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices
+displayName: Apply best practices for JPA
+description: Apply best practices for JPA.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - jpa
+recipeList:
+  # Add addToXyz( type element) and removeFromXyz(type element) where Xyz is a collection of type
+  - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
+      regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
+      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
+      public void removeFrom$varNameC$($varGType$ element){
+      $varName$.remove(element);
+      element.set$className$(null);
+      }'
+  - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
+      regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
+      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
+      public void addTo$varNameC$($varGType$ element){
+      $varName$.add(element);
+      element.set$className$(this);
+      }'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
