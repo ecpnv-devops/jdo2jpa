@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -34,6 +36,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Loop;
+import org.openrewrite.java.tree.MethodCall;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
@@ -47,8 +51,6 @@ import static org.openrewrite.java.tree.TypeUtils.toFullyQualifiedName;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /**
  * A recipe that removes unused imports to a certain extent.
@@ -391,64 +393,229 @@ public class RemovedUnusedImports extends Recipe {
             return annotations;
         }
 
-        // There may be more statement types that needs to be scanned
+        public static boolean scanStatements(List<Statement> statements, String simpleName) {
+            if (CollectionUtils.isEmpty(statements)) {
+                return false;
+            }
+            return statements.stream().anyMatch(statement -> scanStatement(statement, simpleName));
+        }
+
         public static boolean scanStatement(@Nullable Statement statement, String simpleName) {
             if (statement == null || StringUtils.isBlank(simpleName)) {
                 return false;
             }
 
             switch (statement) {
+                case Expression expression -> {
+                    return scanExpression(expression, simpleName);
+                }
                 case J.ClassDeclaration classDeclaration -> {
-                    return scanStatement(classDeclaration.getBody(), simpleName);
+                    return scanAnnotations(classDeclaration.getLeadingAnnotations(), simpleName) ||
+                            scanStatement(classDeclaration.getBody(), simpleName);
                 }
                 case J.Block jBlock -> {
                     return scanStatements(jBlock.getStatements(), simpleName);
                 }
-                case J.Switch switchStatement -> {
-                    return scanStatements(switchStatement.getCases().getStatements(), simpleName);
+                case J.Case aCase -> {
+                    return scanStatements(aCase.getStatements(), simpleName);
                 }
-                case J.MethodInvocation methodInvocation when methodInvocation.getSelect() instanceof J.MethodInvocation invocation -> {
-                    if (invocation != null && CollectionUtils.isNotEmpty(invocation.getArguments())) {
-                        return invocation.getArguments().stream().anyMatch(arg -> {
-                            if (arg instanceof J.Lambda lambda && lambda.getBody() instanceof J.Block block) {
-                                return scanStatements(block.getStatements(), simpleName);
-                            }
-                            return false;
-                        });
-                    }
-                    return false;
+                case J.If ifStatement -> {
+                    return scanExpression(ifStatement.getIfCondition(), simpleName) ||
+                            scanElse(ifStatement.getElsePart(), simpleName) ||
+                            scanThen(ifStatement.getThenPart(), simpleName);
+                }
+                case J.Switch switchStatement -> {
+                    return scanStatements(switchStatement.getCases().getStatements(), simpleName) ||
+                            scanExpression(switchStatement.getSelector(), simpleName);
+                }
+                case J.Label label -> {
+                    return label.getLabel().getSimpleName().equals(simpleName) ||
+                            scanStatement(label.getStatement(), simpleName);
+                }
+                case J.Synchronized synchronizedStatement -> {
+                    return scanStatement(synchronizedStatement.getBody(), simpleName);
+                }
+                case Loop loop -> {
+                    return scanStatement(loop.getBody(), simpleName);
                 }
                 case J.Try jTry -> {
-                    return scanStatements(jTry.getBody().getStatements(), simpleName);
+                    return scanStatement(jTry.getBody(), simpleName) ||
+                            scanCatches(jTry.getCatches(), simpleName) ||
+                            scanFinally(jTry.getFinally(), simpleName);
                 }
-                case J.Lambda lambda when lambda.getBody() instanceof J.Block block -> {
-                    return scanStatements(block.getStatements(), simpleName);
-                }
-                case J.VariableDeclarations variableDeclarations -> {
-                    if (variableDeclarations.getTypeExpression() instanceof J.Identifier identifier) {
-                        return simpleName.equals(identifier.getSimpleName());
-                    } else if (variableDeclarations.getTypeExpression() instanceof J.FieldAccess access) {
-                        return simpleName.equals(access.getSimpleName());
-                    }
+                case J.Throw aThrow -> {
+                    return scanExpression(aThrow.getException(), simpleName);
                 }
                 case J.Return returnStatement when returnStatement.getExpression() instanceof J.MethodInvocation methodInvocation -> {
                     return scanStatement(methodInvocation, simpleName);
                 }
+                case J.VariableDeclarations variableDeclarations -> {
+                    return scanTypeTree(variableDeclarations.getTypeExpression(), simpleName) ||
+                            variableDeclarations.getVariables().stream()
+                                    .anyMatch(namedVariable -> scanExpression(namedVariable.getInitializer(), simpleName));
+                }
                 case J.MethodDeclaration methodDeclaration -> {
-                    if (methodDeclaration.getBody() instanceof J.Block block) {
-                        return scanStatement(block, simpleName);
-                    }
-                    return false;
+                    return scanStatements(methodDeclaration.getParameters(), simpleName) ||
+                            scanStatement(methodDeclaration.getBody(), simpleName);
                 }
                 default -> {
                     return false;
                 }
             }
-            return false;
         }
 
-        public static boolean scanStatements(List<Statement> statements, String simpleName) {
-            return statements.stream().anyMatch(statement -> scanStatement(statement, simpleName));
+        private static boolean scanExpressions(@Nullable List<Expression> initializer, String simpleName) {
+            if (CollectionUtils.isEmpty(initializer)) {
+                return false;
+            }
+            return initializer.stream().anyMatch(expression -> scanExpression(expression, simpleName));
+        }
+
+        private static boolean scanExpression(@Nullable Expression expression, String simpleName) {
+            if (expression == null || StringUtils.isBlank(simpleName)) {
+                return false;
+            }
+            switch (expression) {
+                case TypeTree typeTree -> {
+                    return scanTypeTree(typeTree, simpleName);
+                }
+                case J.NewArray newArray -> {
+                    if (newArray.getType() instanceof JavaType.Array arrayType &&
+                            arrayType.getElemType() instanceof JavaType.Class classType) {
+                        return simpleName.equals(classType.getClassName()) ||
+                                scanExpressions(newArray.getInitializer(), simpleName);
+
+                    }
+                    return scanExpressions(newArray.getInitializer(), simpleName);
+                }
+                case J.Assignment assignment -> {
+                    return scanExpression(assignment.getVariable(), simpleName) ||
+                            scanExpression(assignment.getAssignment(), simpleName);
+                }
+                case J.Unary unary -> {
+                    return scanExpression(unary.getExpression(), simpleName);
+                }
+                case J.Binary binary -> {
+                    return scanExpression(binary.getRight(), simpleName) ||
+                            scanExpression(binary.getLeft(), simpleName);
+                }
+                case J.Ternary ternary -> {
+                    return scanExpression(ternary.getCondition(), simpleName) ||
+                            scanExpression(ternary.getTruePart(), simpleName) ||
+                            scanExpression(ternary.getFalsePart(), simpleName);
+                }
+                case J.Annotation annotation -> {
+                    return scanAnnotation(annotation, simpleName);
+                }
+                case J.Lambda lambda when lambda.getBody() instanceof J.Block jBlock -> {
+                    return scanStatement(jBlock, simpleName);
+                }
+                case J.Literal literal -> {
+                    return !StringUtils.isBlank(literal.getValueSource()) && literal.getValueSource().equals(simpleName);
+                }
+                case J.MethodInvocation invocation -> {
+                    return scanExpression(invocation.getSelect(), simpleName) ||
+                            scanArguments(invocation.getArguments(), simpleName);
+                }
+                case MethodCall methodCall -> {
+                    return scanArguments(methodCall.getArguments(), simpleName);
+                }
+                case J.AssignmentOperation assignmentOperation -> {
+                    return scanExpression(assignmentOperation.getVariable(), simpleName) ||
+                            scanExpression(assignmentOperation.getAssignment(), simpleName);
+                }
+                default -> {
+                    return false;
+                }
+            }
+        }
+
+        private static boolean scanTypeTree(@Nullable TypeTree typeExpression, String simpleName) {
+            if (typeExpression == null) {
+                return false;
+            }
+
+            switch (typeExpression) {
+                case J.Identifier identifier -> {
+                    return identifier.getSimpleName().equals(simpleName) ||
+                            scanAnnotations(identifier.getAnnotations(), simpleName);
+                }
+                case J.ArrayType arrayType -> {
+                    return scanAnnotations(arrayType.getAnnotations(), simpleName) ||
+                            scanTypeTree(arrayType.getElementType(), simpleName);
+                }
+                case J.FieldAccess fieldAccess -> {
+                    return simpleName.equals(fieldAccess.getSimpleName()) ||
+                            scanExpression(fieldAccess.getTarget(), simpleName);
+                }
+                case J.AnnotatedType annotatedType -> {
+                    return scanAnnotations(annotatedType.getAnnotations(), simpleName);
+                }
+                case J.ParameterizedType parameterizedType -> {
+                    if (CollectionUtils.isEmpty(parameterizedType.getTypeParameters())) {
+                        return false;
+                    }
+                    return scanTypeParameters(parameterizedType.getTypeParameters(), simpleName);
+                }
+                default -> {
+                    return false;
+                }
+            }
+        }
+
+        private static boolean scanThen(Statement thenPart, String simpleName) {
+            return scanStatement(thenPart, simpleName);
+        }
+
+        private static boolean scanElse(@Nullable J.If.Else elsePart, String simpleName) {
+            if (elsePart == null) {
+                return false;
+            }
+            return scanStatement(elsePart.getBody(), simpleName);
+        }
+
+        private static boolean scanFinally(@Nullable J.Block aFinally, String simpleName) {
+            if (aFinally == null || CollectionUtils.isEmpty(aFinally.getStatements())) {
+                return false;
+            }
+            return scanStatements(aFinally.getStatements(), simpleName);
+        }
+
+        // It seems that scanning inside annotation of classes is somehow limited not to recognize everything
+        private static boolean scanAnnotations(@Nullable List<J.Annotation> annotations, String simpleName) {
+            if (CollectionUtils.isEmpty(annotations)) {
+                return false;
+            }
+            return annotations.stream().anyMatch(annotation -> scanAnnotation(annotation, simpleName));
+        }
+
+        private static boolean scanAnnotation(J.Annotation annotation, String simpleName) {
+            if (annotation.getType() instanceof JavaType.Class aClass) {
+                return simpleName.equals(aClass.getClassName()) || scanArguments(annotation.getArguments(), simpleName);
+            }
+            return scanArguments(annotation.getArguments(), simpleName);
+        }
+
+        private static boolean scanTypeParameters(@Nullable List<Expression> typeParameters, String simpleName) {
+            if (typeParameters == null || typeParameters.isEmpty()) {
+                return false;
+            }
+            return typeParameters.stream().anyMatch(typeParameter -> scanExpression(typeParameter, simpleName));
+        }
+
+        private static boolean scanArguments(@Nullable List<Expression> arguments, String simpleName) {
+            if (CollectionUtils.isEmpty(arguments)) {
+                return false;
+            }
+            return arguments.stream().anyMatch(argument -> scanExpression(argument, simpleName));
+        }
+
+        private static boolean scanCatches(List<J.Try.Catch> catches, String simpleName) {
+            return catches.stream().anyMatch(aCatch -> scanCatch(aCatch, simpleName));
+        }
+
+        private static boolean scanCatch(J.Try.Catch aCatch, String simpleName) {
+            return scanStatement(aCatch.getBody(), simpleName);
         }
 
         public static String stripClass(final String string) {
