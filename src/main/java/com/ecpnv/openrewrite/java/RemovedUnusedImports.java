@@ -23,6 +23,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
+import org.openrewrite.RecipeException;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -163,32 +164,34 @@ public class RemovedUnusedImports extends Recipe {
             final Set<String> annotationImports = new HashSet<>();
             final Set<J.Annotation> annotations = findAllAnnotations(cu);
 
-            if (!annotations.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(annotations)) {
                 for (J.Annotation annotation : annotations) {
                     if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                         for (Expression expression : annotation.getArguments()) {
                             if (expression instanceof J.NewArray newArray) {
                                 for (Expression initializer : newArray.getInitializer()) {
-                                    String className;
+                                    String className = null;
                                     if (initializer instanceof J.FieldAccess fieldAccess) {
                                         className = fieldAccess.getTarget().print(getCursor());
-                                    } else {
-                                        className = stripClass(initializer.print(getCursor()));
+                                    } else if (initializer instanceof J.Literal literal) {
+                                        className = literal.getValueSource();
                                     }
-                                    final String member = JavaType.ShallowClass.build(className).getClassName();
-                                    final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
-                                    if (!packageName.isEmpty()) {
-                                        try {
-                                            final J.Import importToAdd = new J.Import(randomId(),
-                                                    Space.EMPTY,
-                                                    Markers.EMPTY,
-                                                    new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
-                                                    TypeTree.build(packageName + "." + member).withPrefix(Space.SINGLE_SPACE),
-                                                    null);
+                                    if (className != null) {
+                                        final String member = JavaType.ShallowClass.build(className).getClassName();
+                                        final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
+                                        if (!packageName.isEmpty()) {
+                                            try {
+                                                final J.Import importToAdd = new J.Import(randomId(),
+                                                        Space.EMPTY,
+                                                        Markers.EMPTY,
+                                                        new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
+                                                        TypeTree.build(packageName + "." + member).withPrefix(Space.SINGLE_SPACE),
+                                                        null);
 
-                                            annotationImports.add(importToAdd.toString());
-                                        } catch (Exception e) {
-                                            // keep calm and move on
+                                                annotationImports.add(importToAdd.toString());
+                                            } catch (Exception e) {
+                                                throw new RecipeException("Cannot create import for class: {}", className, e);
+                                            }
                                         }
                                     }
                                 }
@@ -616,17 +619,6 @@ public class RemovedUnusedImports extends Recipe {
 
         private static boolean scanCatch(J.Try.Catch aCatch, String simpleName) {
             return scanStatement(aCatch.getBody(), simpleName);
-        }
-
-        public static String stripClass(final String string) {
-            final String[] lines = string.split("\n");
-            for (String line : lines) {
-                String result = line.trim();
-                if (result.contains(CLASS) && (!result.contains(COMMENT_SINGLE_LINE) || result.indexOf(COMMENT_SINGLE_LINE) > result.indexOf(CLASS))) {
-                    return result.substring(0, result.indexOf(CLASS));
-                }
-            }
-            return string;
         }
 
         private static String getPackageName(List<ImportUsage> importUsage, String member) {
