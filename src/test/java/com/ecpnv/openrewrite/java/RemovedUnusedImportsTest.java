@@ -1,9 +1,5 @@
 package com.ecpnv.openrewrite.java;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 
@@ -74,7 +70,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageFull() {
+    void removeUnusedImportsImportUsageFull() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -102,7 +98,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageAbstract() {
+    void removeUnusedImportsImportUsageAbstract() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -126,7 +122,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageEnum() {
+    void removeUnusedImportsImportUsageEnum() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -144,9 +140,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageLambda() {
-        List<String> listOfStrings = new ArrayList<>();
-        listOfStrings.stream().collect(Collectors.joining(","));
+    void removeUnusedImportsImportUsageLambda() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -173,9 +167,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageMethod() {
-        List<String> listOfStrings = new ArrayList<>();
-        listOfStrings.stream().collect(Collectors.joining(","));
+    void removeUnusedImportsImportUsageMethod() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -200,9 +192,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportUsageTryCatch() {
-        List<String> listOfStrings = new ArrayList<>();
-        listOfStrings.stream().collect(Collectors.joining(","));
+    void removeUnusedImportsImportUsageTryCatch() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -231,9 +221,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsSpringImportEnum() {
-        List<String> listOfStrings = new ArrayList<>();
-        listOfStrings.stream().collect(Collectors.joining(","));
+    void removeUnusedImportsImportEnum() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
@@ -255,6 +243,29 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
                                             return null;
                                         }
                                     }
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void removeUnusedImportsAnnotations() {
+        rewriteRun(
+                spec -> spec.parser(PARSER)
+                        .recipe(new RemovedUnusedImports()),
+                java(
+                        """
+                                import javax.persistence.Table;
+                                import com.ecpnv.openrewrite.java.dom.SomeOtherClass;
+                                import javax.persistence.UniqueConstraint;
+                                
+                                @Table(schema = "dbo", name = "UnitLink", uniqueConstraints = {
+                                        @UniqueConstraint(name = "UnitLink_sourceUnit_destinationUnit_UNQ", columnNames = {"sourceUnit", "destinationUnit"})
+                                })
+                                public class SomeClass {
+                                   private static final String NAME = SomeOtherClass.NAME + "123";
                                 }
                                 """
                 )
