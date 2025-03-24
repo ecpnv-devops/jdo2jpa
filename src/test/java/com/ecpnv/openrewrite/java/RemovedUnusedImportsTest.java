@@ -2,13 +2,11 @@ package com.ecpnv.openrewrite.java;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.SourceSpec;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.openrewrite.java.Assertions.java;
 
 import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
-
-import static com.ecpnv.openrewrite.java.RemovedUnusedImports.RemoveUnusedImportsVisitor.stripClass;
 
 class RemovedUnusedImportsTest extends BaseRewriteTest {
 
@@ -74,6 +72,13 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules;
+                                
+                                public class SomeModule {
+                                }
+                                """,
+                        SourceSpec::skip),
                 java(
                         """
                                 import java.util.List;
@@ -83,7 +88,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
                                 @Import({
                                 
                                 //some comment here
-                                com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules.SomeModule.class,
+                                SomeModule.class,
                                 
                                 //some comment here
                                 })
@@ -102,6 +107,25 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
+                java("""
+                                package org.springframework.context.annotation;
+                                import java.lang.annotation.*;
+                                
+                                @Target({ElementType.TYPE})
+                                @Retention(RetentionPolicy.RUNTIME)
+                                @Documented
+                                public @interface Import {
+                                    Class<?>[] value();
+                                }
+                                """,
+                        SourceSpec::skip),
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules;
+                                
+                                public class SomeModule {
+                                }
+                                """,
+                        SourceSpec::skip),
                 java(
                         """
                                 import java.util.List;
@@ -110,7 +134,7 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
                                 
                                 public abstract class SomeClass {
                                 
-                                    @Import({com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules.SomeModule.class})
+                                    @Import({SomeModule.class})
                                 
                                     private List<String> listOfStrings;
                                 
@@ -126,12 +150,19 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules;
+                                
+                                public class SomeModule {
+                                }
+                                """,
+                        SourceSpec::skip),
                 java(
                         """
                                 import com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules.SomeModule;
                                 
                                 public enum SomeEnum {
-                                    private com.ecpnv.openrewrite.jdo2jpa.com.ecpnv.openrewrite.modules.SomeModule someModule;
+                                    private SomeModule someModule;
                                 }
                                 """
                 )
@@ -251,10 +282,18 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void removeUnusedImportsAnnotations() {
+    void removeUnusedVar() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
                         .recipe(new RemovedUnusedImports()),
+                java("""
+                                package com.ecpnv.openrewrite.java.dom;
+                                
+                                public class SomeOtherClass {
+                                    private static final String NAME = "SomeName";
+                                }
+                                """,
+                        SourceSpec::skip),
                 java(
                         """
                                 import javax.persistence.Table;
@@ -270,34 +309,5 @@ class RemovedUnusedImportsTest extends BaseRewriteTest {
                                 """
                 )
         );
-    }
-
-    @Test
-    void testStripClass() {
-        assertEquals("FakeSchedulerV2", stripClass("""
-                
-                // services
-                FakeSchedulerV2.class,
-                """));
-        assertEquals("FakeSchedulerV2", stripClass("""
-                /*
-                * some comment here 
-                */
-                FakeSchedulerV2.class,
-                
-                """));
-        assertEquals("FakeSchedulerV2", stripClass("""
-                /* test */
-                FakeSchedulerV2.class
-                """));
-        assertEquals("FakeSchedulerV2", stripClass("""
-                // dont use SomeOtherClass.class
-                FakeSchedulerV2.class,
-                
-                """));
-        assertEquals("FakeSchedulerV2", stripClass("""
-                FakeSchedulerV2.class, //some comment here
-                
-                """));
     }
 }
