@@ -21,9 +21,9 @@
         <!-- Keep junit version in line with rewrite.version -->
         <junit.version>5.12.0</junit.version>
         <!-- Keep bom version in line with rewrite.version -->
-        <rewrite-bom.version>3.3.0</rewrite-bom.version>
-        <rewrite.version>8.47.3</rewrite.version>
-        <rewrite-static-analysis.version>2.3.0</rewrite-static-analysis.version>
+        <rewrite-bom.version>3.4.0</rewrite-bom.version>
+        <rewrite.version>8.48.0</rewrite.version>
+        <rewrite-static-analysis.version>2.4.0</rewrite-static-analysis.version>
 
         <assertj.version>3.27.2</assertj.version>
         <lombok.version>1.18.36</lombok.version>
