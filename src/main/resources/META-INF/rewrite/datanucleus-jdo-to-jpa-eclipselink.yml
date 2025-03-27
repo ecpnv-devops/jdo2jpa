@@ -40,7 +40,6 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
   - com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices
   # Post code changes
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
       annotationTemplateToInsert: '@javax.persistence.Transient'
@@ -100,16 +99,9 @@ recipeList:
   #       one should wrap the recipes with parameters in a declarative one!
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap1
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap2
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap3
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap1
-displayName: Wrap recipes with parameters to maintain execution order
-recipeList:
-  - com.ecpnv.openrewrite.jdo2jpa.AddCommentToPersistenceCapableWithIdentityTypeApplication
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap2
 displayName: Wrap recipes with parameters to maintain execution order
 recipeList:
   - com.ecpnv.openrewrite.java.ExtendWithClassForAnnotationConditionally:
@@ -127,7 +119,7 @@ recipeList:
       declarationType: CLASS
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap3
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable.wrap2
 displayName: Wrap recipes with parameters to maintain execution order
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistenceCapableWithTableAnnotation
@@ -136,8 +128,7 @@ recipeList:
   - com.ecpnv.openrewrite.java.MaybeRemoveImport:
       type: javax.jdo.annotations.IdentityType
   # Update spring configurations to include entity scanning
-  - com.ecpnv.openrewrite.jdo2jpa.AddEntityScanAnnotationConditionally:
-      entitySubPackageName: 'dom'
+  - com.ecpnv.openrewrite.jdo2jpa.AddEntityScanAnnotationConditionally
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
@@ -589,19 +580,6 @@ recipeList:
       }'
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
-displayName: Cleanup
-description: Run cleanup.
-tags:
-  - cleanup
-recipeList:
-  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
-      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value,javax.persistence
-  - com.ecpnv.openrewrite.java.RemovedUnusedImports
-# too soon
-#  - org.openrewrite.java.format.AutoFormat
----
-type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.causeway
 displayName: Causeway specific migrations
 description: Causeway specific migrations to support JPA.
@@ -724,3 +702,73 @@ recipeList:
       annotationPattern: '@org.apache.causeway.persistence.jdo.applib.types..*'
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@org.apache.isis.persistence.jdo.applib.types..*'
+  # Extend specific classes
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.settings.dom.SettingAbstract
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.docflow.dom.DocFlowZip
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.luxs.orchestrations.dom.unit.metricsecp.UnitMetricsInEcp
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Named\(InvoiceSummary\.LOGICAL_TYPE_NAMED\)'
+      annotationType: javax.persistence.IdClass
+      annotationTemplate: '@IdClass(InvoiceSummaryId.class)'
+      declarationType: CLASS
+# fix some annotations
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.PrimaryKey'
+      annotationTemplateToInsert: '@javax.persistence.Id'
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
+      annotationTemplateToInsert: '@javax.persistence.Transient'
+  - com.ecpnv.openrewrite.jdo2jpa.AddAnnotationToChildrenConditionally:
+      fullClassName: 'org.estatio.module.amendment.dom.LeaseAmendmentItem'
+      annotationPattern: 'lombok.NoArgsConstructor'
+  - com.ecpnv.openrewrite.jdo2jpa.AddAnnotationToChildrenConditionally:
+      fullClassName: 'org.estatio.module.budget.dom.keyitem.KeyItem'
+      annotationPattern: 'lombok.NoArgsConstructor'
+  - com.ecpnv.openrewrite.jdo2jpa.AddAnnotationToChildrenConditionally:
+      fullClassName: 'org.estatio.module.lease.imports.persistedimports.AuditedTurnoverRentImport'
+      annotationPattern: 'lombok.NoArgsConstructor'
+  - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
+      fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
+      fullClassNameToInsert: 'javax.persistence.Transient'
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
+displayName: Migrations after Causeway
+description: Migrations after Causeway.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - causeway
+  - isis
+recipeList:
+  # Inherited classes also need Entity annotation because of QueryDSL
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@.*Inheritance(.|\n|\s)*'
+      annotationType: javax.persistence.Entity
+      annotationTemplate: '@Entity'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
+displayName: Cleanup
+description: Run cleanup.
+tags:
+  - cleanup
+recipeList:
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
+      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value
+  - com.ecpnv.openrewrite.java.RemovedUnusedImports
+# too soon
+#  - org.openrewrite.java.format.AutoFormat

@@ -168,9 +168,6 @@ class ReplacePersistenceCapableWithTableAnnotationTest extends BaseRewriteTest {
                                 import javax.persistence.Entity;
                                 import javax.persistence.Table;
                                 
-                                /*
-                                TODO: manually migrate to JPA
-                                */
                                 @Entity
                                 @Table(schema = "schemaName")
                                 public class SomeEntity {

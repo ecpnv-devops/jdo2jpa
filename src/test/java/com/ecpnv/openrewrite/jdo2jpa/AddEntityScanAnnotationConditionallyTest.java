@@ -10,11 +10,20 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void addEmptyEntityScanAnnotationConditionallyHappyPath() {
+    void happyPath() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally(null, null),
+                        .recipes(new AddEntityScanAnnotationConditionally(),
                                 new ShortenFullyQualifiedTypeReferences()),
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.dom;
+                        
+                                import javax.persistence.Entity;
+                        
+                                @Entity
+                                public class SomeEntity {
+                                }
+                        """),
                 java(
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa;
@@ -36,7 +45,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 import org.springframework.context.annotation.Configuration;
                                 
                                 @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa"})
+                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa.dom"})
                                 @ComponentScan
                                 public class SomeConfiguration {
                                 }
@@ -47,48 +56,29 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void addConfigurationEntityScanAnnotationConditionallyHappyPath() {
+    void multipleSubDirs() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally("config", null),
+                        .recipes(new AddEntityScanAnnotationConditionally(),
                                 new ShortenFullyQualifiedTypeReferences()),
-                java(
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa.config;
-                                
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @ComponentScan
-                                public class SomeConfiguration {
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.entities;
+                        
+                                import javax.persistence.Entity;
+                        
+                                @Entity
+                                public class SomeEntity {
                                 }
-                                """
-                ,
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa.config;
-                                
-                                import org.springframework.boot.autoconfigure.domain.EntityScan;
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa"})
-                                @ComponentScan
-                                public class SomeConfiguration {
+                        """),
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.dom;
+                        
+                                import javax.persistence.Entity;
+                        
+                                @Entity
+                                public class SomeOtherEntity {
                                 }
-                                """
-                )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void addConfigurationAndEntitiesEntityScanAnnotationConditionallyHappyPath() {
-        rewriteRun(
-                spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally("config", "entities"),
-                                new ShortenFullyQualifiedTypeReferences()),
+                        """),
                 java(
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa.config;
@@ -110,7 +100,7 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 import org.springframework.context.annotation.Configuration;
                                 
                                 @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa.entities"})
+                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa.dom", "com.ecpnv.openrewrite.jdo2jpa.entities"})
                                 @ComponentScan
                                 public class SomeConfiguration {
                                 }
@@ -121,85 +111,20 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void addClassNameEntityScanAnnotationConditionallyHappyPath() {
+    void unhappyPath() {
         rewriteRun(
                 spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally(null, null),
+                        .recipes(new AddEntityScanAnnotationConditionally(),
                                 new ShortenFullyQualifiedTypeReferences()),
-                java(
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa;
-                                
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @ComponentScan("com.ecpnv.openrewrite.jdo2jpa")
-                                public class SomeConfiguration {
+                java("""
+                                package com.ecpnv.openrewrite.jdo2jpa.dom;
+                        
+                                import javax.persistence.Entity;
+                        
+                                @Entity
+                                public class SomeEntity {
                                 }
-                                """
-                ,
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa;
-                                
-                                import org.springframework.boot.autoconfigure.domain.EntityScan;
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa"})
-                                @ComponentScan("com.ecpnv.openrewrite.jdo2jpa")
-                                public class SomeConfiguration {
-                                }
-                                """
-                )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void addClassEntityScanAnnotationConditionallyHappyPath() {
-        rewriteRun(
-                spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally(null, null),
-                                new ShortenFullyQualifiedTypeReferences()),
-                java(
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa;
-                                
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @ComponentScan({SomeConfiguration.class})
-                                public class SomeConfiguration {
-                                }
-                                """
-                ,
-                        """
-                                package com.ecpnv.openrewrite.jdo2jpa;
-                                
-                                import org.springframework.boot.autoconfigure.domain.EntityScan;
-                                import org.springframework.context.annotation.ComponentScan;
-                                import org.springframework.context.annotation.Configuration;
-                                
-                                @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa"})
-                                @ComponentScan({SomeConfiguration.class})
-                                public class SomeConfiguration {
-                                }
-                                """
-                )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void addEntityScanAnnotationConditionallyUnHappyPath() {
-        rewriteRun(
-                spec -> spec.parser(PARSER)
-                        .recipes(new AddEntityScanAnnotationConditionally(null, null),
-                                new ShortenFullyQualifiedTypeReferences()),
+                        """),
                 java(
                         """
                                 package com.ecpnv.openrewrite.jdo2jpa;

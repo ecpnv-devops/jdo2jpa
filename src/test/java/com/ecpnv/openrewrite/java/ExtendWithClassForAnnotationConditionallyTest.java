@@ -19,8 +19,8 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                         .recipe(new ExtendWithClassForAnnotationConditionally(
                                 "@javax.jdo.annotations.PersistenceCapable",
                                 "identityType = IdentityType.DATASTORE",
-                                "org.estatio.base.prod.dom.EntityAbstract",
-                                "jdo2jpa-abstract")),
+                                "org.estatio.base.prod.dom.EntityAbstract"
+                        )),
                 // language=java
                 java(
                         """
@@ -70,8 +70,8 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                         .recipe(new ExtendWithClassForAnnotationConditionally(
                                 "@javax.jdo.annotations.PersistenceCapable",
                                 "identityType = IdentityType.DATASTORE",
-                                "org.estatio.base.prod.dom.EntityAbstract",
-                                "jdo2jpa-abstract")),
+                                "org.estatio.base.prod.dom.EntityAbstract"
+                        )),
                 // language=java
                 java(
                         """
@@ -94,8 +94,8 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                         .recipe(new ExtendWithClassForAnnotationConditionally(
                                 "@javax.jdo.annotations.PersistenceCapable",
                                 "identityType = IdentityType.DATASTORE",
-                                "org.estatio.base.prod.dom.EntityAbstract",
-                                "jdo2jpa-abstract")),
+                                "org.estatio.base.prod.dom.EntityAbstract"
+                        )),
                 // language=java
                 java(
                         """
@@ -118,8 +118,8 @@ class ExtendWithClassForAnnotationConditionallyTest extends BaseRewriteTest {
                         .recipe(new ExtendWithClassForAnnotationConditionally(
                                 "@javax.jdo.annotations.PersistenceCapable",
                                 "identityType = IdentityType.DATASTORE",
-                                "org.estatio.base.prod.dom.EntityAbstract",
-                                "jdo2jpa-abstract")),
+                                "org.estatio.base.prod.dom.EntityAbstract"
+                        )),
                 java(
                         """
                                 import javax.jdo.annotations.PersistenceCapable;
