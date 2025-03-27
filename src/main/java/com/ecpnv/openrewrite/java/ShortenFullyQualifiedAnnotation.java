@@ -1,6 +1,5 @@
 package com.ecpnv.openrewrite.java;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +17,13 @@ import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.marker.Markers;
+
+import static org.openrewrite.Tree.randomId;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 
@@ -90,6 +95,14 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
                                 .apply(getCursor(), annotation.getCoordinates().replace()))
                                 .withArguments(annotation.getArguments());
                         doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
+                        //keep track of the import
+                        final J.Import importToAdd = new J.Import(randomId(),
+                                Space.EMPTY,
+                                Markers.EMPTY,
+                                new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
+                                TypeTree.build(aClass.getFullyQualifiedName()).withPrefix(Space.SINGLE_SPACE),
+                                null);
+                        imports.add(importToAdd);
                         return newAnnotation;
                     }
                 }
@@ -100,21 +113,6 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
                 for (J.Import _import : imports) {
                     if (Objects.equals(aClass.getClassName(), _import.getClassName())) {
                         return false;
-                    }
-                }
-                for (TreeVisitor treeVisitor : this.getAfterVisit()) {
-                    if (treeVisitor instanceof AddImport addImport) {
-                        try {
-                            // hack to spy on the add import value
-                            Field field = AddImport.class.getDeclaredField("fullyQualifiedName");
-                            field.setAccessible(true);
-                            String fullyQualifiedName = (String) field.get(addImport);
-                            if (Objects.equals(JavaType.ShallowClass.build(fullyQualifiedName).getClassName(), JavaType.ShallowClass.build(aClass.getFullyQualifiedName()).getClassName())) {
-                                return false;
-                            }
-                        } catch (Exception e) {
-                            return true;
-                        }
                     }
                 }
                 return true;
