@@ -82,7 +82,8 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
             @Override
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
 
-                if (annotation.getType() instanceof JavaType.Class aClass &&
+                if (annotation.getAnnotationType() instanceof J.FieldAccess &&
+                        annotation.getType() instanceof JavaType.Class aClass &&
                         (StringUtils.isBlank(fullClassName) ||
                                 Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
                     // works on the basis of first come, first serve
