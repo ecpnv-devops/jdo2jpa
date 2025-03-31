@@ -49,17 +49,20 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 
                                 @lombok.NoArgsConstructor
                                 @lombok.ToString(callSuper = true)
+                                @lombok.EqualsAndHashCode
                                 public class SomeClass {
                                 }
                                 """,
                         """
                                 package a;
                                 
+                                import lombok.EqualsAndHashCode;
                                 import lombok.NoArgsConstructor;
                                 import lombok.ToString;
                                 
                                 @NoArgsConstructor
                                 @ToString(callSuper = true)
+                                @EqualsAndHashCode
                                 public class SomeClass {
                                 }
                                 """
@@ -137,6 +140,44 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 
                                     @javax.jdo.annotations.Version
                                     @Version
+                                    private String name;
+                                
+                                }
+                                """)
+        );
+    }
+
+
+    @DocumentExample
+    @Test
+    void edgeCase1() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(
+                        new ShortenFullyQualifiedAnnotation(null)),
+                java(
+                        """
+                                package a;
+                                
+                                @lombok.ToString
+                                @lombok.EqualsAndHashCode
+                                public class SomeClass {
+                                
+                                    @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
+                                    private String name;
+                                
+                                }
+                                """
+                        ,
+                        """
+                                package a;
+                                
+                                import lombok.EqualsAndHashCode;
+                                import lombok.ToString;
+                                
+                                @ToString
+                                @EqualsAndHashCode
+                                public class SomeClass {
+                                
+                                    @ToString.Include @EqualsAndHashCode.Include
                                     private String name;
                                 
                                 }

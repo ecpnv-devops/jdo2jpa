@@ -82,19 +82,21 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
             @Override
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
 
-                if (annotation.getAnnotationType() instanceof J.FieldAccess fieldAccess &&
-                        (StringUtils.isBlank(fullClassName) || Objects.equals(fullClassName, fieldAccess.print(getCursor())))
-                        && annotation.getType() instanceof JavaType.Class aClass) {
+                if (annotation.getType() instanceof JavaType.Class aClass &&
+                        (StringUtils.isBlank(fullClassName) ||
+                                Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
                     // works on the basis of first come, first serve
                     if (checkImports(imports, aClass)) {
-                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + fieldAccess.getSimpleName())
+                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
                                 .contextSensitive()
                                 .javaParser(JavaParserFactory.create(ctx))
                                 .imports(aClass.getFullyQualifiedName())
                                 .build()
                                 .apply(getCursor(), annotation.getCoordinates().replace()))
                                 .withArguments(annotation.getArguments());
-                        doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
+                        if (aClass.getOwningClass() == null) {
+                            doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
+                        }
                         //keep track of the import
                         final J.Import importToAdd = new J.Import(randomId(),
                                 Space.EMPTY,
