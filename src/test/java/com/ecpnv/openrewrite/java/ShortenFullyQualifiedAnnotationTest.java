@@ -166,7 +166,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package a;
                                 
