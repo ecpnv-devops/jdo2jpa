@@ -54,13 +54,17 @@ class RemoveInheritedAnnotationsTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.persistence.Inheritance;
+                                import lombok.NoArgsConstructor;
                                 
                                 @Inheritance
+                                @NoArgsConstructor
                                 public class Person {
                                         private int id;
                                         private String name;
                                 }
+                                
                                 @Inheritance
+                                @NoArgsConstructor
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -68,13 +72,17 @@ class RemoveInheritedAnnotationsTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.persistence.Inheritance;
+                                import lombok.NoArgsConstructor;
                                 
                                 @Inheritance
+                                @NoArgsConstructor
                                 public class Person {
                                         private int id;
                                         private String name;
                                 }
                                 
+                                
+                                @NoArgsConstructor
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
