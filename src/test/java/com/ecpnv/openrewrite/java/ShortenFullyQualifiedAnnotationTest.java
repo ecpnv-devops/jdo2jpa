@@ -2,12 +2,11 @@ package com.ecpnv.openrewrite.java;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.test.SourceSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
 import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
-
-import org.openrewrite.test.SourceSpec;
 
 class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @DocumentExample
@@ -20,6 +19,8 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """
                                 package a;
                                 
+                                import lombok.*;
+                                
                                 @lombok.NoArgsConstructor
                                 @lombok.ToString(callSuper = true)
                                 public class SomeClass {
@@ -28,7 +29,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """
                                 package a;
                                 
-                                import lombok.ToString;
+                                import lombok.*;
                                 
                                 @lombok.NoArgsConstructor
                                 @ToString(callSuper = true)
@@ -204,7 +205,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """
                                 package a;
                                 
-                                import javax.persistence.Version;
+                                import javax.persistence.*;
                                 
                                 public class SomeClass {
                                 
@@ -223,49 +224,47 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
                         new ShortenFullyQualifiedAnnotation(null)),
                 java("""
-                    package test;
-                    
-                    import java.lang.annotation.ElementType;
-                    import java.lang.annotation.Retention;
-                    import java.lang.annotation.RetentionPolicy;
-                    import java.lang.annotation.Target;
-                    
-                    @Target({ElementType.TYPE})
-                    @Retention(RetentionPolicy.SOURCE)
-                    public @interface ToString {
-                        boolean includeFieldNames() default true;
-                    
-                        String[] exclude() default {};
-                    
-                        String[] of() default {};
-                    
-                        boolean callSuper() default false;
-                    
-                        boolean doNotUseGetters() default false;
-                    
-                        boolean onlyExplicitlyIncluded() default false;
-                    
-                        @Target({ElementType.FIELD})
+                        package test;
+                        
+                        import java.lang.annotation.ElementType;
+                        import java.lang.annotation.Retention;
+                        import java.lang.annotation.RetentionPolicy;
+                        import java.lang.annotation.Target;
+                        
+                        @Target({ElementType.TYPE})
                         @Retention(RetentionPolicy.SOURCE)
-                        public @interface Exclude {
+                        public @interface ToString {
+                            boolean includeFieldNames() default true;
+                        
+                            String[] exclude() default {};
+                        
+                            String[] of() default {};
+                        
+                            boolean callSuper() default false;
+                        
+                            boolean doNotUseGetters() default false;
+                        
+                            boolean onlyExplicitlyIncluded() default false;
+                        
+                            @Target({ElementType.FIELD})
+                            @Retention(RetentionPolicy.SOURCE)
+                            public @interface Exclude {
+                            }
+                        
+                            @Target({ElementType.FIELD, ElementType.METHOD})
+                            @Retention(RetentionPolicy.SOURCE)
+                            public @interface Include {
+                                int rank() default 0;
+                        
+                                String name() default "";
+                            }
                         }
-                    
-                        @Target({ElementType.FIELD, ElementType.METHOD})
-                        @Retention(RetentionPolicy.SOURCE)
-                        public @interface Include {
-                            int rank() default 0;
-                    
-                            String name() default "";
-                        }
-                    }
-                    """, SourceSpec::skip),
-                java(
-                        """
+                        """, SourceSpec::skip),
+                java("""
                                 package a;
                                 
-                                @lombok.ToString
                                 @lombok.EqualsAndHashCode
-                                public class SomeClass {
+                                public class ToString {
                                 
                                     @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
                                     private String name;
@@ -274,16 +273,14 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     private String title;
                                 }
                                 """
-                ,
+                        ,
                         """
                                 package a;
                                 
                                 import lombok.EqualsAndHashCode;
-                                import lombok.ToString;
                                 
-                                @ToString
                                 @EqualsAndHashCode
-                                public class SomeClass {
+                                public class ToString {
                                 
                                     @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
                                     private String name;
@@ -292,6 +289,46 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     private String title;
                                 }
                                 """)
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void edgeCase2() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(
+                        new ShortenFullyQualifiedAnnotation(null)),
+                java("""
+                        package test;
+                        
+                        import java.lang.annotation.ElementType;
+                        import java.lang.annotation.Inherited;
+                        import java.lang.annotation.Retention;
+                        import java.lang.annotation.RetentionPolicy;
+                        import java.lang.annotation.Target;
+                        
+                        @Inherited
+                        @Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+                        @Retention(RetentionPolicy.RUNTIME)
+                        public @interface Property {
+                            String value() default "";
+                        }
+                        """, SourceSpec::skip),
+                java("""
+                        package a;
+                        
+                        public class Property {
+                        }
+                        """, SourceSpec::skip),
+                java("""
+                        package a;
+                        
+                        public class ToString {
+                        
+                            @test.Property
+                            Property property;
+                        
+                        }
+                        """)
         );
     }
 }
