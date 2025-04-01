@@ -7,6 +7,8 @@ import static org.openrewrite.java.Assertions.java;
 
 import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
 
+import org.openrewrite.test.SourceSpec;
+
 class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @DocumentExample
     @Test
@@ -82,6 +84,9 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 
                                     @javax.persistence.Transient
                                     private Long id;
+                                
+                                    @javax.persistence.Transient
+                                    private Long version;
                                 }
                                 """,
                         """
@@ -93,6 +98,9 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 
                                     @Transient
                                     private Long id;
+                                
+                                    @Transient
+                                    private Long version;
                                 }
                                 """
                 )
@@ -103,7 +111,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @Test
     void happyPathAll() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
-                        new ShortenFullyQualifiedAnnotation("lombok.ToString")),
+                        new ShortenFullyQualifiedAnnotation(null)),
                 //language=java
                 java(
                         """
@@ -118,11 +126,13 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """
                                 package a;
                                 
+                                import lombok.EqualsAndHashCode;
+                                import lombok.NoArgsConstructor;
                                 import lombok.ToString;
                                 
-                                @lombok.NoArgsConstructor
+                                @NoArgsConstructor
                                 @ToString(callSuper = true)
-                                @lombok.EqualsAndHashCode
+                                @EqualsAndHashCode
                                 public class SomeClass {
                                 }
                                 """
@@ -207,12 +217,48 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
         );
     }
 
-
     @DocumentExample
     @Test
     void edgeCase1() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
                         new ShortenFullyQualifiedAnnotation(null)),
+                java("""
+                    package test;
+                    
+                    import java.lang.annotation.ElementType;
+                    import java.lang.annotation.Retention;
+                    import java.lang.annotation.RetentionPolicy;
+                    import java.lang.annotation.Target;
+                    
+                    @Target({ElementType.TYPE})
+                    @Retention(RetentionPolicy.SOURCE)
+                    public @interface ToString {
+                        boolean includeFieldNames() default true;
+                    
+                        String[] exclude() default {};
+                    
+                        String[] of() default {};
+                    
+                        boolean callSuper() default false;
+                    
+                        boolean doNotUseGetters() default false;
+                    
+                        boolean onlyExplicitlyIncluded() default false;
+                    
+                        @Target({ElementType.FIELD})
+                        @Retention(RetentionPolicy.SOURCE)
+                        public @interface Exclude {
+                        }
+                    
+                        @Target({ElementType.FIELD, ElementType.METHOD})
+                        @Retention(RetentionPolicy.SOURCE)
+                        public @interface Include {
+                            int rank() default 0;
+                    
+                            String name() default "";
+                        }
+                    }
+                    """, SourceSpec::skip),
                 java(
                         """
                                 package a;
@@ -224,6 +270,8 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
                                     private String name;
                                 
+                                    @test.ToString
+                                    private String title;
                                 }
                                 """
                 ,
@@ -240,6 +288,8 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
                                     private String name;
                                 
+                                    @test.ToString
+                                    private String title;
                                 }
                                 """)
         );

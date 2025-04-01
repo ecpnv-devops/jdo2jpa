@@ -87,31 +87,41 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
                         annotation.getType() instanceof JavaType.Class aClass &&
                         (StringUtils.isBlank(fullClassName) ||
                                 Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
-                    // works on the basis of first come, first serve
-                    if (checkImports(imports, aClass)) {
-                        J.Annotation newAnnotation = annotation;
-                        if (aClass.getOwningClass() == null) {
-                            newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
-                                    .contextSensitive()
-                                    .javaParser(JavaParserFactory.create(ctx))
-                                    .imports(aClass.getFullyQualifiedName())
-                                    .build()
-                                    .apply(getCursor(), annotation.getCoordinates().replace()))
-                                    .withArguments(annotation.getArguments());
+
+                    if (aClass.getOwningClass() == null && checkNames(imports, aClass)) {
+                        // works on the basis of first come, first serve
+                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
+                                .contextSensitive()
+                                .javaParser(JavaParserFactory.create(ctx))
+                                .imports(aClass.getFullyQualifiedName())
+                                .build()
+                                .apply(getCursor(), annotation.getCoordinates().replace()))
+                                .withArguments(annotation.getArguments());
+                        if (checkImports(imports, aClass)) {
                             doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
+                            //keep track of the handled class
+                            final J.Import importToAdd = new J.Import(randomId(),
+                                    Space.EMPTY,
+                                    Markers.EMPTY,
+                                    new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
+                                    TypeTree.build(aClass.getFullyQualifiedName()).withPrefix(Space.SINGLE_SPACE),
+                                    null);
+                            imports.add(importToAdd);
                         }
-                        //keep track of the handled class
-                        final J.Import importToAdd = new J.Import(randomId(),
-                                Space.EMPTY,
-                                Markers.EMPTY,
-                                new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
-                                TypeTree.build(aClass.getFullyQualifiedName()).withPrefix(Space.SINGLE_SPACE),
-                                null);
-                        imports.add(importToAdd);
                         return newAnnotation;
                     }
                 }
                 return super.visitAnnotation(annotation, ctx);
+            }
+
+            private boolean checkNames(List<J.Import> imports, JavaType.Class aClass) {
+                for (J.Import _import : imports) {
+                    if (!Objects.equals(aClass.getPackageName(), _import.getPackageName()) &&
+                            Objects.equals(aClass.getClassName(), _import.getClassName())) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             private boolean checkImports(List<J.Import> imports, JavaType.Class aClass) {
