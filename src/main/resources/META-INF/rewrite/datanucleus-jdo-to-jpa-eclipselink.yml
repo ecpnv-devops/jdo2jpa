@@ -778,7 +778,10 @@ recipeList:
   - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
       fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
       fullClassNameToInsert: 'javax.persistence.Transient'
-  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation:
+      fullClassName: 'javax.persistence.Transient'
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation:
+      fullClassName: 'javax.persistence.Id'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway

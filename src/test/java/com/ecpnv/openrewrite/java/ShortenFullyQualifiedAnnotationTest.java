@@ -39,9 +39,71 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
+    void happyPathAttribute1() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(
+                        new ShortenFullyQualifiedAnnotation("javax.persistence.Id")),
+                //language=java
+                java(
+                        """
+                                package a;
+                                
+                                public class SomeClass {
+                                
+                                    @javax.persistence.Id
+                                    private Long id;
+                                }
+                                """,
+                        """
+                                package a;
+                                
+                                import javax.persistence.Id;
+                                
+                                public class SomeClass {
+                                
+                                    @Id
+                                    private Long id;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void happyPathAttribute2() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(
+                        new ShortenFullyQualifiedAnnotation("javax.persistence.Transient")),
+                //language=java
+                java(
+                        """
+                                package a;
+                                
+                                public class SomeClass {
+                                
+                                    @javax.persistence.Transient
+                                    private Long id;
+                                }
+                                """,
+                        """
+                                package a;
+                                
+                                import javax.persistence.Transient;
+                                
+                                public class SomeClass {
+                                
+                                    @Transient
+                                    private Long id;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
     void happyPathAll() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
-                        new ShortenFullyQualifiedAnnotation(null)),
+                        new ShortenFullyQualifiedAnnotation("lombok.ToString")),
                 //language=java
                 java(
                         """
@@ -56,13 +118,11 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """
                                 package a;
                                 
-                                import lombok.EqualsAndHashCode;
-                                import lombok.NoArgsConstructor;
                                 import lombok.ToString;
                                 
-                                @NoArgsConstructor
+                                @lombok.NoArgsConstructor
                                 @ToString(callSuper = true)
-                                @EqualsAndHashCode
+                                @lombok.EqualsAndHashCode
                                 public class SomeClass {
                                 }
                                 """
@@ -74,7 +134,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @Test
     void happyPathDouble() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
-                        new ShortenFullyQualifiedAnnotation(null)),
+                        new ShortenFullyQualifiedAnnotation("javax.persistence.Version")),
                 java(
                         """
                                 package a;
@@ -107,7 +167,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @Test
     void happyPathHalf1() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
-                        new ShortenFullyQualifiedAnnotation(null)),
+                        new ShortenFullyQualifiedAnnotation("javax.persistence.Version")),
                 java(
                         """
                                 package a;
@@ -129,7 +189,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
     @Test
     void happyPathHalf2() {
         rewriteRun(spec -> spec.parser(PARSER).recipes(
-                        new ShortenFullyQualifiedAnnotation(null)),
+                        new ShortenFullyQualifiedAnnotation("javax.persistence.Version")),
                 java(
                         """
                                 package a;
@@ -177,7 +237,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                 @EqualsAndHashCode
                                 public class SomeClass {
                                 
-                                    @ToString.Include @EqualsAndHashCode.Include
+                                    @lombok.ToString.Include @lombok.EqualsAndHashCode.Include
                                     private String name;
                                 
                                 }

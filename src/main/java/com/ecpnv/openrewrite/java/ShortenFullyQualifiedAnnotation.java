@@ -38,7 +38,8 @@ import io.micrometer.core.instrument.util.StringUtils;
  * other colliding ones will remain original.
  * <p>
  * The parameter 'fullClassname' is the full class name of the annotation to be shortened.
- * If the parameter is null all annotations found will be shortened.
+ * If the parameter is null all annotations found without an owning class will be shortened.
+ * Example of an annotation with an owning class would be '@lombok.String.Include'.
  * <p>
  *
  * @author Wouter Veltmaat @ Open Circle Solutions
@@ -88,17 +89,18 @@ public class ShortenFullyQualifiedAnnotation extends Recipe {
                                 Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
                     // works on the basis of first come, first serve
                     if (checkImports(imports, aClass)) {
-                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
-                                .contextSensitive()
-                                .javaParser(JavaParserFactory.create(ctx))
-                                .imports(aClass.getFullyQualifiedName())
-                                .build()
-                                .apply(getCursor(), annotation.getCoordinates().replace()))
-                                .withArguments(annotation.getArguments());
+                        J.Annotation newAnnotation = annotation;
                         if (aClass.getOwningClass() == null) {
+                            newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
+                                    .contextSensitive()
+                                    .javaParser(JavaParserFactory.create(ctx))
+                                    .imports(aClass.getFullyQualifiedName())
+                                    .build()
+                                    .apply(getCursor(), annotation.getCoordinates().replace()))
+                                    .withArguments(annotation.getArguments());
                             doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
                         }
-                        //keep track of the import
+                        //keep track of the handled class
                         final J.Import importToAdd = new J.Import(randomId(),
                                 Space.EMPTY,
                                 Markers.EMPTY,
