@@ -273,7 +273,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     private String title;
                                 }
                                 """
-                ,
+                        ,
                         """
                                 package a;
                                 
@@ -327,6 +327,41 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                             @test.Property
                             Property property;
                         
+                        }
+                        """)
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void edgeCase3() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(
+                        new ShortenFullyQualifiedAnnotation(null)),
+                java("""
+                        package org.springframework.stereotype;
+                        
+                        import java.lang.annotation.Documented;
+                        import java.lang.annotation.ElementType;
+                        import java.lang.annotation.Retention;
+                        import java.lang.annotation.RetentionPolicy;
+                        import java.lang.annotation.Target;
+                        
+                        @Target({ElementType.TYPE})
+                        @Retention(RetentionPolicy.RUNTIME)
+                        @Documented
+                        @Component
+                        public @interface Repository {
+                            String value() default "";
+                        }
+                        """, SourceSpec::skip),
+                java("""
+                        package a;
+                        
+                        public class SomeClass {
+                        
+                            @org.springframework.stereotype.Repository
+                            private static class Repository {
+                            }
                         }
                         """)
         );
