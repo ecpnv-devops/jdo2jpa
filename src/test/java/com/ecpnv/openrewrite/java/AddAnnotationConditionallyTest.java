@@ -34,7 +34,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "VAR"));
+        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR));
     }
 
     /**
@@ -86,7 +86,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForClass() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "CLASS")),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS)),
                 //language=java
                 java(
                         """
@@ -126,7 +126,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForMethod() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "METHOD")),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD)),
                 //language=java
                 //language=java
                 java(
@@ -258,7 +258,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void noChangeWhenTargetAlreadyExist() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, "CLASS")),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS)),
                 //language=java
                 java(
                         """

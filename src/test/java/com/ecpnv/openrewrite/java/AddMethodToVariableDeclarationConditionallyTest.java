@@ -32,7 +32,7 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices");
+        spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices.OneToMany");
     }
 
     /**
@@ -51,7 +51,8 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addMethodToVariableDeclaration() {
-        rewriteRun(spec -> spec.typeValidationOptions(
+        rewriteRun(
+                spec -> spec.typeValidationOptions(
                         TypeValidation.builder().allowMissingType(o -> true).build()),
                 //language=java
                 java(
@@ -69,7 +70,12 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
                                 }
                                 """,
                         """
+                                import java.util.ArrayList;
+                                import java.util.Collection;
+                                import java.util.Collections;
                                 import java.util.List;
+                                import java.util.stream.Stream;
+                                
                                 import javax.persistence.Entity;
                                 import javax.jdo.annotations.Persistent;
                                 
@@ -80,17 +86,50 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
                                     @Persistent( mappedBy = "person")
                                     private List<Person> persons;
                                 
-                                    @org.apache.isis.applib.annotation.Programmatic
+                                    @Programmatic
+                                    public Collection<Person> getPersons() {
+                                        return Collections.unmodifiableCollection(persons);
+                                    }
+                                
+                                    @Programmatic
+                                    public Stream<Person> streamPersons() {
+                                        return new ArrayList<>(persons).stream();
+                                    }
+                                
+                                    @Programmatic
                                     public void addToPersons(Person element) {
                                         persons.add(element);
                                         element.setSomeEntity(this);
                                     }
                                 
-                                    @org.apache.isis.applib.annotation.Programmatic
+                                    @Programmatic
                                     public void removeFromPersons(Person element) {
                                         persons.remove(element);
                                         element.setSomeEntity(null);
                                     }
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void noChangeWhenNotAnCollection() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                
+                                public class Person {
+                                    public void setSomeEntity(SomeEntity someEntity) {}
+                                }
+                                public class SomeEntity {
+                                    @Persistent( mappedBy = "person")
+                                    private Person person;
                                 }
                                 """
                 )
