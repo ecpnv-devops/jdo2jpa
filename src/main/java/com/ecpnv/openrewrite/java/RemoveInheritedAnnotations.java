@@ -80,10 +80,16 @@ public class RemoveInheritedAnnotations extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new RemoveAnnoVisitor();
+        return new RemoveAnnotationVisitor(nonInheritedAnnotationTypes);
     }
 
-    public static class RemoveAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
+    public static class RemoveAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+        Set<String> nonInheritedAnnotationTypes;
+
+        public RemoveAnnotationVisitor(Set<String> nonInheritedAnnotationTypes) {
+            this.nonInheritedAnnotationTypes = nonInheritedAnnotationTypes;
+        }
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -109,6 +115,7 @@ public class RemoveInheritedAnnotations extends Recipe {
             J.ClassDeclaration finalCd = cd;
             List<J.Annotation> annotationsToRemove = cd.getLeadingAnnotations().stream()
                     .filter(ca -> ca.getAnnotationType().getType() != null)
+                    .filter(ca -> nonInheritedAnnotationTypes.contains(((JavaType.FullyQualified) ca.getAnnotationType().getType()).getFullyQualifiedName()))
                     // Is there any parent type
                     .filter(ca -> parentTypes.stream()
                             // That has candidate annotations

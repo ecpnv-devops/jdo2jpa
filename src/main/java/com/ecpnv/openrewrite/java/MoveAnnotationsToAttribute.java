@@ -16,6 +16,7 @@ import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.AddImport;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -165,6 +166,8 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 // Imports when needed
                 maybeAddImport(sourceAnnotationType);
                 maybeAddImport(targetAnnotationType);
+                doAfterVisit(new AddImport<>(sourceAnnotationType, null, true));
+                doAfterVisit(new AddImport<>(targetAnnotationType, null, true));
                 // Remove existing annotations
                 classDeclaration = new RemoveAnnotationVisitor(new AnnotationMatcher(sourceAnnotationType))
                         .visitClassDeclaration(classDeclaration, ctx);

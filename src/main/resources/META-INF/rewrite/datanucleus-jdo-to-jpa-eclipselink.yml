@@ -778,7 +778,6 @@ recipeList:
   - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
       fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
       fullClassNameToInsert: 'javax.persistence.Transient'
-  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
@@ -811,6 +810,7 @@ tags:
 recipeList:
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
       excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value
+  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
   - com.ecpnv.openrewrite.java.RemovedUnusedImports
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
