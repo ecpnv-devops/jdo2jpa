@@ -14,7 +14,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.RemoveImport;
@@ -101,7 +100,7 @@ public class ReplaceLinkInComment extends Recipe {
             public Statement visitStatement(Statement statement, ExecutionContext ctx) {
                 if (statement instanceof J tree) {
                     if (CollectionUtils.isNotEmpty(tree.getComments()) && scanComments(tree.getComments(), fullClassNameToReplace)) {
-                        doAfterVisit(new AddImport<>(fullClassNameToInsert, null, false));
+                        maybeAddImport(fullClassNameToInsert, null, false);
                         doAfterVisit(new RemoveImport<>(fullClassNameToReplace, true));
                         return JavaTemplate.builder(statement.print(getCursor()))
                                 .contextSensitive()
