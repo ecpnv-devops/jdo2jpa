@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Vector;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -132,6 +135,7 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
         return new JavaIsoVisitor<>() {
 
             J.CompilationUnit cu;
+            Vector<J.Annotation> annotationStack = new Vector<>();//used to check if the annotation is nested
             final List<J.Import> scannedClasses = new ArrayList<>();
             final List<J.Import> usedImports = new ArrayList<>();
 
@@ -159,9 +163,24 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
                         (StringUtils.isBlank(fullClassName) ||
                                 Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
 
-                    if (aClass.getOwningClass() == null && checkClassNamesAndImports(scannedClasses, aClass)) {
-                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder("@" + aClass.getClassName())
+                    if (annotationStack.isEmpty() && aClass.getOwningClass() == null && checkClassNamesAndImports(scannedClasses, aClass)) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append("@").append(aClass.getClassName());
+                        if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
+                            stringBuilder.append("(").append(annotation.getArguments().stream()
+                                            .map(Object::toString)
+                                            .collect(Collectors.joining(",")))
+                                    .append(")");
+                        }
+
+                        J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder(stringBuilder.toString())
                                 .contextSensitive()
+                                .doBeforeParseTemplate(new Consumer<String>() {
+                                    @Override
+                                    public void accept(String s) {
+                                        System.err.println(s);
+                                    }
+                                })
                                 .javaParser(JavaParserFactory.create(ctx))
                                 .imports(aClass.getFullyQualifiedName())
                                 .build()
@@ -176,7 +195,12 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
                         return newAnnotation;
                     }
                 }
-                return super.visitAnnotation(annotation, ctx);
+                try {
+                    annotationStack.addElement(annotation);
+                    return super.visitAnnotation(annotation, ctx);
+                } finally {
+                    annotationStack.removeElement(annotation);
+                }
             }
 
             private boolean checkClassNamesAndImports(List<J.Import> classes, JavaType.Class aClass) {

@@ -366,4 +366,31 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                         """)
         );
     }
+
+    @DocumentExample
+    @Test
+    void edgeCase4() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(new ShortenFullyQualifiedAnnotation(null)),
+                java("""
+                        import javax.persistence.*;
+
+                        @Entity
+                        public class Person {}
+                        """, SourceSpec::skip),
+                java("""
+                        import java.util.List;
+                        import javax.persistence.*;
+                        
+                        @Entity
+                        public class SomeEntity {
+                            private int id;
+                            @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                            @JoinTable(name = "some_entity_person",
+                                    joinColumns = {@javax.persistence.JoinColumn(name = "some_entity_id")},
+                                    inverseJoinColumns = {@javax.persistence.JoinColumn(name = "person_id")})
+                            private List<Person> persons;
+                        }
+                        """
+                ));
+    }
 }
