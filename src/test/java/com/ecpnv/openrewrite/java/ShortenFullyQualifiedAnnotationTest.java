@@ -373,7 +373,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
         rewriteRun(spec -> spec.parser(PARSER).recipes(new ShortenFullyQualifiedAnnotation(null)),
                 java("""
                         import javax.persistence.*;
-
+                        
                         @Entity
                         public class Person {}
                         """, SourceSpec::skip),
@@ -391,6 +391,35 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                             private List<Person> persons;
                         }
                         """
+                ));
+    }
+
+
+    @DocumentExample
+    @Test
+    void edgeCase5() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(new ShortenFullyQualifiedAnnotation(null)),
+                java("""
+                                package a;
+                                
+                                import org.springframework.context.annotation.Configuration;
+                                
+                                @Configuration
+                                @org.springframework.boot.autoconfigure.domain.EntityScan({"a","b"})
+                                public class SomeConfiguration {
+                                }
+                                """,
+                        """
+                                package a;
+                                
+                                import org.springframework.boot.autoconfigure.domain.EntityScan;
+                                import org.springframework.context.annotation.Configuration;
+                                
+                                @Configuration
+                                @EntityScan({"a","b"})
+                                public class SomeConfiguration {
+                                }
+                                """
                 ));
     }
 }

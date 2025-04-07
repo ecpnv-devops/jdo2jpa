@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -164,23 +163,17 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
                                 Objects.equals(fullClassName, aClass.getFullyQualifiedName()))) {
 
                     if (annotationStack.isEmpty() && aClass.getOwningClass() == null && checkClassNamesAndImports(scannedClasses, aClass)) {
-                        StringBuilder stringBuilder = new StringBuilder();
+                        final StringBuilder stringBuilder = new StringBuilder();
                         stringBuilder.append("@").append(aClass.getClassName());
                         if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                             stringBuilder.append("(").append(annotation.getArguments().stream()
-                                            .map(Object::toString)
+                                            .map(exp -> exp.print(getCursor()))
                                             .collect(Collectors.joining(",")))
                                     .append(")");
                         }
 
                         J.Annotation newAnnotation = ((J.Annotation) JavaTemplate.builder(stringBuilder.toString())
                                 .contextSensitive()
-                                .doBeforeParseTemplate(new Consumer<String>() {
-                                    @Override
-                                    public void accept(String s) {
-                                        System.err.println(s);
-                                    }
-                                })
                                 .javaParser(JavaParserFactory.create(ctx))
                                 .imports(aClass.getFullyQualifiedName())
                                 .build()
