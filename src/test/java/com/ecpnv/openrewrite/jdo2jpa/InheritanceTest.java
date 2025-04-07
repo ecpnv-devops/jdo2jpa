@@ -341,18 +341,6 @@ class InheritanceTest {
                                     public class Manager extends Person {
                                             @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                             private List<Person> managedPersons;
-                                    
-                                        @org.apache.isis.applib.annotation.Programmatic
-                                        public void addToManagedPersons(Person element) {
-                                            managedPersons.add(element);
-                                            element.setManager(this);
-                                        }
-                                    
-                                        @org.apache.isis.applib.annotation.Programmatic
-                                        public void removeFromManagedPersons(Person element) {
-                                            managedPersons.remove(element);
-                                            element.setManager(null);
-                                        }
                                     }
                                     """
                     )
@@ -431,18 +419,6 @@ class InheritanceTest {
                                             public static final String DISCRIMINATOR_VALUE = "Manager_discriminator";
                                             @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                             private List<Person> managedPersons;
-                                    
-                                        @org.apache.isis.applib.annotation.Programmatic
-                                        public void addToManagedPersons(Person element) {
-                                            managedPersons.add(element);
-                                            element.setManager(this);
-                                        }
-                                    
-                                        @org.apache.isis.applib.annotation.Programmatic
-                                        public void removeFromManagedPersons(Person element) {
-                                            managedPersons.remove(element);
-                                            element.setManager(null);
-                                        }
                                     }
                                     """
                     )

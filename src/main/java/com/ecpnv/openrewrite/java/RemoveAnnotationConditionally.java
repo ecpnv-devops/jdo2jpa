@@ -6,13 +6,16 @@ import java.util.function.Function;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -45,14 +48,23 @@ public class RemoveAnnotationConditionally extends Recipe {
             example = "VAR")
     DeclarationType declarationType;
 
+    @Option(displayName = "Match type",
+            description = "Skip when this type does not match the (inherited) type of the variable, " +
+                    "return type of the method or type of the class.",
+            required = false,
+            example = "java.util.Collection")
+    String fullyQualifiedType;
+
     @JsonCreator
     public RemoveAnnotationConditionally(
             @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("matchByRegularExpressionForRemoval") String matchByRegularExpressionForRemoval,
-            @NonNull @JsonProperty("declarationType") String declarationType) {
+            @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
+            @Nullable @JsonProperty("fullyQualifiedType") String fullyQualifiedType) {
         this.matchByRegularExpression = matchByRegularExpression != null ? matchByRegularExpression : matchByRegularExpressionForRemoval;
         this.matchByRegularExpressionForRemoval = matchByRegularExpressionForRemoval;
-        this.declarationType = DeclarationType.valueOf(declarationType);
+        this.declarationType = declarationType;
+        this.fullyQualifiedType = fullyQualifiedType;
     }
 
     @Override
@@ -68,13 +80,14 @@ public class RemoveAnnotationConditionally extends Recipe {
     @Override
     public JavaIsoVisitor<ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
+            protected final TypeMatcher typeMatcher = new TypeMatcher(fullyQualifiedType, true);
 
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations vars = super.visitVariableDeclarations(multiVariable, ctx);
 
                 return (J.VariableDeclarations) removeAnnotationConditionally(DeclarationType.VAR, vars,
-                        vars.getLeadingAnnotations(), vars::withLeadingAnnotations);
+                        vars.getType(), vars.getLeadingAnnotations(), vars::withLeadingAnnotations);
             }
 
             @Override
@@ -82,20 +95,24 @@ public class RemoveAnnotationConditionally extends Recipe {
                 J.ClassDeclaration classD = super.visitClassDeclaration(classDecl, ctx);
 
                 return (J.ClassDeclaration) removeAnnotationConditionally(DeclarationType.CLASS, classD,
-                        classD.getLeadingAnnotations(), classD::withLeadingAnnotations);
+                        classD.getType(), classD.getLeadingAnnotations(), classD::withLeadingAnnotations);
             }
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
-                return (J.MethodDeclaration) removeAnnotationConditionally(DeclarationType.METHOD, m,
+                return (J.MethodDeclaration) removeAnnotationConditionally(DeclarationType.METHOD, m, m.getType(),
                         m.getLeadingAnnotations(), m::withLeadingAnnotations);
             }
 
             public J removeAnnotationConditionally(
-                    DeclarationType currentDeclarationType, J j, List<J.Annotation> annotations,
+                    DeclarationType currentDeclarationType, J j, JavaType type, List<J.Annotation> annotations,
                     Function<List<J.Annotation>, J> applyAnnotations) {
+                // Match type when applicable
+                if (StringUtils.isNotBlank(fullyQualifiedType) && !typeMatcher.matches(type)) {
+                    return j;
+                }
                 // Match declarationType or exit
                 if (declarationType != currentDeclarationType) {
                     return j;

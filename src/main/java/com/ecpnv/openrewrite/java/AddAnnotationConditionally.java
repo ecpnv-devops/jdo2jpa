@@ -75,15 +75,11 @@ public class AddAnnotationConditionally extends Recipe {
             @NonNull @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("annotationTemplate") String annotationTemplate,
-            @NonNull @JsonProperty("declarationType") String declarationType) {
+            @NonNull @JsonProperty("declarationType") DeclarationType declarationType) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
-        if (declarationType == null) {
-            this.declarationType = null;
-        } else {
-            this.declarationType = DeclarationType.valueOf(declarationType);
-        }
+        this.declarationType = declarationType;
     }
 
     @Override

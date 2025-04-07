@@ -38,7 +38,6 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices
   # Post code changes
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.NotPersistent'
@@ -550,8 +549,8 @@ recipeList:
       newFullyQualifiedTypeName: javax.persistence.Id
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices
-displayName: Apply best practices for JPA
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.BestPractices.OneToMany
+displayName: Apply best practices for JPA one to many relationships
 description: Apply best practices for JPA.
 tags:
   - jdo
@@ -567,55 +566,60 @@ recipeList:
   # Add addToXyz( type element) and removeFromXyz(type element) where Xyz is a collection of type
   - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
       regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
-      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
+      methodTemplateString: '@Programmatic 
       public void removeFrom$varNameC$($varGType$ element){
-      $varName$.remove(element);
-      element.set$className$(null);
+        $varName$.remove(element);
+        element.set$className$(null);
       }'
+      fullyQualifiedType: java.util.Collection
       maybeImportTypes:
         - org.apache.isis.applib.annotation.Programmatic
   - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
       regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
-      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
+      methodTemplateString: '@Programmatic 
       public void addTo$varNameC$($varGType$ element){
-      $varName$.add(element);
-      element.set$className$(this);
+        $varName$.add(element);
+        element.set$className$(this);
       }'
+      fullyQualifiedType: java.util.Collection
       maybeImportTypes:
         - org.apache.isis.applib.annotation.Programmatic
   # Remove Lombok @Getter from bi-directional OneToMany relationships
   - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
       matchByRegularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
       matchByRegularExpressionForRemoval: '@.*Getter.*'
+      fullyQualifiedType: java.util.Collection
       declarationType: VAR
   # Remove Lombok @Setter from bi-directional OneToMany relationships
   - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
       matchByRegularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
-      matchByRegularExpressionForRemoval: '@.*Getter.*'
+      matchByRegularExpressionForRemoval: '(@.*Setter.*)|(@lombok\.Setter.*)'
+      fullyQualifiedType: java.util.Collection
       declarationType: VAR
   # Add streamXyz method where Xyz is a collection of type
   - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
       regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
-      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
-      public java.util.Stream<$varGType$> stream$varNameC$(){
-        return new java.util.ArrayList<>($varName$).stream();
+      methodTemplateString: '@Programmatic 
+      public Stream<$varGType$> stream$varNameC$(){
+        return new ArrayList<>($varName$).stream();
       }'
+      fullyQualifiedType: java.util.Collection
       maybeImportTypes:
-        - java.util.Stream
+        - java.util.stream.Stream
         - java.util.ArrayList
+        - org.apache.isis.applib.annotation.Programmatic
   # Add getXyz method where Xyz is a collection of type
   - com.ecpnv.openrewrite.java.AddMethodToVariableDeclarationConditionally:
       regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
-
-      TODO         Collections.unmodifiableCollection()
-
-      methodTemplateString: '@org.apache.isis.applib.annotation.Programmatic 
-      public java.util.Stream<$varGType$> stream$varNameC$(){
-        return new java.util.ArrayList<>($varName$).stream();
+      methodTemplateString: '@Programmatic 
+      public Collection<$varGType$> get$varNameC$(){
+        return Collections.unmodifiableCollection($varName$);
       }'
+      fullyQualifiedType: java.util.Collection
       maybeImportTypes:
-        - java.util.Stream
-        - java.util.ArrayList
+        - java.util.Collection
+        - java.util.Collections
+        - org.apache.isis.applib.annotation.Programmatic
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.causeway

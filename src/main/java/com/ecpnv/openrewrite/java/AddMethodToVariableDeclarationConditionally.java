@@ -19,6 +19,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -80,6 +81,12 @@ public class AddMethodToVariableDeclarationConditionally extends Recipe {
             example = "@Programmatic public void addTo$varNameC$($varGType$ element) { $varName$.add(element); element.set$className$(this); }")
     String methodTemplateString;
 
+    @Option(displayName = "Match type",
+            description = "Skip when this type does not match the (inherited) type of the variable",
+            required = false,
+            example = "java.util.Collection")
+    String fullyQualifiedType;
+
     @Option(displayName = "Maybe import types",
             description = "When the template introduces new types, specify them in this list",
             required = false,
@@ -90,10 +97,12 @@ public class AddMethodToVariableDeclarationConditionally extends Recipe {
     public AddMethodToVariableDeclarationConditionally(
             @NonNull @JsonProperty("regularExpression") String regularExpression,
             @NonNull @JsonProperty("methodTemplateString") String methodTemplateString,
+            @Nullable @JsonProperty("fullyQualifiedType") String fullyQualifiedType,
             @Nullable @JsonProperty("maybeImportTypes") String... maybeImportTypes
     ) {
         this.regularExpression = regularExpression;
         this.methodTemplateString = methodTemplateString;
+        this.fullyQualifiedType = fullyQualifiedType;
         this.maybeImportTypes = maybeImportTypes;
     }
 
@@ -114,7 +123,8 @@ public class AddMethodToVariableDeclarationConditionally extends Recipe {
 
     public class AddMethodToVariableDeclarationConditionallyVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        List<J.VariableDeclarations> mvMatches;
+        protected final TypeMatcher typeMatcher = new TypeMatcher(fullyQualifiedType, true);
+        protected List<J.VariableDeclarations> mvMatches;
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cs, ExecutionContext ctx) {
@@ -184,7 +194,9 @@ public class AddMethodToVariableDeclarationConditionally extends Recipe {
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
             J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, ctx);
-            if (mv.getLeadingAnnotations().stream().anyMatch(a -> a.toString().matches(regularExpression))) {
+
+            if ((StringUtils.isBlank(fullyQualifiedType) || typeMatcher.matches(mv.getTypeExpression()))
+                    && mv.getLeadingAnnotations().stream().anyMatch(a -> a.toString().matches(regularExpression))) {
                 mvMatches.add(mv);
             }
             return mv;
