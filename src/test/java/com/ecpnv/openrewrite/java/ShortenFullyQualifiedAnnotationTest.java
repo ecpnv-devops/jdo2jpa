@@ -273,7 +273,7 @@ class ShortenFullyQualifiedAnnotationTest extends BaseRewriteTest {
                                     private String title;
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package a;
                                 

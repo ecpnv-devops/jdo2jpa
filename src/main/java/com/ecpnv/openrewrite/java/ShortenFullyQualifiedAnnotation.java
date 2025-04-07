@@ -167,8 +167,8 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
                         stringBuilder.append("@").append(aClass.getClassName());
                         if (CollectionUtils.isNotEmpty(annotation.getArguments())) {
                             stringBuilder.append("(").append(annotation.getArguments().stream()
-                                            .map(exp -> exp.print(getCursor()))
-                                            .collect(Collectors.joining(",")))
+                                    .map(exp -> exp.print(getCursor()))
+                                    .collect(Collectors.joining(",")))
                                     .append(")");
                         }
 
