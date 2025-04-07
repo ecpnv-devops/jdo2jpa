@@ -100,16 +100,13 @@ public class ExtendWithClassForAnnotationConditionally extends Recipe {
                     if (checkAnnotationForCondition(sourceAnnotation, annotationCondition)) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
 
-                        maybeAddImport(extendsFullClassName);
+                        maybeAddImport(extendsFullClassName, null, false);
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
                                 .contextSensitive()
                                 .javaParser(JavaParserFactory.create(ctx))
                                 .imports(extendsFullClassName)
                                 .build()
                                 .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
-
-                        //This line causes the imports to have white lines between them
-                        doAfterVisit(new AddImport<>(extendsFullClassName, null, false));
 
                         return newCd;
                     }

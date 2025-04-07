@@ -166,8 +166,6 @@ public class MoveAnnotationsToAttribute extends Recipe {
                 // Imports when needed
                 maybeAddImport(sourceAnnotationType);
                 maybeAddImport(targetAnnotationType);
-                doAfterVisit(new AddImport<>(sourceAnnotationType, null, true));
-                doAfterVisit(new AddImport<>(targetAnnotationType, null, true));
                 // Remove existing annotations
                 classDeclaration = new RemoveAnnotationVisitor(new AnnotationMatcher(sourceAnnotationType))
                         .visitClassDeclaration(classDeclaration, ctx);

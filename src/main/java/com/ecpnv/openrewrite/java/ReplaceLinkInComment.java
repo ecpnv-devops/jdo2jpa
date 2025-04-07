@@ -82,8 +82,8 @@ public class ReplaceLinkInComment extends Recipe {
             public Expression visitExpression(Expression expression, ExecutionContext ctx) {
                 if (expression instanceof J tree) {
                     if (CollectionUtils.isNotEmpty(tree.getComments()) && scanComments(tree.getComments(), fullClassNameToReplace)) {
-                        doAfterVisit(new AddImport<>(fullClassNameToInsert, null, false));
-                        doAfterVisit(new RemoveImport<>(fullClassNameToReplace, true));
+                        maybeAddImport(fullClassNameToInsert, null, false);
+                        maybeAddImport(fullClassNameToReplace, true);
                         return JavaTemplate.builder(expression.print(getCursor()))
                                 .contextSensitive()
                                 .javaParser(JavaParserFactory.create(ctx))

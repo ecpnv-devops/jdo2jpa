@@ -248,7 +248,6 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.JOIN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.ELEMENT_ANNOTATION_FULL);
-                doAfterVisit(new AddImport<>(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, null, true));
 
                 // Add @OneToMany
                 multiVariable = JavaTemplate.builder(template.toString())

@@ -259,7 +259,6 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                 maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);
-                doAfterVisit(new AddImport<>(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, null, true));
 
                 var leadAnnosResult = ListUtils.concat(leadAnnos, ((J.VariableDeclarations) JavaTemplate.builder(template.toString())
                         .javaParser(JavaParserFactory.create(ctx))
