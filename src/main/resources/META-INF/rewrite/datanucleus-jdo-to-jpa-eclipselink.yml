@@ -792,6 +792,8 @@ tags:
   - javax
   - causeway
   - isis
+preconditions:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 recipeList:
   # Inherited classes also need Entity annotation because of QueryDSL
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
