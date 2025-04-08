@@ -8,7 +8,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
@@ -78,16 +77,13 @@ public class ExtendWithClassForClass extends Recipe {
                     if (fullClassName.equals(cd.getType().getFullyQualifiedName())) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
 
-                        maybeAddImport(extendsFullClassName);
+                        maybeAddImport(extendsFullClassName, null, false);
                         J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
                                 .contextSensitive()
                                 .javaParser(JavaParserFactory.create(ctx))
                                 .imports(extendsFullClassName)
                                 .build()
                                 .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
-
-                        //This line causes the imports to have white lines between them
-                        doAfterVisit(new AddImport<>(extendsFullClassName, null, false));
 
                         return newCd;
                     }

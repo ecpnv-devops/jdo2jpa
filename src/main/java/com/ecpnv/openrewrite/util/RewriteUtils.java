@@ -14,14 +14,21 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 
 import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import org.openrewrite.marker.Markers;
+
+import static org.openrewrite.Tree.randomId;
 
 /**
  * Utility class providing helper methods for handling and analyzing Java annotation metadata,
@@ -366,4 +373,14 @@ public class RewriteUtils {
         }
         return false;
     }
+
+    public static J.Import createImport(String fullClassName) {
+        return new J.Import(randomId(),
+                Space.format("\n"),
+                Markers.EMPTY,
+                new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
+                TypeTree.build(fullClassName).withPrefix(Space.SINGLE_SPACE),
+                null);
+    }
+
 }

@@ -19,7 +19,6 @@ import org.openrewrite.NlsRewrite;
 import org.openrewrite.Option;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.AddImport;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.Expression;
@@ -180,7 +179,7 @@ public class ShortenFullyQualifiedAnnotation extends ScanningRecipe<ShortenFully
                                 .apply(getCursor(), annotation.getCoordinates().replace()))
                                 .withArguments(annotation.getArguments());
                         if (checkImports(usedImports, aClass)) {
-                            doAfterVisit(new AddImport<>(aClass.getFullyQualifiedName(), null, false));
+                            maybeAddImport(aClass.getFullyQualifiedName(), null, false);
                             //keep track of the handled class
                             final J.Import importToAdd = createImport(aClass);
                             usedImports.add(importToAdd);

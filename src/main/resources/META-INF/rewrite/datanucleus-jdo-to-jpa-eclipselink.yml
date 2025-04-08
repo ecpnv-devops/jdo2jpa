@@ -778,6 +778,16 @@ recipeList:
   - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
       fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
       fullClassNameToInsert: 'javax.persistence.Transient'
+# Adds missing imports that somehow dissappeared
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.estatio.module.asset.dom.unitlink.UnitLink'
+      importFullClassName: 'javax.persistence.UniqueConstraint'
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.estatio.module.capex.dom.codamapping.CodaMapping'
+      importFullClassName: 'javax.persistence.UniqueConstraint'
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
+      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
@@ -792,6 +802,8 @@ tags:
   - javax
   - causeway
   - isis
+preconditions:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 recipeList:
   # Inherited classes also need Entity annotation because of QueryDSL
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:

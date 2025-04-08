@@ -34,7 +34,6 @@ import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JLeftPadded;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Loop;
@@ -45,10 +44,11 @@ import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 
-import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.style.ImportLayoutStyle.isPackageAlwaysFolded;
 import static org.openrewrite.java.tree.TypeUtils.fullyQualifiedNamesAreEqual;
 import static org.openrewrite.java.tree.TypeUtils.toFullyQualifiedName;
+
+import static com.ecpnv.openrewrite.util.RewriteUtils.createImport;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -181,13 +181,7 @@ public class RemovedUnusedImports extends Recipe {
                                         final String packageName = JavaType.ShallowClass.build(className).getPackageName().isEmpty() ? getPackageName(importUsage, member) : JavaType.ShallowClass.build(className).getPackageName();
                                         if (!packageName.isEmpty()) {
                                             try {
-                                                final J.Import importToAdd = new J.Import(randomId(),
-                                                        Space.EMPTY,
-                                                        Markers.EMPTY,
-                                                        new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
-                                                        TypeTree.build(packageName + "." + member).withPrefix(Space.SINGLE_SPACE),
-                                                        null);
-
+                                                final J.Import importToAdd = createImport(packageName + "." + member);
                                                 annotationImports.add(importToAdd.toString());
                                             } catch (Exception e) {
                                                 throw new RecipeException("Cannot create import for class: {}", className, e);
