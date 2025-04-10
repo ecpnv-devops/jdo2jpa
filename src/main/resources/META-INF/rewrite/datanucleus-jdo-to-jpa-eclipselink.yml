@@ -865,9 +865,6 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.capex.dom.codamapping.CodaMapping'
       importFullClassName: 'javax.persistence.UniqueConstraint'
-  - com.ecpnv.openrewrite.java.AddImport:
-      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
-      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
@@ -906,3 +903,7 @@ recipeList:
   - com.ecpnv.openrewrite.java.RemovedUnusedImports
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
+# This specific class has an inner class that extends from an abstract class defined in an interface and rewrite doesn't support this
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
+      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
