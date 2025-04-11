@@ -481,6 +481,9 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     @Contract("_, null, _ -> null; _, !null, _ -> !null")
     private static @Nullable String maybeQuoteStringArgument(@Nullable String attributeName, @Nullable String attributeValue, J.Annotation annotation) {
         if ((attributeValue != null) && attributeIsString(attributeName, annotation)) {
+            if (attributeValue.startsWith("$")) {
+                return attributeValue.substring(1);
+            }
             return "\"" + attributeValue + "\"";
         } else {
             return attributeValue;
