@@ -754,12 +754,92 @@ recipeList:
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.estatio.luxs.orchestrations.dom.unit.metricsecp.UnitMetricsInEcp
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.document.dom.impl.paperclips.Paperclip
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.numerator.integtests.dom.NumeratorExampleObject
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.platform.dom.docfragment.integtests.demo.dom.invoicewithatpath.DemoInvoiceWithAtPath
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.communications.integtests.demo.dom.invoice.DemoInvoice
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.platform.dom.docfragment.integtests.demo.dom.customer.DemoCustomer
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.classification.integtests.ClassificationForTaxForTesting
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.classification.dom.impl.classification.Classification
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.task.dom.state.StateTransitionAbstract
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.integration.orchestration.dom.OrchestrationAbstract
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.asset.dom.Site
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.invoiceforlease.dom.reminderletter.ReminderLetterLineViewModel
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.asset.dom.tax.PropertyTaxForUnit
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.asset.dom.registration.LandRegistration
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.capex.dom.invoice.IncomingInvoiceItemSynopsis
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.assetfinancial.dom.FixedAssetFinancialAccount
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.fastnet.dom.FastNetRentRollOnLeaseDataLine
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.fastnet.dom.FastNetChargingOnLeaseDataLine
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.asset.dom.energylabel.EnergyPerformanceCertification
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.document.dom.impl.types.DocumentType
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.docfragment.dom.impl.DocFragment
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.incode.module.communications.dom.impl.comms.Communication
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
+      fullClassName: org.estatio.module.agreement.dom.AgreementRoleCommunicationChannelType
+      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
+  #
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Named\(InvoiceSummary\.LOGICAL_TYPE_NAMED\)'
       annotationType: javax.persistence.IdClass
       annotationTemplate: '@IdClass(InvoiceSummaryId.class)'
       declarationType: CLASS
-# fix some annotations
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Named\(ApplicationSettingForEstatio\.LOGICAL_TYPE_NAMED\)'
+      annotationType: javax.persistence.IdClass
+      annotationTemplate: '@IdClass(ApplicationSettingForEstatioId.class)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Named\(UserSettingForEstatioId\.LOGICAL_TYPE_NAMED\)'
+      annotationType: javax.persistence.IdClass
+      annotationTemplate: '@IdClass(UserSettingForEstatioIdId.class)'
+      declarationType: CLASS
+  # fix some annotations
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@javax.jdo.annotations.PrimaryKey'
       annotationTemplateToInsert: '@javax.persistence.Id'
@@ -778,16 +858,29 @@ recipeList:
   - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
       fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
       fullClassNameToInsert: 'javax.persistence.Transient'
-# Adds missing imports that somehow dissappeared
+  # Adds missing imports that somehow dissappeared
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.asset.dom.unitlink.UnitLink'
       importFullClassName: 'javax.persistence.UniqueConstraint'
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.capex.dom.codamapping.CodaMapping'
       importFullClassName: 'javax.persistence.UniqueConstraint'
-  - com.ecpnv.openrewrite.java.AddImport:
-      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
-      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttributeForClass:
+      fullyQualifiedTypeName: org.incode.module.classification.dom.impl.applicability.Applicability
+      annotationType: javax.persistence.Entity
+      attributeName: name
+      oldAttributeValue: "null"
+      attributeValue: Applicability.LOGICAL_TYPE_NAMED
+      operation: ADD
+      appendArray: false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttributeForClass:
+      fullyQualifiedTypeName: org.incode.module.document.dom.impl.applicability.Applicability
+      annotationType: javax.persistence.Entity
+      attributeName: name
+      oldAttributeValue: "null"
+      attributeValue: Applicability.LOGICAL_TYPE_NAMED
+      operation: ADD
+      appendArray: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
@@ -826,3 +919,7 @@ recipeList:
   - com.ecpnv.openrewrite.java.RemovedUnusedImports
 # too soon
 #  - org.openrewrite.java.format.AutoFormat
+# This specific class has an inner class that extends from an abstract class defined in an interface and rewrite doesn't support this
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
+      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'

@@ -100,6 +100,8 @@ public class AddImport extends Recipe {
             private static boolean checkName(J.Import t, @NonNull String importFullClassName) {
                 if (t.getQualid().getType() instanceof JavaType.ShallowClass shallowClass) {
                     return importFullClassName.equals(shallowClass.getFullyQualifiedName());
+                } else if (t.getQualid().getType() instanceof JavaType.FullyQualified fullyQualified) {
+                    return importFullClassName.equals(fullyQualified.getFullyQualifiedName());
                 }
                 return false;
             }
