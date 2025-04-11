@@ -42,17 +42,17 @@ class AddImportTest extends BaseRewriteTest {
     void innerClass() {
         rewriteRun(spec -> spec.parser(PARSER)
                         .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway")
-                ,
-                //language=java
-                java("""
+        ,
+                        //language=java
+                        java("""
                         package org.incode.module.communications;
                         
                         public interface EstatioSharedKernelCommunicationsModule {
                             abstract class AbstractEvent{}
                         }
                         """, SourceSpec::skip),
-                java(
-                        """
+                        java(
+                                """
                                 package org.incode.module.communications.integtests.dom.communications.dom.demowithnotes;
                                 
                                 import org.springframework.context.annotation.Configuration;
@@ -63,7 +63,7 @@ class AddImportTest extends BaseRewriteTest {
                                     public abstract class SomeEvent extends EstatioSharedKernelCommunicationsModule.AbstractEvent {}
                                 }
                                 """
-                )
-        );
+                        )
+                );
     }
 }
