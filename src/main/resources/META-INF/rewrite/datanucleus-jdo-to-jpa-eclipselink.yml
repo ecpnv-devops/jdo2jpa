@@ -855,9 +855,16 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.AddAnnotationToChildrenConditionally:
       fullClassName: 'org.estatio.module.lease.imports.persistedimports.AuditedTurnoverRentImport'
       annotationPattern: 'lombok.NoArgsConstructor'
+  - com.ecpnv.openrewrite.jdo2jpa.AddAnnotationToChildrenConditionally:
+      fullClassName: 'org.estatio.module.party.dom.permit.Permit'
+      annotationPattern: 'lombok.NoArgsConstructor'
   - com.ecpnv.openrewrite.java.ReplaceLinkInComment:
       fullClassNameToReplace: 'javax.jdo.annotations.NotPersistent'
       fullClassNameToInsert: 'javax.persistence.Transient'
+  - com.ecpnv.openrewrite.java.AddAnnotationToClassVariable:
+      variableTypeRegex: 'com.ecpnv.platform.subdomains.base.applib.with.WithIntervalContiguous.Helper.*'
+      annotationType: 'javax.persistence.Transient'
+      annotationTemplateToInsert: '@Transient'
   # Adds missing imports that somehow dissappeared
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.asset.dom.unitlink.UnitLink'

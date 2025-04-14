@@ -23,6 +23,8 @@ import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import static com.ecpnv.openrewrite.util.RewriteUtils.hasAnnotation;
+
 /**
  * A recipe that adds an annotation to all children classes.
  * <p>
@@ -71,7 +73,7 @@ public class AddAnnotationToChildrenConditionally extends Recipe {
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
                 if (CollectionUtils.isEmpty(FindAnnotations.find(classDecl, annotationPattern)) &&
-                        !hasAnnotation(classDecl.getLeadingAnnotations(), annotationPattern) &&
+                        !hasAnnotation(classDecl.getLeadingAnnotations(), annotationPattern, getCursor()) &&
                         checkIsExtended(classDecl.getType(), fullClassName)) {
                     maybeAddImport(annotationPattern, null, false);
                     J.ClassDeclaration cd = JavaTemplate.builder(checkAnnotation(annotationPattern))
@@ -102,25 +104,6 @@ public class AddAnnotationToChildrenConditionally extends Recipe {
                 }
                 if (type.getSupertype() != null) {
                     return checkIsExtended(type.getSupertype(), fullClassName);
-                }
-                return false;
-            }
-
-            private boolean hasAnnotation(List<J.Annotation> annotations, String annotationPattern) {
-                if (CollectionUtils.isEmpty(annotations)) {
-                    return false;
-                }
-                for (J.Annotation annotation : annotations) {
-                    if (annotation.getType() instanceof JavaType.FullyQualified fullyQualified &&
-                            Objects.equals(annotationPattern, fullyQualified.getFullyQualifiedName())) {
-                        return true;
-                    }
-                    if ((annotation.getAnnotationType() instanceof J.FieldAccess fieldAccess &&
-                            Objects.equals(annotationPattern, fieldAccess.print(getCursor())))
-                            || (annotation.getAnnotationType() instanceof J.Identifier identifier &&
-                            Objects.equals(JavaType.ShallowClass.build(annotationPattern).getClassName(), identifier.print(getCursor())))) {
-                        return true;
-                    }
                 }
                 return false;
             }
