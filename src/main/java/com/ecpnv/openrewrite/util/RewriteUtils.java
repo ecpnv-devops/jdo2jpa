@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.openrewrite.Cursor;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Comment;
@@ -183,6 +184,25 @@ public class RewriteUtils {
         }
         return sourceType.getAnnotations().stream()
                 .anyMatch(a -> a.getFullyQualifiedName().equals(annotationName));
+    }
+
+    public static boolean hasAnnotation(List<J.Annotation> annotations, String annotationPattern, Cursor cursor) {
+        if (CollectionUtils.isEmpty(annotations)) {
+            return false;
+        }
+        for (J.Annotation annotation : annotations) {
+            if (annotation.getType() instanceof JavaType.FullyQualified fullyQualified &&
+                    Objects.equals(annotationPattern, fullyQualified.getFullyQualifiedName())) {
+                return true;
+            }
+            if ((annotation.getAnnotationType() instanceof J.FieldAccess fieldAccess &&
+                    Objects.equals(annotationPattern, fieldAccess.print(cursor)))
+                    || (annotation.getAnnotationType() instanceof J.Identifier identifier &&
+                    Objects.equals(JavaType.ShallowClass.build(annotationPattern).getClassName(), identifier.print(cursor)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -382,5 +402,4 @@ public class RewriteUtils {
                 TypeTree.build(fullClassName).withPrefix(Space.SINGLE_SPACE),
                 null);
     }
-
 }
