@@ -865,6 +865,10 @@ recipeList:
       variableTypeRegex: 'com.ecpnv.platform.subdomains.base.applib.with.WithIntervalContiguous.Helper.*'
       annotationType: 'javax.persistence.Transient'
       annotationTemplateToInsert: '@Transient'
+  - com.ecpnv.openrewrite.java.AddAnnotationToClassVariable:
+      variableTypeRegex: 'com.ecpnv.platform.subdomains.base.applib.with.WithIntervalMutable.Helper.*'
+      annotationType: 'javax.persistence.Transient'
+      annotationTemplateToInsert: '@Transient'
   # Adds missing imports that somehow dissappeared
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.asset.dom.unitlink.UnitLink'
@@ -930,3 +934,13 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
       importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
+  - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
+      matchByRegularExpression: '(@.*ManyToOne.*)|(@.*OneToMany.*)'
+      matchByRegularExpressionForRemoval: '@Transient'
+      fullyQualifiedType: org.estatio.module.party.dom.Party
+      declarationType: VAR
+  - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
+      matchByRegularExpression: '(@.*ManyToOne.*)|(@.*OneToMany.*)'
+      matchByRegularExpressionForRemoval: '@Transient'
+      fullyQualifiedType: org.estatio.module.asset.dom.Property
+      declarationType: VAR
