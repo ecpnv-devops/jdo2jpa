@@ -578,8 +578,8 @@ recipeList:
       regularExpression: '(@.*Persistent\(.*mappedBy.*)|(@.*OneToMany\(.*mappedBy.*)'
       methodTemplateString: '@Programmatic 
       public void addTo$varNameC$($varGType$ element){
-        $varName$.add(element);
         element.set$className$(this);
+        $varName$.add(element);
       }'
       fullyQualifiedType: java.util.Collection
       maybeImportTypes:
@@ -928,9 +928,9 @@ recipeList:
       excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value
   - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
   - com.ecpnv.openrewrite.java.RemovedUnusedImports
-# too soon
-#  - org.openrewrite.java.format.AutoFormat
-# This specific class has an inner class that extends from an abstract class defined in an interface and rewrite doesn't support this
+  # too soon
+  #  - org.openrewrite.java.format.AutoFormat
+  # This specific class has an inner class that extends from an abstract class defined in an interface and rewrite doesn't support this
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
       importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
