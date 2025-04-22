@@ -260,6 +260,62 @@ class InheritanceTest {
                     )
             );
         }
+
+        /**
+         * Unit test method validating the replacement of JDO `InheritanceStrategy.NEW_TABLE` with
+         * the JPA `InheritanceType.JOINED` annotation while moving the `@Inheritance` annotation
+         * to the parent class.
+         * <p>
+         * This method ensures the transformation of inheritance annotations in Java source code
+         * from JDO to JPA for parent and child classes, adhering to JPA conventions for inheritance
+         * strategies. Key aspects verified in this test include:
+         * <p>
+         * - The replacement of the JDO `@Inheritance(strategy = InheritanceStrategy.NEW_TABLE)` annotation
+         * with the JPA equivalent `@Inheritance(strategy = InheritanceType.JOINED)`.
+         * - Moving the `@Inheritance` annotation from the child class to the parent class,
+         * ensuring that the inheritance strategy configuration is correctly centralized.
+         * - Removal of redundant or unnecessary imports associated with JDO and replacement
+         * with appropriate JPA imports.
+         * - Preservation of the functional and structural integrity of both parent and child
+         * classes in the transformed code.
+         */
+        @DocumentExample
+        @Test
+        void replaceAndMoveToParent() {
+            rewriteRun(
+                    //language=java
+                    java(
+                            """
+                                    import java.util.List;
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+                                    
+                                    public abstract class Person {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Manager extends Person {
+                                            private List<Person> managedPersons;
+                                    }
+                                    """,
+                            """
+                                    import java.util.List;
+                                    import javax.persistence.Inheritance;
+                                    
+                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    public abstract class Person {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    
+                                    public class Manager extends Person {
+                                            private List<Person> managedPersons;
+                                    }
+                                    """
+                    )
+            );
+        }
     }
 
     @Nested
