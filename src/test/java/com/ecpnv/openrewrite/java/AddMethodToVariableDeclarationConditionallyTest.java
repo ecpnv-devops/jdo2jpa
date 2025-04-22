@@ -98,8 +98,8 @@ class AddMethodToVariableDeclarationConditionallyTest extends BaseRewriteTest {
                                 
                                     @Programmatic
                                     public void addToPersons(Person element) {
-                                        persons.add(element);
                                         element.setSomeEntity(this);
+                                        persons.add(element);
                                     }
                                 
                                     @Programmatic

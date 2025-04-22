@@ -404,6 +404,11 @@ tags:
   - persistence
   - Inheritance
 recipeList:
+  # Copy @Inheritance to parent when parent is not an object
+  - com.ecpnv.openrewrite.java.CopyAnnotationToSuper:
+      move: true
+      annotationTypes:
+        - javax.jdo.annotations.Inheritance
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Inheritance\((.|\s|\n)*strategy(.|\s|\n)*=(.|\s|\n)*InheritanceStrategy.SUBCLASS_TABLE(.|\s|\n)*\)'
