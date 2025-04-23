@@ -480,5 +480,71 @@ class InheritanceTest {
                     )
             );
         }
+
+
+        @DocumentExample
+        @Test
+        void testInheritanceWithEntityAbstract() {
+            rewriteRun(
+                    //language=java
+                    java(
+                            """
+                                    package org.estatio.base.prod.dom;
+                                    
+                                    import java.util.List;
+                                    import javax.jdo.annotations.Discriminator;
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+                                    import javax.jdo.annotations.Persistent;
+                                    import javax.jdo.annotations.PersistenceCapable;
+                                    
+                                    public abstract class EntityAbstract{
+                                        int version;
+                                    }
+                                    
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public abstract class Person extends EntityAbstract {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Manager extends Person {
+                                            @Persistent( mappedBy = "person")
+                                            private List<Person> managedPersons;
+                                    }
+                                    """,
+                            """
+                                    package org.estatio.base.prod.dom;
+                                    
+                                    import java.util.List;
+                                    import javax.persistence.*;
+                                    
+                                    public abstract class EntityAbstract{
+                                        int version;
+                                    }
+                                    
+                                    @DiscriminatorColumn(name = "discriminator", length = 255)
+                                    @Entity
+                                    @Table(schema = "schemaname", name = "person")
+                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    public abstract class Person extends EntityAbstract {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    
+                                    @DiscriminatorColumn(name = "discriminator", length = 255)
+                                    @Entity
+                                    @Table(schema = "schemaname", name = "manager")
+                                    public class Manager extends Person {
+                                            @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                            private List<Person> managedPersons;
+                                    }
+                                    """
+                    )
+            );
+        }
     }
 }
