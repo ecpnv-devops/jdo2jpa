@@ -88,6 +88,19 @@ class DiscriminatorTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Tests the transformation of JDO `@Discriminator` annotations to JPA `@DiscriminatorValue`
+     * and `@DiscriminatorColumn` annotations for entities in an inheritance hierarchy.
+     * <p>
+     * The migration process validates the following aspects:
+     * 1. Converts the `@Discriminator` annotation from JDO to the `@DiscriminatorValue`
+     * and `@DiscriminatorColumn` annotations in JPA while preserving the discriminator
+     * value's semantic meaning.
+     * 2. Ensures that the converted JPA entity classes are correctly annotated with
+     * `@DiscriminatorValue` to specify the discriminator value for each entity.
+     * 3. Applies the `@DiscriminatorColumn` annotation to represent the column configuration
+     * for the discriminator across the inheritance hierarchy.
+     */
     @DocumentExample
     @Test
     void useDiscriminatorValue() {
@@ -123,6 +136,57 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 
                                 @DiscriminatorValue("manager_discriminator")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Tests the addition of a `@DiscriminatorColumn` annotation when the `@Inheritance` annotation
+     * is present on a Java class. This conversion facilitates the migration from JDO to JPA by
+     * ensuring that classes using inheritance mappings receive the required discriminator column
+     * definition in JPA for inheritance strategy definition.
+     * <p>
+     * The method validates the following aspects:
+     * 1. Adds a `@DiscriminatorColumn` annotation to the class containing the `@Inheritance` annotation.
+     * 2. Ensures the discriminator column definition includes the correct default attributes such as
+     * `name` ("discriminator") and `length` (255).
+     * 3. Preserves the existing structure and functionality of the class hierarchy while aligning
+     * it with JPA requirements.
+     */
+    @DocumentExample
+    @Test
+    void addDiscriminatorColumnWhenInheritanceAnnotationPresent() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                
+                                @Inheritance
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
+                                import javax.persistence.DiscriminatorColumn;
+                                
+                                @DiscriminatorColumn(name = "discriminator", length = 255)
+                                @Inheritance
+                                public class Person {
+                                        private int id;
+                                        private String name;
+                                }
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
