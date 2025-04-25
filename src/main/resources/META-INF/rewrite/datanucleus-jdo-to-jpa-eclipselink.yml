@@ -845,7 +845,7 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Named\(UserSettingForEstatio\.LOGICAL_TYPE_NAMED\)'
       annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(UserSettingForEstatioIdId.class)'
+      annotationTemplate: '@IdClass(UserSettingForEstatioId.class)'
       declarationType: CLASS
   # fix some annotations
   - org.openrewrite.java.ReplaceAnnotation:
