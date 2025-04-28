@@ -409,6 +409,9 @@ recipeList:
       move: true
       annotationTypes:
         - javax.jdo.annotations.Inheritance
+      typesToStopAt:
+        - java.lang.Object
+        - org.estatio.base.prod.dom.EntityAbstract
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Inheritance\((.|\s|\n)*strategy(.|\s|\n)*=(.|\s|\n)*InheritanceStrategy.SUBCLASS_TABLE(.|\s|\n)*\)'

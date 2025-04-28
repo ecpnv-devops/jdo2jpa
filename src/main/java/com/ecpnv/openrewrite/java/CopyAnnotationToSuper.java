@@ -53,6 +53,12 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
             example = "@javax.jdo.annotations.Discriminator")
     Set<String> annotationTypes;
 
+    @Option(displayName = "Set of types to stop",
+            description = "Traversing the parents stops when one of these types is found. Default is java.lang.Object.",
+            required = false,
+            example = "java.lang.Object")
+    Set<String> typesToStopAt = Set.of("java.lang.Object");
+
     @Option(displayName = "Move instead of copy",
             description = "When true then move instead of copy, e.g. delete the annotation on the subclass. Default is false.",
             required = false,
@@ -62,8 +68,10 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
     @JsonCreator
     public CopyAnnotationToSuper(
             @NonNull @JsonProperty("annotationTypes") Set<String> annotationTypes,
+            @NonNull @JsonProperty("typesToStopAt") Set<String> typesToStopAt,
             @NonNull @JsonProperty("move") boolean move) {
         this.annotationTypes = annotationTypes;
+        this.typesToStopAt = typesToStopAt;
         this.move = move;
     }
 
@@ -90,7 +98,7 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getType() != null && cd.getType().getSupertype() != null) {
                     String classFqn = cd.getType().getSupertype().getFullyQualifiedName();
-                    if (!"java.lang.Object".equals(classFqn)) {
+                    if (!typesToStopAt.contains(classFqn)) {
                         for (J.Annotation annotation : cd.getLeadingAnnotations()) {
                             JavaType.FullyQualified annoFq = TypeUtils.asFullyQualified(annotation.getType());
                             if (annoFq != null && annotationTypes.stream().anyMatch(fqn -> fqn.equals(annoFq.getFullyQualifiedName()))
