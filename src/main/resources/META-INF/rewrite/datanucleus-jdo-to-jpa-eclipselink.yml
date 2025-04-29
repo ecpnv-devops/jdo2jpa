@@ -240,6 +240,12 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
       newFullyQualifiedTypeName: javax.persistence.Column
+  - com.ecpnv.openrewrite.java.AddAnnotationNameAttributeForKeywords:
+      annotationType: "javax.persistence.Column"
+      attributeName: "name"
+      keywords: "key,user,value,values"
+      escapeString: "\\\""
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
