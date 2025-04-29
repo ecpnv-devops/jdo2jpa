@@ -240,6 +240,12 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
       newFullyQualifiedTypeName: javax.persistence.Column
+  - com.ecpnv.openrewrite.java.AddAnnotationNameAttributeForKeywords:
+      annotationType: "javax.persistence.Column"
+      attributeName: "name"
+      keywords: "key,user,value,values"
+      escapeString: "\\\""
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
@@ -843,9 +849,14 @@ recipeList:
       annotationTemplate: '@IdClass(ApplicationSettingForEstatioId.class)'
       declarationType: CLASS
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Named\(UserSettingForEstatioId\.LOGICAL_TYPE_NAMED\)'
+      matchByRegularExpression: '@Named\(UserSettingForEstatio\.LOGICAL_TYPE_NAMED\)'
       annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(UserSettingForEstatioIdId.class)'
+      annotationTemplate: '@IdClass(UserSettingForEstatioId.class)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@.*Import\(.(.|\n|\s)*BackgroundCommandsOrchestration.class(.|\n|\s)*.\)'
+      annotationType: org.springframework.boot.autoconfigure.domain.EntityScan
+      annotationTemplate: '@EntityScan({"org.estatio.integration.orchestration.dom"})'
       declarationType: CLASS
   # fix some annotations
   - org.openrewrite.java.ReplaceAnnotation:
