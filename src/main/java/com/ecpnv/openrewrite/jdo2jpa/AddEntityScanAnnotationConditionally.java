@@ -1,10 +1,14 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -17,15 +21,17 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Space;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 
 /**
  * A recipe that adds a {@link org.springframework.boot.autoconfigure.domain.EntityScan} looking for entities and when
  * it finds a {@link org.springframework.context.annotation.Configuration} with a
- * {@link org.springframework.context.annotation.ComponentScan} and uses the package names of the found entites for the
+ * {@link org.springframework.context.annotation.ComponentScan} and adds the package names of the found entites for the
  * entity scan path.
  * <p>
+ *
  * @author Wouter Veltmaat @ Open Circle Solutions
  */
 public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<String>> {
@@ -83,26 +89,70 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                     final List<J.Annotation> annotations = cd.getLeadingAnnotations();
                     final Set<J.Annotation> componentScanAnnotations = FindAnnotations.find(cd, COMPONENT_SCAN_ANNOTATION);
 
-                    J.Annotation entityScanAnnotation = annotations.stream()
-                            .filter(annotation -> annotation.getSimpleName().contains(ENTITY_SCAN_CLASS_NAME))
-                            .findFirst()
-                            .orElse(null);
+                    J.Annotation entityScanAnnotation = getEntityScanAnnotation(annotations);
+                    if (CollectionUtils.isNotEmpty(componentScanAnnotations)) {
+                        if (entityScanAnnotation == null) {
+                            final String packages = packageNames.stream()
+                                    .map(name -> "\"%s\"".formatted(name))
+                                    .collect(Collectors.joining(","));
+                            final String template = ENTITY_SCAN_FULL_ANNOTATION + "({%s})".formatted(packages);
 
-                    if (CollectionUtils.isNotEmpty(componentScanAnnotations) && entityScanAnnotation == null) {
-                        final String packages = packageNames.stream()
-                                .map(name -> "\"%s\"".formatted(name))
-                                .collect(Collectors.joining(","));
-                        final String template = ENTITY_SCAN_FULL_ANNOTATION + "({%s})".formatted(packages);
+                            return JavaTemplate.builder(template)
+                                    .javaParser(JavaParserFactory.create(ctx))
+                                    .imports(ENTITY_SCAN_FULL_CLASS)
+                                    .build()
+                                    .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                        } else if (entityScanAnnotation != null && entityScanAnnotation.getArguments().getFirst() instanceof J.NewArray newArray &&
+                                newArray.getInitializer().stream()
+                                        .filter(J.Literal.class::isInstance)
+                                        .map(J.Literal.class::cast)
+                                        .noneMatch(literal -> packageNames.contains(literal.getValue()))) {
 
-                        return maybeAutoFormat(cd, JavaTemplate.builder(template)
-                                .javaParser(JavaParserFactory.create(ctx))
-                                .imports(ENTITY_SCAN_FULL_CLASS)
-                                .build()
-                                .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName))), ctx);
+                            List<String> mergedPackages = new ArrayList<>();
+                            newArray.getInitializer().stream()
+                                    .filter(J.Literal.class::isInstance)
+                                    .map(J.Literal.class::cast)
+                                    .forEach(literal -> mergedPackages.add(literal.getValue().toString()));
+                            mergedPackages.addAll(packageNames);
+                            final String packages = mergedPackages.stream()
+                                    .map(name -> "\"%s\"".formatted(name))
+                                    .collect(Collectors.joining(","));
+
+                            final String template = ENTITY_SCAN_FULL_ANNOTATION + "({%s})".formatted(packages);
+
+                            J.ClassDeclaration dummyCd = JavaTemplate.builder(template)
+                                    .javaParser(JavaParserFactory.create(ctx))
+                                    .imports(ENTITY_SCAN_FULL_CLASS)
+                                    .build()
+                                    .apply(getCursor(), cd.getCoordinates().replaceAnnotations());
+
+                            J.Annotation newEntityScanAnnotation = getEntityScanAnnotation(dummyCd.getLeadingAnnotations());
+                            replaceAnnotation(annotations, entityScanAnnotation, newEntityScanAnnotation);
+
+                            return cd.withLeadingAnnotations(annotations);
+                        }
                     }
                 }
 
                 return cd;
+            }
+
+            private static void replaceAnnotation(List<J.Annotation> annotations, J.Annotation oldAnnotation, J.Annotation newAnnotation) {
+                final ListIterator<J.Annotation> listIterator = annotations.listIterator();
+                while (listIterator.hasNext()) {
+                    J.Annotation annotation = listIterator.next();
+                    if (annotation == oldAnnotation) {
+                        listIterator.set(newAnnotation.withPrefix(Space.build("\n", emptyList())));
+                        break;
+                    }
+                }
+            }
+
+            private static J.Annotation getEntityScanAnnotation(final List<J.Annotation> annotations) {
+                return annotations.stream()
+                        .filter(annotation -> annotation.getSimpleName().contains(ENTITY_SCAN_CLASS_NAME))
+                        .findFirst()
+                        .orElse(null);
             }
         };
     }
