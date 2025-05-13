@@ -61,7 +61,8 @@ public class AddSortedMethodToStreamMethods extends Recipe {
                         method.getMethodType().getReturnType().isAssignableFrom(STREAM) &&
                         method.getBody().getStatements().getFirst() instanceof J.Return oldReturn &&
                         oldReturn.getExpression() instanceof J.MethodInvocation oldMethodInvocation &&
-                        !oldMethodInvocation.getName().getSimpleName().equals("sorted")) {
+                        !(oldMethodInvocation.getName().getSimpleName().equals("sorted") ||
+                                oldMethodInvocation.print(getCursor()).contains("sorted"))) {
                     /*
                         Uses a template to create a new J.MethodInvocation instance that can be placed into the LST hierarchy.
                      */

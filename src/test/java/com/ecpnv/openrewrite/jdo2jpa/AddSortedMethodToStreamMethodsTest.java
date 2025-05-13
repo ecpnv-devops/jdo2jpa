@@ -86,4 +86,52 @@ class AddSortedMethodToStreamMethodsTest extends BaseRewriteTest {
                 )
         );
     }
+
+    @DocumentExample
+    @Test
+    void unhappyPath() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(new AddSortedMethodToStreamMethods("com.ecpnv.openrewrite.Programmatic")),
+                java("""
+                            package com.ecpnv.openrewrite;
+                            
+                            import java.lang.annotation.ElementType;
+                            import java.lang.annotation.Inherited;
+                            import java.lang.annotation.Retention;
+                            import java.lang.annotation.RetentionPolicy;
+                            import java.lang.annotation.Target;
+                        
+                            @Inherited
+                            @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
+                            @Retention(RetentionPolicy.RUNTIME)
+                            public @interface Programmatic {}
+                        """, SourceSpec::skip),
+                //language=java
+                java(
+                        """
+                                package a;
+
+                                import java.util.SortedSet;
+                                import java.util.TreeSet;
+                                import java.util.ArrayList;
+                                import java.util.stream.Stream;
+
+                                import com.ecpnv.openrewrite.Programmatic;
+
+                                public class SomeClass {
+
+                                    private final SortedSet<String> items = new TreeSet<>();
+                                    
+                                    public SortedSet<String> getItems() {
+                                        return items;
+                                    }
+
+                                    @Programmatic
+                                    @Override
+                                    public Stream<String> streamItems() {
+                                        return getItems().stream().filter(s->!s.isEmpty()).sorted().map(String::toUpperCase);
+                                    }
+                                }
+                                """)
+        );
+    }
 }
