@@ -163,6 +163,18 @@ recipeList:
       annotationType: javax.persistence.OrderColumn
       oldAttributeName: column
       newAttributeName: name
+  # Replace variables of type SortedSet with Set type and correct instance
+  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypesForAnnotatedVariables:
+      annotationType: javax.persistence.OneToMany
+      oldFullyQualifiedTypeNames: 'java.util.SortedSet,java.util.TreeSet,java.util.Collections.unmodifiableSortedSet'
+      newFullyQualifiedTypeNames: 'java.util.Set,java.util.HashSet,java.util.Collections.unmodifiableSet'
+  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
+      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
+      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
+      newFullyQualifiedTypeNames: 'java.util.Set'
+  # Add sorted method to streams
+  - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
+      annotationType: org.apache.isis.applib.annotation.Programmatic
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Column
@@ -240,11 +252,12 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
       newFullyQualifiedTypeName: javax.persistence.Column
-  - com.ecpnv.openrewrite.java.AddAnnotationNameAttributeForKeywords:
-      annotationType: "javax.persistence.Column"
-      attributeName: "name"
-      keywords: "key,user,value,values"
-      escapeString: "\\\""
+# Can be used to track keywords of JPA attributes
+#  - com.ecpnv.openrewrite.java.AddAnnotationNameAttributeForKeywords:
+#      annotationType: "javax.persistence.Column"
+#      attributeName: "name"
+#      keywords: "key,user,value,values"
+#      escapeString: "\\\""
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

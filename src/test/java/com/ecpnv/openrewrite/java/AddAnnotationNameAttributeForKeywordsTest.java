@@ -1,5 +1,6 @@
 package com.ecpnv.openrewrite.java;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 
@@ -101,6 +102,7 @@ class AddAnnotationNameAttributeForKeywordsTest extends BaseRewriteTest {
      * recipe applies the expected transformations by comparing the input source code
      * to the modified output source code.
      */
+    @Disabled("the integration is disabled in the yml configuration")
     @DocumentExample
     @Test
     void integrationTest() {
