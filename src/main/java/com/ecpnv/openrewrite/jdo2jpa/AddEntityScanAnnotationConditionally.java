@@ -115,7 +115,7 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                                     .forEach(literal -> mergedPackages.add(literal.getValue().toString()));
                             mergedPackages.addAll(packageNames);
                             final String packages = mergedPackages.stream()
-                                    .map(name -> "\"%s\"".formatted(name))
+                                    .map(name -> "\n\"%s\"".formatted(name))
                                     .collect(Collectors.joining(","));
 
                             final String template = ENTITY_SCAN_FULL_ANNOTATION + "({%s})".formatted(packages);

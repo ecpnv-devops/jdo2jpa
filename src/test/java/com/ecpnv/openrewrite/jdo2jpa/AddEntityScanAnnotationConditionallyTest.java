@@ -157,7 +157,10 @@ class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
                                 import org.springframework.context.annotation.Configuration;
                                 
                                 @Configuration
-                                @EntityScan({"com.ecpnv.openrewrite.jdo2jpa.backup", "com.ecpnv.openrewrite.jdo2jpa.dom", "com.ecpnv.openrewrite.jdo2jpa.entities"})
+                                @EntityScan({
+                                        "com.ecpnv.openrewrite.jdo2jpa.backup",
+                                        "com.ecpnv.openrewrite.jdo2jpa.dom",
+                                        "com.ecpnv.openrewrite.jdo2jpa.entities"})
                                 @ComponentScan
                                 public class SomeConfiguration {
                                 }
