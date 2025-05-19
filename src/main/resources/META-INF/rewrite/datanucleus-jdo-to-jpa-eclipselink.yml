@@ -913,7 +913,7 @@ recipeList:
       annotationType: javax.persistence.Entity
       attributeName: name
       oldAttributeValue: "null"
-      attributeValue: $Applicability.LOGICAL_TYPE_NAMED
+      attributeValue: $Applicability.TABLE_NAME
       operation: ADD
       appendArray: false
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttributeForClass:
@@ -921,7 +921,7 @@ recipeList:
       annotationType: javax.persistence.Entity
       attributeName: name
       oldAttributeValue: "null"
-      attributeValue: $Applicability.LOGICAL_TYPE_NAMED
+      attributeValue: $Applicability.TABLE_NAME
       operation: ADD
       appendArray: false
 ---

@@ -74,7 +74,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Applicability {
-                                    public static String LOGICAL_TYPE_NAMED = "test";
+                                    public static String TABLE_NAME = "test";
                                 }
                                 """,
                         """
@@ -83,10 +83,10 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 import javax.persistence.Entity;
                                 import javax.persistence.EntityListeners;
                                 
-                                @Entity(name = Applicability.LOGICAL_TYPE_NAMED)
+                                @Entity(name = Applicability.TABLE_NAME)
                                 @EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)
                                 public class Applicability {
-                                    public static String LOGICAL_TYPE_NAMED = "test";
+                                    public static String TABLE_NAME = "test";
                                 }
                                 """));
     }
