@@ -415,7 +415,7 @@ public class RewriteUtils {
      * @param string the input string to be sanitized. Can be null or blank.
      * @return a sanitized string.
      */
-    public static String sanitize(String string) {
+    public static String sanitizeTableName(String string) {
         if (StringUtils.isBlank(string)) {
             return null;
         } else if (string.contains(".")) {

@@ -34,7 +34,7 @@ import com.ecpnv.openrewrite.util.RewriteUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
-import static com.ecpnv.openrewrite.util.RewriteUtils.sanitize;
+import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
 
 /**
  * This class defines a migration recipe for replacing occurrences of an entity field not contained in a collection
@@ -195,7 +195,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                                 }
                                 colTemplate
                                         .append(" name = \"")
-                                        .append(sanitize(nameArg.getAssignment().toString()))
+                                        .append(sanitizeTableName(nameArg.getAssignment().toString()))
                                         .append("\")");
                                 // Remove name argument
                                 args.remove(nameArg);

@@ -34,7 +34,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
-import static com.ecpnv.openrewrite.util.RewriteUtils.sanitize;
+import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
 
 /**
  * This class defines a migration recipe for replacing occurrences of the <code>@javax.jdo.annotations.Persistent</code>
@@ -267,7 +267,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                 .map(name -> new StringBuilder("@")
                                                 .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
                                                 .append("(name = \"")
-                                                .append(sanitize(name))
+                                                .append(sanitizeTableName(name))
                                                 .append("\")\n")
                                                 .toString()
                                 );
@@ -311,7 +311,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                             .map(assignment -> assignment.getAssignment().toString())
                             .ifPresent(name -> joinColTemplate
                                     .append("name = \"")
-                                    .append(sanitize(name))
+                                    .append(sanitizeTableName(name))
                                     .append("\""));
                     joinColTemplate.append(")\n");
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
