@@ -153,7 +153,7 @@ public class AddAnnotationConditionally extends Recipe {
                         .findFirst()
                         .map(a -> {
                             // Add annotation to variable
-                            maybeAddImport(annotationType);
+                            maybeAddImport(annotationType, null, false);
                             return (Statement) JavaTemplate.builder(annotationTemplate)
                                     .javaParser(JavaParserFactory.create(ctx))
                                     .imports(annotationType)
