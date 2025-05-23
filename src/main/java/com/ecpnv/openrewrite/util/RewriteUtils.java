@@ -21,15 +21,14 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Markers;
+
+import static org.openrewrite.Tree.randomId;
 
 import com.ecpnv.openrewrite.jdo2jpa.Constants;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-
-import org.openrewrite.marker.Markers;
-
-import static org.openrewrite.Tree.randomId;
 
 /**
  * Utility class providing helper methods for handling and analyzing Java annotation metadata,
@@ -394,6 +393,12 @@ public class RewriteUtils {
         return false;
     }
 
+    /**
+     * Creates an import statement for the specified fully qualified class name.
+     *
+     * @param fullClassName the fully qualified name of the class to be imported. Must not be null or blank.
+     * @return a {@link J.Import} object representing the import statement for the specified class.
+     */
     public static J.Import createImport(String fullClassName) {
         return new J.Import(randomId(),
                 Space.format("\n"),
@@ -401,5 +406,21 @@ public class RewriteUtils {
                 new JLeftPadded<>(Space.SINGLE_SPACE, Boolean.FALSE, Markers.EMPTY),
                 TypeTree.build(fullClassName).withPrefix(Space.SINGLE_SPACE),
                 null);
+    }
+
+    /**
+     * Sanitizes the given string by replacing periods with underscores if the string contains a period.
+     * If the input string is blank, it returns null.
+     *
+     * @param string the input string to be sanitized. Can be null or blank.
+     * @return a sanitized string.
+     */
+    public static String sanitizeTableName(String string) {
+        if (StringUtils.isBlank(string)) {
+            return null;
+        } else if (string.contains(".")) {
+            return string.replace(".", "_");
+        }
+        return string;
     }
 }

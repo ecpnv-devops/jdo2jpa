@@ -947,6 +947,17 @@ recipeList:
       annotationType: javax.persistence.Entity
       annotationTemplate: '@Entity'
       declarationType: CLASS
+  # add eclipselink customizers
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Table\(schema = InvoiceItem.SCHEMA(.|\n|\s)*\)'
+      annotationType: org.eclipse.persistence.annotations.Customizer
+      annotationTemplate: '@Customizer(InvoiceItemCustomizer.class)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Table\(schema = Invoice.SCHEMA(.|\n|\s)*'
+      annotationType: org.eclipse.persistence.annotations.Customizer
+      annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
+      declarationType: CLASS
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
 ---
 type: specs.openrewrite.org/v1beta/recipe
