@@ -908,22 +908,6 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.capex.dom.codamapping.CodaMapping'
       importFullClassName: 'javax.persistence.UniqueConstraint'
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttributeForClass:
-      fullyQualifiedTypeName: org.incode.module.classification.dom.impl.applicability.Applicability
-      annotationType: javax.persistence.Entity
-      attributeName: name
-      oldAttributeValue: "null"
-      attributeValue: $Applicability.TABLE_NAME
-      operation: ADD
-      appendArray: false
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttributeForClass:
-      fullyQualifiedTypeName: org.incode.module.document.dom.impl.applicability.Applicability
-      annotationType: javax.persistence.Entity
-      attributeName: name
-      oldAttributeValue: "null"
-      attributeValue: $Applicability.TABLE_NAME
-      operation: ADD
-      appendArray: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
