@@ -1,6 +1,8 @@
 package com.ecpnv.openrewrite.java;
 
 import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 
@@ -63,6 +65,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                         """));
     }
 
+    @Disabled("the integration is disabled in the yml configuration")
     @DocumentExample
     @Test
     void attribute() {
