@@ -380,4 +380,72 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
+    /**
+     * Tests the transformation of a `@Persistent` annotation, combined with a `@Column` annotation
+     * where the `name` attribute references a constant expression, into a `@ManyToOne` annotation
+     * with the appropriate configuration in a JPA-annotated Java class.
+     * <p>
+     * This method validates the following:
+     * - Replacement of fields annotated with `@Persistent` and `@Column(name)` into fields annotated with
+     * `@ManyToOne` and `@JoinColumn(name)`, maintaining the constant expression reference.
+     * - Application of `FetchType.LAZY` as the default fetch strategy in the resulting `@ManyToOne` annotation.
+     * - Inclusion of cascade types (`CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH`)
+     * in the generated annotation.
+     * - Preservation of the constant expression from the original `@Column(name)` annotation into the resulting `@JoinColumn(name)`.
+     * - Addition of necessary JPA-related imports to the resulting Java code.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithColumnNameAsExpression() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.lang.annotation.*;
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Column;
+                                
+                                @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })
+                                @Retention(RetentionPolicy.RUNTIME)
+                                public @interface iPerson {
+                                    String NAME = "personId";
+                                }
+                                
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent
+                                    @Column(name = iPerson.NAME, allowsNull = "false")
+                                    private Person person;
+                                }
+                                """,
+                        """
+                                import java.lang.annotation.*;
+                                import java.util.List;
+                                import javax.persistence.*;
+                                
+                                @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })
+                                @Retention(RetentionPolicy.RUNTIME)
+                                public @interface iPerson {
+                                    String NAME = "personId";
+                                }
+                                
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @JoinColumn(nullable = false, name = iPerson.NAME)
+                                    private Person person;
+                                }
+                                """
+                )
+        );
+    }
 }

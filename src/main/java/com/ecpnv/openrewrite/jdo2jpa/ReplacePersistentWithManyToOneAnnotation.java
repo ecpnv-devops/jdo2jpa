@@ -31,10 +31,10 @@ import org.openrewrite.java.tree.J;
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
+import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
+
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
-import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
 
 /**
  * This class defines a migration recipe for replacing occurrences of an entity field not contained in a collection
@@ -193,10 +193,16 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                                 if (foundNullOrName.get()) {
                                     colTemplate.append(", ");
                                 }
-                                colTemplate
-                                        .append(" name = \"")
-                                        .append(sanitizeTableName(nameArg.getAssignment().toString()))
-                                        .append("\")");
+                                colTemplate.append(" name = ");
+                                if (nameArg.getAssignment() instanceof J.Literal literal) {
+                                    colTemplate
+                                            .append("\"")
+                                            .append(sanitizeTableName(literal.toString()))
+                                            .append("\"");
+                                } else {
+                                    colTemplate.append(nameArg.getAssignment().toString());
+                                }
+                                colTemplate.append(")");
                                 // Remove name argument
                                 args.remove(nameArg);
                                 foundNullOrName.set(true);
