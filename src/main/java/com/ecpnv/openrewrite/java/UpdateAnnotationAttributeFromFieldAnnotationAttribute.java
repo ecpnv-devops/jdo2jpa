@@ -90,6 +90,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                     Map<String, Object> fieldColumnNames = null;
                     Map<String, String> constants = null;
                     J.ClassDeclaration currentClassDecl = null;
+                    boolean changed = false;
 
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
@@ -97,6 +98,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                             fieldColumnNames = new HashMap<>();
                             constants = new HashMap<>();
                             currentClassDecl = classDecl;
+                            changed = false;
                         }
                         // Collect the fields info
                         J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
@@ -123,7 +125,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                                 .toList();
                         ;
                         // And replace the value in the target annotation
-                        if (newAnnos != cd.getLeadingAnnotations()) {
+                        if (changed) {
                             cd = cd.withLeadingAnnotations(newAnnos);
                         }
                         if (currentClassDecl == classDecl) {
@@ -137,16 +139,18 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                         return RewriteUtils.findArgument(a, attributeName)
                                 .map(arg -> {
                                     // Then Get the value of the fieldAnnotation attribute
+                                    J.Annotation result = a;
                                     if (arg instanceof J.Literal literal) {
-                                        return addOrUpdateAnnotationAttribute(executionContext, a, literal.getValue());
+                                        result = addOrUpdateAnnotationAttribute(executionContext, a, literal.getValue());
                                     } else if (arg instanceof J.Assignment assignment) {
                                         if (assignment.getAssignment() instanceof J.Literal literal) {
-                                            return addOrUpdateAnnotationAttribute(executionContext, a, literal.getValue());
+                                            result = addOrUpdateAnnotationAttribute(executionContext, a, literal.getValue());
                                         } else if (assignment.getAssignment() instanceof J.NewArray newArray) {
-                                            return addOrUpdateAnnotationAttribute(executionContext, a, newArray);
+                                            result = addOrUpdateAnnotationAttribute(executionContext, a, newArray);
                                         }
                                     }
-                                    return a;
+                                    changed = result != a;
+                                    return result;
                                 })
                                 .orElse(a);
                     }

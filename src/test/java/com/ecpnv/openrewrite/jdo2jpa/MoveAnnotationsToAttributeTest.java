@@ -15,13 +15,13 @@
  */
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute;
-
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
+
+import com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute;
 
 
 /**
@@ -223,29 +223,29 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
     /**
      * Tests the functionality of moving the `@Unique` annotation attributes into the `uniqueConstraints` attribute of
      * the `@Table` annotation while preserving the original structure and ensuring adherence to proper Java syntax.
-     *
+     * <p>
      * Functionality verified:
      * - Identifies the `@Unique` annotation on a class and retrieves its relevant information (e.g., name, members, table).
      * - Moves the `@Unique` annotation attributes to the `uniqueConstraints` attribute of the `@Table` annotation.
      * - Ensures proper formatting and structure of the resulting `@Table` annotation.
      * - Validates that the `@Unique` annotation is removed after migration.
      * - Confirms appropriate handling of imports for the modified annotations.
-     *
+     * <p>
      * Preconditions:
      * - The source `@Unique` annotation is present on the class and correctly defined.
      * - The target `@Table` annotation is already present and may or may not define a `uniqueConstraints` attribute.
-     *
+     * <p>
      * Postconditions:
      * - The `@Unique` annotation is removed from its original location.
      * - The `uniqueConstraints` attribute of the `@Table` annotation is created or updated with the migrated data
-     *   from the `@Unique` annotation.
+     * from the `@Unique` annotation.
      * - The resulting annotations include a correctly formatted and consistent `@Table` annotation with the embedded
-     *   constraints from `@Unique`.
-     *
+     * constraints from `@Unique`.
+     * <p>
      * Expected outcome:
      * - The test starts with an input Java class containing a `@Unique` annotation along with a `@Table` annotation.
      * - The recipe modifies the input such that the `@Unique` annotation's data is migrated as a part of the
-     *   `uniqueConstraints` attribute within the `@Table` annotation.
+     * `uniqueConstraints` attribute within the `@Table` annotation.
      * - The modified class reflects the changes accurately and maintains syntactic correctness and proper formatting.
      */
     @DocumentExample
@@ -286,28 +286,28 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
      * This test method validates the functionality of the recipe responsible for migrating nested `@Unique` annotations
      * from the `@Uniques` annotation into the `uniqueConstraints` attribute of the `@Table` annotation. It ensures the
      * transformation is executed properly while maintaining correct formatting and syntax.
-     *
+     * <p>
      * Functionality tested:
      * - Converts nested `@Unique` annotations within `@Uniques` into individual entries in the `uniqueConstraints`
-     *   attribute of the `@Table` annotation.
+     * attribute of the `@Table` annotation.
      * - Removes the `@Uniques` annotation from the class after migration.
      * - Ensures proper structure, formatting, and correctness of the resulting `@Table` annotation.
      * - Verifies proper handling of imports for the modified annotations.
-     *
+     * <p>
      * Preconditions:
      * - The source annotation (`@Uniques`) containing nested `@Unique` annotations is present on the class.
      * - The target annotation (`@Table`) is present and may or may not already have a `uniqueConstraints` attribute.
-     *
+     * <p>
      * Postconditions:
      * - The nested `@Unique` annotations within the `@Uniques` annotation are migrated to the `uniqueConstraints` attribute
-     *   of the `@Table` annotation.
+     * of the `@Table` annotation.
      * - The `@Uniques` annotation is removed from the class.
      * - The resulting class contains a correctly formatted and complete `@Table` annotation with all constraints embedded.
-     *
+     * <p>
      * Expected behavior:
      * - The recipe processes an input Java class containing the `@Uniques` annotation with nested `@Unique` annotations.
      * - After executing the recipe, the nested `@Unique` data is moved to the `uniqueConstraints` attribute within the
-     *   `@Table` annotation, and the `@Uniques` annotation is removed.
+     * `@Table` annotation, and the `@Uniques` annotation is removed.
      * - The final output reflects the migration accurately and adheres to proper Java syntax and formatting standards.
      */
     @DocumentExample
@@ -341,8 +341,8 @@ class MoveAnnotationsToAttributeTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 @Table(schema = "schemaName", uniqueConstraints = {
-                                        @UniqueConstraint(name = "Person__name__UNQ", columnNames = {"firstName", "lastName"}),
-                                        @UniqueConstraint(name = "Person__email__UNQ", columnNames = {"email"})})
+                                        @UniqueConstraint(name = "Person__email__UNQ", columnNames = {"email"}),
+                                        @UniqueConstraint(name = "Person__name__UNQ", columnNames = {"firstName", "lastName"})})
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
