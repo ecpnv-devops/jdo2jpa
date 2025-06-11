@@ -1,6 +1,7 @@
 package com.ecpnv.openrewrite.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.openrewrite.Cursor;
@@ -38,6 +40,24 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class RewriteUtils {
+
+    /**
+     * Finds and returns the parent class declaration from the given cursor.
+     * This method traverses up the cursor's tree until it finds a node representing
+     * a class declaration.
+     *
+     * @param cursor the cursor from which to start the search for a parent class declaration
+     * @return the parent class declaration if found, or null if no class declaration is found
+     */
+    public static J.ClassDeclaration findParentClass(Cursor cursor) {
+        if (cursor == null) {
+            return null;
+        }
+        if (cursor.getValue() instanceof J.ClassDeclaration classDeclaration) {
+            return classDeclaration;
+        }
+        return findParentClass(cursor.getParentTreeCursor());
+    }
 
     /**
      * Finds the first assignment expression within the arguments of the first annotation in the provided annotation set
@@ -129,28 +149,18 @@ public class RewriteUtils {
      * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
      */
     public static Optional<Object> findArgumentValue(J.Annotation sourceAnnotation, String varName) {
-        if (sourceAnnotation == null || Optional.ofNullable(sourceAnnotation)
-                .map(J.Annotation::getArguments)
-                .map(CollectionUtils::isEmpty)
-                .orElse(Boolean.TRUE)) {
-            return Optional.empty();
-        }
-        return sourceAnnotation.getArguments().stream()
+        return findArgument(sourceAnnotation, varName)
                 .map(a -> {
                     // Test if literal
-                    if (varName == null || "value".equals(varName)) {
-                        if (a instanceof J.Literal lit) {
-                            return lit.getValue();
-                        }
+                    if (a instanceof J.Literal lit) {
+                        return lit.getValue();
                     } else
                         // Test if assignment
-                        if (a instanceof J.Assignment assignment && assignment.getVariable().toString().equals(varName)) {
+                        if (a instanceof J.Assignment assignment) {
                             return assignment.getAssignment();
                         }
                     return null;
-                })
-                .filter(Objects::nonNull)
-                .findFirst();
+                });
     }
 
     /**
@@ -229,7 +239,8 @@ public class RewriteUtils {
      * @param annotationType the type of annotation to match. Must not be blank.
      * @return a list of matching leading annotations, or an empty list if no matching annotations are found.
      */
-    public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
+    public static List<J.Annotation> findLeadingAnnotations(
+            J.ClassDeclaration classDecl, String annotationType, boolean subAnnotations) {
         if (classDecl == null || StringUtils.isBlank(annotationType) ||
                 Optional.ofNullable(classDecl)
                         .map(J.ClassDeclaration::getLeadingAnnotations)
@@ -238,9 +249,21 @@ public class RewriteUtils {
             return new ArrayList<>();
         }
         Pattern pattern = Pattern.compile(annotationType);
-        List<J.Annotation> annotations = classDecl.getLeadingAnnotations().stream()
-                .filter(annotation -> annotation.getType().isAssignableFrom(pattern))
-                .toList();
+        List<J.Annotation> annotations = Stream.concat(
+                // Find all root annotations on class
+                classDecl.getLeadingAnnotations().stream()
+                        .filter(annotation -> annotation.getType().isAssignableFrom(pattern)),
+                // Should we search for sub-annotations?
+                subAnnotations ? classDecl.getLeadingAnnotations().stream()
+                        .filter(a -> !a.getType().isAssignableFrom(pattern))
+                        .filter(a -> a.getArguments() != null && !a.getArguments().isEmpty())
+                        .flatMap(a -> a.getArguments().stream())
+                        .filter(a -> a instanceof J.Annotation)
+                        .filter(a -> TypeUtils.isOfClassType(a.getType(), annotationType))
+                        .map(a -> (J.Annotation) a)
+                        // Otherwise skip sub-annotations
+                        : Stream.empty()
+        ).toList();
         if (CollectionUtils.isEmpty(annotations)) {
             annotations = FindAnnotations.find(classDecl, annotationType).stream()
                     .filter(a -> TypeUtils.isOfClassType(a.getType(), annotationType))
@@ -248,6 +271,10 @@ public class RewriteUtils {
                     .toList();
         }
         return annotations;
+    }
+
+    public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
+        return findLeadingAnnotations(classDecl, annotationType, false);
     }
 
     /**
@@ -422,5 +449,52 @@ public class RewriteUtils {
             return string.replace(".", "_");
         }
         return string;
+    }
+
+    /**
+     * Adds double quotes around a string if it is not already quoted with either single
+     * or double quotes. If the input is already quoted, it is returned as is.
+     *
+     * @param unquotedString The input string to potentially quote. It can be null.
+     * @return A string wrapped in double quotes if it was not already quoted, or the
+     * original string if it was either null or already quoted.
+     */
+    public String maybeQuoteString(String unquotedString) {
+        if (unquotedString != null && !unquotedString.startsWith("'") && !unquotedString.endsWith("'")
+                && !unquotedString.startsWith("\"") && !unquotedString.endsWith("\"")) {
+            return "\"" + unquotedString + "\"";
+        }
+        return unquotedString;
+    }
+
+    /**
+     * Removes surrounding quotes from a given string if present.
+     * Supported quotes are single quotes ('') and double quotes ("").
+     *
+     * @param quotedString the string which may have surrounding single or double quotes
+     * @return the unquoted string if quotes were present, otherwise returns the original string
+     */
+    public String maybeUnquoteString(String quotedString) {
+        if (quotedString != null && (quotedString.startsWith("'") && quotedString.endsWith("'")
+                || quotedString.startsWith("\"") && quotedString.endsWith("\""))) {
+            return quotedString.substring(1, quotedString.length() - 1);
+        }
+        return quotedString;
+    }
+
+    /**
+     * Determines if the given variable declarations contain all specified modifiers.
+     *
+     * @param multiVariable the variable declarations to check for the specified modifiers
+     * @param modifiers     the modifiers to be checked within the variable declarations
+     * @return {@code true} if all specified modifiers are present in the variable declarations; otherwise {@code false}
+     */
+    public boolean hasModifiers(J.VariableDeclarations multiVariable, J.Modifier.Type... modifiers) {
+        if (modifiers == null || modifiers.length == 0) {
+            return false;
+        }
+        return Arrays.stream(modifiers)
+                .allMatch(m -> multiVariable.getModifiers().stream()
+                        .anyMatch(mm -> mm.getType() == m));
     }
 }
