@@ -22,6 +22,7 @@ import org.openrewrite.test.RecipeSpec;
 import static org.openrewrite.java.Assertions.java;
 
 import com.ecpnv.openrewrite.java.MoveAnnotationsToAttribute;
+import com.ecpnv.openrewrite.java.UnwrapAnnotationToClass;
 
 
 /**
@@ -72,7 +73,6 @@ class IndexesTest extends BaseRewriteTest {
     void moveIndexConstraintAnnotation() {
         rewriteRun(spec -> spec.recipe(new MoveAnnotationsToAttribute(Constants.Jpa.INDEX_ANNOTATION_FULL,
                         Constants.Jpa.TABLE_ANNOTATION_FULL, Constants.Jpa.TABLE_ARGUMENT_INDEXES, false)),
-                //language=java
                 //language=java
                 java(
                         """
@@ -362,6 +362,63 @@ class IndexesTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * This method tests the transformation of the {@code @Indices} annotation
+     * into multiple {@code @Index} annotations on a Java class. Specifically,
+     * it rewrites the code by unwrapping an {@code @Indices} annotation that
+     * contains multiple {@code @Index} definitions, replacing it with individual
+     * {@code @Index} annotations directly on the class. It ensures that
+     * the transformation maintains the correctness of the original annotations
+     * and their properties.
+     * <p>
+     * The test verifies:
+     * - Conversion of the {@code @Indices} wrapper annotation into multiple
+     * standalone {@code @Index} annotations.
+     * - Preservation of all properties and their values from the original
+     * annotations.
+     * - Proper integration of transformed annotations in the resulting class structure.
+     * <p>
+     * This rewrite is facilitated by the `UnwrapAnnotationToClass` recipe,
+     * targeting the {@code @Indices} annotation.
+     */
+    @DocumentExample
+    @Test
+    void unwrapIndexAnnotationsFromIndices() {
+        rewriteRun(
+                spec -> spec.recipe(new UnwrapAnnotationToClass(Constants.Jdo.INDEX_ANNOTATION_FULL, true)),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Indices;
+                                import javax.jdo.annotations.Index;
+                                
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
+                                @Indices({
+                                  @Index(name = "Person__name__IDX", members = {"firstName", "lastName"}),
+                                  @Index(name = "Person__email__IDX", members = {"email"}),
+                                })
+                                public class SomeEntity {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """,
+                        """
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Index;
+                                
+                                @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
+                                @Index(name = "Person__name__IDX", members = {"firstName", "lastName"})
+                                @Index(name = "Person__email__IDX", members = {"email"})
+                                public class SomeEntity {
+                                        private int id;
+                                        private String firstName, lastName, email;
+                                }
+                                """
+                )
+        );
+    }
+
 
     /**
      * This method tests the refactoring process of migrating JDO-specific annotations
@@ -485,6 +542,109 @@ class IndexesTest extends BaseRewriteTest {
                                 """ + "        " + """
                                 
                                         public Date getBirthDate(){ return null;}
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Tests the ability to transform JDO (Java Data Objects) annotations to JPA (Java Persistence API) annotations
+     * by moving the index definition from fields to the class level and utilizing the column names in the index definitions.
+     * <p>
+     * This method verifies the correctness of a code transformation recipe applied to a Java class that:
+     * - Replaces annotations like {@code @javax.jdo.annotations.Index} and {@code @javax.jdo.annotations.Indices}
+     * with their equivalent {@code @javax.persistence.Index} and class-level {@code @Table} specifications.
+     * - Consolidates individual field-level indexes into a single {@code @Table} annotation defining all indexes
+     * at the class level with the appropriate {@code columnList}.
+     * - Retains schema, unique constraints, and any applicable column or index-specific properties.
+     * <p>
+     * This transformation ensures compatibility with JPA while preserving the intent and structure
+     * of the original JDO-based definitions.
+     * <p>
+     * The method operates on a sample input Java class annotated using JDO and ensures that the transformed class complies with
+     * JPA standards, including correct use of {@code @Table}, {@code @Column}, and {@code @Index}.
+     */
+    @DocumentExample
+    @Test
+    void moveIndexFromFieldToClassAndUseColumnName() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
+                //language=java
+                java(
+                        """
+                                import java.lang.annotation.ElementType;
+                                import java.lang.annotation.Retention;
+                                import java.lang.annotation.RetentionPolicy;
+                                import java.lang.annotation.Target;
+                                import javax.jdo.annotations.Indices;
+                                import javax.persistence.Table;
+                                import javax.jdo.annotations.Index;
+                                import javax.jdo.annotations.Column;
+                                import java.util.Date;
+                                
+                                @Index(name = "SomeEntityNameIndex", members = {"name"}, table = "table", 
+                                unique = "false", columns = {"col1", "col2"}, extensions = "")
+                                @Indices({@Index(name = "SomeEntityName2Index", members = {"name"}),
+                                @Index(name = "SomeEntityNameDateIndex", members = {"name", "date", "description"})})
+                                @Table(schema = "schemaName")
+                                public class SomeEntity {
+                                        public final static String DATE_COLUMN = "SomeEntityDate"; 
+                                
+                                        @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })
+                                        @Retention(RetentionPolicy.RUNTIME)
+                                        public @interface Name {
+                                            String NAME = "SomeEntityName";
+                                        }
+                                
+                                        @Column(name = "SomeEntityId")
+                                        @Index(name = "SomeEntityIdIndex", unique = "true")
+                                        private int id;
+                                        @Column(name = Name.NAME)
+                                        private String name;
+                                        @Index(name = "SomeEntityDateIndex")
+                                        @Column(name = SomeEntity.DATE_COLUMN)
+                                        private Date date;
+                                        private String description;
+                                }
+                                """,
+                        """
+                                import java.lang.annotation.ElementType;
+                                import java.lang.annotation.Retention;
+                                import java.lang.annotation.RetentionPolicy;
+                                import java.lang.annotation.Target;
+                                
+                                import javax.persistence.Column;
+                                import javax.persistence.Index;
+                                import javax.persistence.Table;
+                                import java.util.Date;
+                                
+                                
+                                
+                                @Table(schema = "schemaName", indexes = {
+                                        @Index(columnList = "SomeEntityId", name = "SomeEntityIdIndex", unique = "true"), 
+                                        @Index(columnList = "SomeEntityDate", name = "SomeEntityDateIndex"),
+                                        @Index(name = "SomeEntityNameIndex", columnList = "SomeEntityName"),
+                                        @Index(name = "SomeEntityNameDateIndex", columnList = "SomeEntityName, SomeEntityDate, description"),
+                                        @Index(name = "SomeEntityName2Index", columnList = "SomeEntityName")})
+                                public class SomeEntity {
+                                        public final static String DATE_COLUMN = "SomeEntityDate";
+                                
+                                        @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })
+                                        @Retention(RetentionPolicy.RUNTIME)
+                                        public @interface Name {
+                                            String NAME = "SomeEntityName";
+                                        }
+                                
+                                        @Column(name = "SomeEntityId")
+                                        private int id;
+                                        @Column(name = Name.NAME)
+                                        private String name;
+                                """ + "        " + """
+                                
+                                        @Column(name = SomeEntity.DATE_COLUMN)
+                                        private Date date;
+                                        private String description;
                                 }
                                 """
                 )

@@ -30,10 +30,10 @@ recipeList:
   - com.ecpnv.openrewrite.java.RemoveTrailingComma
   # JDO to JPA migration
   - com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Unique
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Index
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
@@ -274,6 +274,22 @@ tags:
   - persistence
   - Unique
 recipeList:
+  # Move @Unique from @Uniques to class
+  - com.ecpnv.openrewrite.java.UnwrapAnnotationToClass:
+      annotationPattern: javax.jdo.annotations.Unique
+      removeParentAnnotation: true
+  # Replace the field names in @Unique(..members..) with column names when @Column(..name..) is specified on the field
+  - com.ecpnv.openrewrite.java.UpdateAnnotationAttributeFromFieldAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: members
+      fieldAnnotationType: javax..Column
+      fieldAttributeName: name
+  # Replace the field names in @Unique(..members..) with column names when @JoinColumn(..name..) is specified on the field
+  - com.ecpnv.openrewrite.java.UpdateAnnotationAttributeFromFieldAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Unique
+      attributeName: members
+      fieldAnnotationType: javax..JoinColumn
+      fieldAttributeName: name
   # replace @Unique(..members..) with @Unique(..columnNames..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
       annotationType: javax.jdo.annotations.Unique
@@ -322,7 +338,23 @@ recipeList:
   # Move @Index from field to class
   - com.ecpnv.openrewrite.java.MoveAnnotationFromFieldOrMethodToClass:
       annotationPattern: javax.jdo.annotations.Index
-      attributeNameToAdd: columnList
+      attributeNameToAdd: members
+  # Move @Index from @Indices to class
+  - com.ecpnv.openrewrite.java.UnwrapAnnotationToClass:
+      annotationPattern: javax.jdo.annotations.Index
+      removeParentAnnotation: true
+  # Replace the field names in @Index(..members..) with column names when @Column(..name..) is specified on the field
+  - com.ecpnv.openrewrite.java.UpdateAnnotationAttributeFromFieldAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: members
+      fieldAnnotationType: javax..Column
+      fieldAttributeName: name
+  # Replace the field names in @Index(..members..) with column names when @JoinColumn(..name..) is specified on the field
+  - com.ecpnv.openrewrite.java.UpdateAnnotationAttributeFromFieldAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Index
+      attributeName: members
+      fieldAnnotationType: javax..JoinColumn
+      fieldAttributeName: name
   # replace @Index(..members..) with @Index(..columnList..)
   - org.openrewrite.java.ChangeAnnotationAttributeName:
       annotationType: javax.jdo.annotations.Index

@@ -118,7 +118,7 @@ public class MoveAnnotationsToAttribute extends Recipe {
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration classDeclaration = super.visitClassDeclaration(classDecl, ctx);
                 // Find all source annotations
-                List<J.Annotation> annotations = RewriteUtils.findLeadingAnnotations(classDeclaration, sourceAnnotationType);
+                List<J.Annotation> annotations = RewriteUtils.findLeadingAnnotations(classDeclaration, sourceAnnotationType, true);
                 // Exit when no source annotations are found
                 if (annotations.isEmpty()) {
                     return classDeclaration;

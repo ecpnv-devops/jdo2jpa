@@ -99,7 +99,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     @Option(displayName = "Attribute value",
             description = "The value to set the attribute to. Set to `null` to remove the attribute.",
             example = "500")
-    String attributeValue;
+    Object attributeValue;
 
     @Option(displayName = "Old Attribute value",
             description = "The current value of the attribute, this can be used to filter where the change is applied. " +
@@ -129,7 +129,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("appendArray") Boolean appendArray,
             @Nullable @JsonProperty("attributeName") String attributeName,
-            @NonNull @JsonProperty("attributeValue") String attributeValue,
+            @NonNull @JsonProperty("attributeValue") Object attributeValue,
             @Nullable @JsonProperty("oldAttributeValue") String oldAttributeValue,
             @NonNull @JsonProperty("operation") Operation operation) {
         this.annotationType = annotationType;
@@ -171,7 +171,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                 } else {
                     String newAttributeValueResult = newAttributeValue;
                     if (((JavaType.FullyQualified) requireNonNull(annotation.getAnnotationType().getType())).getMethods().stream().anyMatch(method -> method.getReturnType().toString().equals("java.lang.String[]"))) {
-                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
+                        String attributeValueCleanedUp = attributeValue.toString().replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                         List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
                         newAttributeValueResult = attributeList.stream()
                                 .map(String::valueOf)
@@ -208,7 +208,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
 
                         if (assignment.getAssignment() instanceof J.NewArray newArray) {
                             List<Expression> jLiteralList = requireNonNull(newArray.getInitializer());
-                            String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
+                            String attributeValueCleanedUp = attributeValue.toString().replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                             List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
 
                             if (assignment.getMarkers().findFirst(AlreadyAppended.class).filter(ap -> ap.getValues().equals(newAttributeValue)).isPresent()) {
@@ -252,11 +252,12 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                                 if (newAttributeListValue.equals(((J.Literal) jLiteralList.get(i)).getValueSource()) || operation.isAdd()) {
                                     continue;
                                 }
-                                if (oldAttributeValue != null && !oldAttributeValue.equals(attributeList.get(i))) {
+                                String oldAttributeValueQuoted = maybeQuoteStringArgument(attributeName, attributeList.get(i), finalA);
+                                if (oldAttributeValueQuoted != null && oldAttributeValueQuoted.equals(((J.Literal) jLiteralList.get(i)).getValueSource())) {
                                     continue;
                                 }
 
-                                jLiteralList.set(i, ((J.Literal) jLiteralList.get(i)).withValue(newAttributeListValue).withValueSource(newAttributeListValue).withPrefix(jLiteralList.get(i).getPrefix()));
+                                jLiteralList.set(i, ((J.Literal) jLiteralList.get(i)).withValue(attributeList.get(i)).withValueSource(newAttributeListValue).withPrefix(jLiteralList.get(i).getPrefix()));
                             }
                             if (jLiteralList.size() < attributeList.size() || operation.isAdd()) {
                                 if (operation.isAdd()) {
@@ -264,7 +265,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                                 }
                                 for (int j = m; j < attributeList.size(); j++) {
                                     String newAttributeListValue = maybeQuoteStringArgument(attributeName, attributeList.get(j), finalA);
-                                    jLiteralList.add(j, new J.Literal(randomId(), jLiteralList.get(j - 1).getPrefix(), Markers.EMPTY, newAttributeListValue, newAttributeListValue, null, JavaType.Primitive.String));
+                                    jLiteralList.add(j, new J.Literal(randomId(), jLiteralList.get(j - 1).getPrefix(), Markers.EMPTY, attributeList.get(j), newAttributeListValue, null, JavaType.Primitive.String));
                                 }
                             }
 
@@ -352,7 +353,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                         }
 
                         List<Expression> jLiteralList = requireNonNull(newArray.getInitializer());
-                        String attributeValueCleanedUp = attributeValue.replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
+                        String attributeValueCleanedUp = attributeValue.toString().replaceAll("\\s+", "").replaceAll(ANNOTATION_REGEX, "");
                         List<String> attributeList = Arrays.asList(attributeValueCleanedUp.contains(",") ? attributeValueCleanedUp.split(",") : new String[]{attributeValueCleanedUp});
 
                         if (Boolean.TRUE.equals(appendArray)) {
@@ -479,15 +480,19 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
     }
 
     @Contract("_, null, _ -> null; _, !null, _ -> !null")
-    private static @Nullable String maybeQuoteStringArgument(@Nullable String attributeName, @Nullable String attributeValue, J.Annotation annotation) {
-        if ((attributeValue != null) && attributeIsString(attributeName, annotation)) {
-            if (attributeValue.startsWith("$")) {
-                return attributeValue.substring(1);
+    private static @Nullable String maybeQuoteStringArgument(@Nullable String attributeName, @Nullable Object attributeValue, J.Annotation annotation) {
+        var av = "";
+        if (attributeValue instanceof String avString && attributeIsString(attributeName, annotation)) {
+            if (avString.startsWith("$")) {
+                return avString.substring(1);
             }
-            return "\"" + attributeValue + "\"";
-        } else {
-            return attributeValue;
+            av = "\"" + avString + "\"";
+        } else if (attributeValue instanceof J.Literal) {
+            av = ((J.Literal) attributeValue).getValueSource();
+        } else if (attributeValue != null) {
+            av = attributeValue.toString();
         }
+        return av;
     }
 
     private static boolean attributeIsString(@Nullable String attributeName, J.Annotation annotation) {
