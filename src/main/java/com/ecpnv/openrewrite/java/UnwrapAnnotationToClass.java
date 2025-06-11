@@ -16,6 +16,7 @@
 package com.ecpnv.openrewrite.java;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -100,8 +101,11 @@ public class UnwrapAnnotationToClass extends Recipe {
                     List<J.Annotation> otherAnnotations = cd.getLeadingAnnotations();
                     otherAnnotations.removeAll(annotationsToRemove);
                     // Add unwrapped annotations
+                    unwrappedAnnotations.sort(Comparator.comparing(J.Annotation::toString));
                     unwrappedAnnotations.stream()
                             .map(annotation -> annotation.withMarkers(annotation.getMarkers().removeByType(SearchResult.class)))
+                            .map(annotation -> annotation.withPrefix(annotation.getPrefix().withWhitespace(
+                                    annotation.getPrefix().getWhitespace().stripIndent())))
                             .forEach(otherAnnotations::add);
                     // Replace annotations
                     cd = cd.withLeadingAnnotations(List.of()); // Force the creation of a new classdeclaration, should NOT be needed :-(

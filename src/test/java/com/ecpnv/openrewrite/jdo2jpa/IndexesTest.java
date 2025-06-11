@@ -408,8 +408,8 @@ class IndexesTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Index;
                                 
                                 @PersistenceCapable(schema = "schemaName", identityType = IdentityType.DATASTORE)
-                                @Index(name = "Person__name__IDX", members = {"firstName", "lastName"})
                                 @Index(name = "Person__email__IDX", members = {"email"})
+                                @Index(name = "Person__name__IDX", members = {"firstName", "lastName"})
                                 public class SomeEntity {
                                         private int id;
                                         private String firstName, lastName, email;
@@ -469,8 +469,8 @@ class IndexesTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 @Table(schema = "schemaName", indexes = {
-                                        @Index(name = "Person__name__IDX", columnList = "firstName, lastName"), 
-                                        @Index(name = "Person__email__IDX", columnList = "email")})
+                                        @Index(name = "Person__email__IDX", columnList = "email"),
+                                        @Index(name = "Person__name__IDX", columnList = "firstName, lastName")}) 
                                 public class SomeEntity extends EntityAbstract {
                                         private int id;
                                         private String firstName, lastName, email;
@@ -625,8 +625,8 @@ class IndexesTest extends BaseRewriteTest {
                                         @Index(columnList = "SomeEntityId", name = "SomeEntityIdIndex", unique = "true"), 
                                         @Index(columnList = "SomeEntityDate", name = "SomeEntityDateIndex"),
                                         @Index(name = "SomeEntityNameIndex", columnList = "SomeEntityName"),
-                                        @Index(name = "SomeEntityNameDateIndex", columnList = "SomeEntityName, SomeEntityDate, description"),
-                                        @Index(name = "SomeEntityName2Index", columnList = "SomeEntityName")})
+                                        @Index(name = "SomeEntityName2Index", columnList = "SomeEntityName"),
+                                        @Index(name = "SomeEntityNameDateIndex", columnList = "SomeEntityName, SomeEntityDate, description")})
                                 public class SomeEntity {
                                         public final static String DATE_COLUMN = "SomeEntityDate";
                                 
