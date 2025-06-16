@@ -274,8 +274,8 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Set
                         .apply(getCursor(), multiVariable.getCoordinates().replaceAnnotations()))
                         .getLeadingAnnotations().get(0));
 
-                // Only add @JoinColumn when the relation is UNIdirectional and NOT bidirectional
-                if (!colTemplate.isEmpty() && !RewriteUtils.hasCollectionMemberOfSameTypeAsOwner(multiVariable)) {
+                // Add @JoinColumn when a @Column with name attribute is defined
+                if (!colTemplate.isEmpty()) {// && !RewriteUtils.hasCollectionMemberOfSameTypeAsOwner(multiVariable)) {
                     leadAnnosResult = ListUtils.concat(leadAnnosResult, columnAnnoIfAny.map(colAnno ->
                             ((J.VariableDeclarations) JavaTemplate.builder(colTemplate.toString())
                                     .javaParser(JavaParserFactory.create(ctx))

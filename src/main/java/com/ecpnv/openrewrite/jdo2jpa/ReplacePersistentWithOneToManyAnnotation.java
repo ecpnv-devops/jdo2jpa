@@ -1,5 +1,6 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,11 +31,11 @@ import com.ecpnv.openrewrite.java.AddAnnotationConditionally;
 import com.ecpnv.openrewrite.util.JavaParserFactory;
 import com.ecpnv.openrewrite.util.RewriteUtils;
 
+import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
-import static com.ecpnv.openrewrite.util.RewriteUtils.sanitizeTableName;
 
 /**
  * This class defines a migration recipe for replacing occurrences of the <code>@javax.jdo.annotations.Persistent</code>
@@ -149,7 +150,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
 
     static boolean validateVar(J.VariableDeclarations multiVariable) {
         // Should have a Collection
-        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile("java.util.Collection"))
+        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile(Collection.class.getName()))
                 // Should not have target annotation
                 && FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty();
     }
@@ -257,29 +258,29 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                         .build()
                         .apply(getCursor(), persistentAnno.getCoordinates().replace());
 
-                if (mappedBy.isPresent()) {
-                    // Must we add a @JoinColumn?
-                    Optional<J.Annotation> joinColAnno = FindAnnotations.find(multiVariable, Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL).stream().findFirst();
-                    if (!joinAnno.isPresent() && !joinColAnno.isPresent()) {
-                        var templateJC = RewriteUtils.getParameterType(multiVariable, 0, 0)
-                                .map(pt -> pt.getFullyQualifiedName() + "#" + mappedBy.get().getAssignment())
-                                .map(key -> acc.varColumnWithName.get(key))
-                                .map(name -> new StringBuilder("@")
-                                                .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
-                                                .append("(name = \"")
-                                                .append(sanitizeTableName(name))
-                                                .append("\")\n")
-                                                .toString()
-                                );
-                        if (templateJC.isPresent()) {
-                            multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
-                                    ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
-                                    Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, templateJC.get(), AddAnnotationConditionally.DeclarationType.VAR)
-                                    .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
-                        }
-                    }
-                }
-
+                /*                if (mappedBy.isPresent()) {
+                                    // Must we add a @JoinColumn?
+                                    Optional<J.Annotation> joinColAnno = FindAnnotations.find(multiVariable, Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL).stream().findFirst();
+                                    if (!joinAnno.isPresent() && !joinColAnno.isPresent()) {
+                                        var templateJC = RewriteUtils.getParameterType(multiVariable, 0, 0)
+                                                .map(pt -> pt.getFullyQualifiedName() + "#" + mappedBy.get().getAssignment())
+                                                .map(key -> acc.varColumnWithName.get(key))
+                                                .map(name -> new StringBuilder("@")
+                                                        .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
+                                                        .append("(name = \"")
+                                                        .append(sanitizeTableName(name))
+                                                        .append("\")\n")
+                                                        .toString()
+                                                );
+                                        if (templateJC.isPresent()) {
+                                            multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
+                                                    ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
+                                                    Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, templateJC.get(), AddAnnotationConditionally.DeclarationType.VAR)
+                                                    .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
+                                        }
+                                    }
+                                }
+                */
                 if (table.isPresent() || joinAnno.isPresent()) {
                     // Add @JoinTable to var with table name
                     StringBuilder joinTableTemplate = new StringBuilder("@")

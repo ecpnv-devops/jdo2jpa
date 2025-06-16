@@ -108,7 +108,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.Column;
                                 import javax.persistence.Entity;
                                 import javax.jdo.annotations.Persistent;
-
+                                
                                 import java.lang.Deprecated;
                                 
                                 @Entity
@@ -133,6 +133,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class Person {
                                     @ManyToOne()
+                                    @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                 }
                                 @Entity
@@ -140,7 +141,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                     private int id;
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                     @Deprecated
-                                    @JoinColumn(name = "someEntity_id")
                                     private List<Person> persons;
                                 }
                                 """
@@ -324,4 +324,96 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                 )
         );
     }
+
+    /**
+     * Validates the transformation of the `@Persistent` annotation in a JDO model to a JPA-compliant `@OneToMany` annotation,
+     * ensuring that multiple annotations on the same field are properly retained or transformed as necessary. Additionally,
+     * verifies that any associated index annotations are correctly migrated to JPA `@Index` annotations.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAnnotationWithMultipleAnnotationsAndIndex() {
+        rewriteRun(spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Index;
+                                import javax.jdo.annotations.Indices;
+                                
+                                @PersistenceCapable
+                                @Indices({
+                                  @Index(name = "Person_name_IDX", members = {"name"}),
+                                  @Index(name = "Person_entity_IDX", members = {"someEntity"})
+                                })
+                                public class Person {
+                                    @Column(name = "someEntity_id")
+                                    private SomeEntity someEntity;
+                                    @Column(name = "someEntity_name")
+                                    private String name;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                import javax.persistence.*;
+                                
+                                @Entity
+                                @Table(indexes = {
+                                        @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
+                                        @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
+                                public class Person extends EntityAbstract {
+                                    @ManyToOne()
+                                    @JoinColumn(name = "someEntity_id")
+                                    private SomeEntity someEntity;
+                                    @Column(name = "someEntity_name")
+                                    private String name;
+                                }
+                                """
+                ),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Index;
+                                import javax.jdo.annotations.Indices;
+                                
+                                import java.lang.Deprecated;
+                                
+                                @PersistenceCapable
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( mappedBy = "someEntity")
+                                    @Deprecated
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                import javax.persistence.*;
+                                
+                                import java.lang.Deprecated;
+                                
+                                @Entity
+                                @Table
+                                public class SomeEntity extends EntityAbstract {
+                                    private int id;
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @Deprecated
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+
+        );
+    }
+
 }
