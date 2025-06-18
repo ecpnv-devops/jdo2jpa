@@ -67,6 +67,8 @@ public final class Constants {
         public static final String JOIN_COLUMN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_COLUMN_ANNOTATION_NAME;
         public static final String JOIN_TABLE_ANNOTATION_NAME = "JoinTable";
         public static final String JOIN_TABLE_ANNOTATION_FULL = BASE_PACKAGE + JOIN_TABLE_ANNOTATION_NAME;
+        public static final String ONE_TO_ONE_ANNOTATION_NAME = "OneToOne";
+        public static final String ONE_TO_ONE_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_ONE_ANNOTATION_NAME;
         public static final String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
         public static final String ONE_TO_MANY_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_MANY_ANNOTATION_NAME;
         public static final String ONE_TO_MANY_ARGUMENT_MAPPED_BY = "mappedBy";

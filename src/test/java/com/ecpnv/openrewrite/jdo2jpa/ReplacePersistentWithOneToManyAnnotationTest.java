@@ -416,4 +416,85 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         );
     }
 
+
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToOneAnnotationWithMultipleAnnotationsAndIndex() {
+        rewriteRun(spec -> spec.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x"),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Index;
+                                import javax.jdo.annotations.Indices;
+                                
+                                @PersistenceCapable
+                                @Indices({
+                                  @Index(name = "Person_name_IDX", members = {"name"}),
+                                  @Index(name = "Person_entity_IDX", members = {"someEntity"})
+                                })
+                                public class Person {
+                                    @Column(name = "someEntity_id")
+                                    private SomeEntity someEntity;
+                                    @Column(name = "someEntity_name")
+                                    private String name;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                import javax.persistence.*;
+                                
+                                @Entity
+                                @Table(indexes = {
+                                        @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
+                                        @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
+                                public class Person extends EntityAbstract {
+                                    @OneToOne()
+                                    @JoinColumn(name = "someEntity_id")
+                                    private SomeEntity someEntity;
+                                    @Column(name = "someEntity_name")
+                                    private String name;
+                                }
+                                """
+                ),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.PersistenceCapable;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Index;
+                                import javax.jdo.annotations.Indices;
+                                
+                                @PersistenceCapable
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent( mappedBy = "someEntity")
+                                    private Person person;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                
+                                import org.estatio.base.prod.dom.EntityAbstract;
+                                import javax.persistence.*;
+                                
+                                @Entity
+                                @Table
+                                public class SomeEntity extends EntityAbstract {
+                                    private int id;
+                                    @OneToOne(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    private Person person;
+                                }
+                                """
+                )
+
+        );
+    }
+
 }

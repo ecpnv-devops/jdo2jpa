@@ -60,18 +60,21 @@ public class RewriteUtils {
     }
 
     /**
-     * Finds the first assignment expression within the arguments of the first annotation in the provided annotation set
-     * that matches the specified variable name.
+     * Finds the first argument assignment for a specific variable name within a set of annotations.
      *
-     * @param sourceAnnotations the set of annotations to search for the assignment. Must not be null or empty.
-     * @param varName           the name of the variable to match within the assignment. Must not be blank.
-     * @return an Optional containing the matching assignment, or an empty Optional if no match is found.
+     * @param sourceAnnotations the set of annotations to search for the variable assignment. Must not be null or empty.
+     * @param varName           the name of the variable to search for in the annotations. Must not be null or blank.
+     * @return an Optional containing the found assignment if present, or an empty Optional if no assignment is found.
      */
     public static Optional<J.Assignment> findArgumentAssignment(Set<J.Annotation> sourceAnnotations, String varName) {
         if (sourceAnnotations == null || sourceAnnotations.isEmpty() || StringUtils.isBlank(varName)) {
             return Optional.empty();
         }
-        return findArgumentAssignment(sourceAnnotations.iterator().next(), varName);
+        return sourceAnnotations.stream()
+                .map(a -> findArgumentAssignment(a, varName))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
     }
 
     /**
@@ -232,29 +235,27 @@ public class RewriteUtils {
 
 
     /**
-     * Finds and returns a list of leading annotations in the given class declaration that match the specified
+     * Finds and returns a list of leading annotations in the given java declaration that match the specified
      * annotation type. The result will maintain order of the annotations as in the source code.
      *
-     * @param classDecl      the class declaration to search for leading annotations. Must not be null.
+     * @param javaElement    the java declaration to search for leading annotations. Must not be null.
      * @param annotationType the type of annotation to match. Must not be blank.
+     * @param subAnnotations should annatations in annotations be included? True=yes
      * @return a list of matching leading annotations, or an empty list if no matching annotations are found.
      */
     public static List<J.Annotation> findLeadingAnnotations(
-            J.ClassDeclaration classDecl, String annotationType, boolean subAnnotations) {
-        if (classDecl == null || StringUtils.isBlank(annotationType) ||
-                Optional.ofNullable(classDecl)
-                        .map(J.ClassDeclaration::getLeadingAnnotations)
-                        .map(CollectionUtils::isEmpty)
-                        .orElse(Boolean.TRUE)) {
+            J javaElement, String annotationType, boolean subAnnotations) {
+        List<J.Annotation> leadingAnnotations = getLeadingAnnotations(javaElement);
+        if (javaElement == null || StringUtils.isBlank(annotationType) || leadingAnnotations.isEmpty()) {
             return new ArrayList<>();
         }
         Pattern pattern = Pattern.compile(annotationType);
         List<J.Annotation> annotations = Stream.concat(
                 // Find all root annotations on class
-                classDecl.getLeadingAnnotations().stream()
+                leadingAnnotations.stream()
                         .filter(annotation -> annotation.getType().isAssignableFrom(pattern)),
                 // Should we search for sub-annotations?
-                subAnnotations ? classDecl.getLeadingAnnotations().stream()
+                subAnnotations ? leadingAnnotations.stream()
                         .filter(a -> !a.getType().isAssignableFrom(pattern))
                         .filter(a -> a.getArguments() != null && !a.getArguments().isEmpty())
                         .flatMap(a -> a.getArguments().stream())
@@ -265,16 +266,26 @@ public class RewriteUtils {
                         : Stream.empty()
         ).toList();
         if (CollectionUtils.isEmpty(annotations)) {
-            annotations = FindAnnotations.find(classDecl, annotationType).stream()
-                    .filter(a -> TypeUtils.isOfClassType(a.getType(), annotationType))
-                    .sorted(Comparator.comparing(a -> getOrder(classDecl.getLeadingAnnotations(), a)))
+            var at = annotationType.startsWith("@") ? annotationType.substring(1) : annotationType;
+            annotations = FindAnnotations.find(javaElement, annotationType).stream()
+                    .filter(a -> TypeUtils.isOfClassType(a.getType(), at))
+                    .sorted(Comparator.comparing(a -> getOrder(leadingAnnotations, a)))
                     .toList();
         }
         return annotations;
     }
 
-    public static List<J.Annotation> findLeadingAnnotations(J.ClassDeclaration classDecl, String annotationType) {
-        return findLeadingAnnotations(classDecl, annotationType, false);
+    public static List<J.Annotation> findLeadingAnnotations(J javaElement, String annotationType) {
+        return findLeadingAnnotations(javaElement, annotationType, false);
+    }
+
+    public static List<J.Annotation> getLeadingAnnotations(J javaElement) {
+        return switch (javaElement) {
+            case J.ClassDeclaration cd -> cd.getLeadingAnnotations();
+            case J.MethodDeclaration md -> md.getLeadingAnnotations();
+            case J.VariableDeclarations vd -> vd.getLeadingAnnotations();
+            default -> new ArrayList<>();
+        };
     }
 
     /**

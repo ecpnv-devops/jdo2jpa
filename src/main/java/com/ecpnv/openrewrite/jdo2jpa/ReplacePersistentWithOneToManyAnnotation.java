@@ -109,7 +109,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                         J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, executionContext);
                         // Check if Collection or already has target annotation or no source annotation is found
                         Optional<J.Annotation> persistentAnno = getPersistentAnnotation(mv);
-                        if (validateVar(mv) && persistentAnno.isPresent()) {
+                        if (hasNoTargetAnnotation(mv) && persistentAnno.isPresent()) {
                             // Find mappedby argument
                             RewriteUtils.findArgumentAssignment(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
                                     .ifPresent(assignment -> {
@@ -119,21 +119,20 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                                 .ifPresent(name -> acc.varPersistentWithMappedBy
                                                         .put(name, assignment.getAssignment().toString()));
                                     });
-                        } else {
-                            // Find @Column#name
-                            FindAnnotations.find(mv, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream()
-                                    .findFirst()
-                                    .ifPresent(ca -> {
-                                        // Find name
-                                        RewriteUtils.findArgumentAssignment(ca, Constants.Jdo.ARGUMENT_NAME)
-                                                .map(J.Assignment::getAssignment)
-                                                .ifPresent(e -> {
-                                                    // Add fqn#varname,column-name-value to accumulator
-                                                    var name = RewriteUtils.toFullyQualifiedNameWithVar(mv.getVariables().get(0));
-                                                    acc.varColumnWithName.put(name, e.toString());
-                                                });
-                                    });
                         }
+                        // Find @Column#name
+                        FindAnnotations.find(mv, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream()
+                                .findFirst()
+                                .ifPresent(ca -> {
+                                    // Find name
+                                    RewriteUtils.findArgumentAssignment(ca, Constants.Jdo.ARGUMENT_NAME)
+                                            .map(J.Assignment::getAssignment)
+                                            .ifPresent(e -> {
+                                                // Add fqn#varname,column-name-value to accumulator
+                                                var name = RewriteUtils.toFullyQualifiedNameWithVar(mv.getVariables().get(0));
+                                                acc.varColumnWithName.put(name, e.toString());
+                                            });
+                                });
                         return mv;
                     }
                 });
@@ -148,11 +147,15 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
     }
 
 
-    static boolean validateVar(J.VariableDeclarations multiVariable) {
+    static boolean hasNoTargetAnnotation(J.VariableDeclarations multiVariable) {
+        // Should not already have @OneToOne or @OneToMany annotation
+        return FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty()
+                && FindAnnotations.find(multiVariable, Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL).isEmpty();
+    }
+
+    static boolean hasCollection(J.VariableDeclarations multiVariable) {
         // Should have a Collection
-        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile(Collection.class.getName()))
-                // Should not have target annotation
-                && FindAnnotations.find(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty();
+        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile(Collection.class.getName()));
     }
 
     static Optional<J.Annotation> getPersistentAnnotation(J.VariableDeclarations multiVariable) {
@@ -189,8 +192,8 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 }
                 return multiVariable;
             }
-            // Check for Collection or already has target annotation
-            if (!validateVar(multiVariable)) {
+            // Has already one of the target annotations?
+            if (!hasNoTargetAnnotation(multiVariable)) {
                 return multiVariable;
             }
             // Find mappedby argument
@@ -201,7 +204,13 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             Optional<J.Annotation> joinAnno = FindAnnotations.find(multiVariable, Constants.Jdo.JOIN_ANNOTATION_FULL).stream().findFirst();
             if (mappedBy.isPresent() || table.isPresent() || joinAnno.isPresent()) {
                 // oneToMany applies
-                StringBuilder template = new StringBuilder("@").append(TARGET_TYPE_NAME).append("(");
+                StringBuilder template = new StringBuilder("@");
+                // Check for Collection
+                if (hasCollection(multiVariable)) {
+                    template.append(TARGET_TYPE_NAME).append("(");
+                } else {
+                    template.append(Constants.Jpa.ONE_TO_ONE_ANNOTATION_NAME).append("(");
+                }
                 mappedBy.ifPresent(template::append);
 
                 // Search for dependentElement
@@ -243,6 +252,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 template.append(")");
                 // Add @OneToMany and CascadeType
                 maybeAddImport(TARGET_TYPE);
+                maybeAddImport(Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL);
                 maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL);
@@ -254,7 +264,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 // Add @OneToMany
                 multiVariable = JavaTemplate.builder(template.toString())
                         .javaParser(JavaParserFactory.create(ctx))
-                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL)
+                        .imports(TARGET_TYPE, Constants.Jpa.CASCADE_TYPE_FULL, Constants.Jpa.FETCH_TYPE_FULL, Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL)
                         .build()
                         .apply(getCursor(), persistentAnno.getCoordinates().replace());
 
