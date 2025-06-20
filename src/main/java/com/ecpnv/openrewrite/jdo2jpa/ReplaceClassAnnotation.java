@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -89,20 +90,35 @@ public class ReplaceClassAnnotation extends Recipe {
             @Override
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {
                 J.Annotation source = super.visitAnnotation(annotation, executionContext);
-                if (annotation.print(getCursor()).contains(annotationPatternToReplace)) {
-                    final JavaTemplate template = JavaTemplate.builder(annotationTemplateToInsert).build();
-                    maybeAddImport(fullClassName, null, false);
-                    source = template.apply(getCursor(), source.getCoordinates().replace());
+                if (annotation.print(getCursor()).contains(getAnnotationPatternToReplace())) {
+                    final String importToRemove = getImportToRemove(annotation);
+
+                    source = JavaTemplate.builder(getAnnotationTemplateToInsert()).build().apply(getCursor(), source.getCoordinates().replace());
                     final List<Expression> arguments = source.getArguments();
-                    arguments.replaceAll(expression -> {
-                        if (expression instanceof J.FieldAccess fieldAccess) {
-                            return fieldAccess.withTarget(fieldAccess.getTarget().withType(JavaType.ShallowClass.build(fullClassName)));
-                        }
-                        throw new RuntimeException("Invalid expression type: " + expression.getClass().getSimpleName() + " in annotation: " + annotation.print(getCursor()));
-                    });
+                    arguments.replaceAll(expression -> replaceTargetType(annotation, expression));
+
+                    maybeAddImport(getFullClassName(), null, false);
+                    maybeRemoveImport(importToRemove);
+
                     return source.withType(annotation.getType()).withArguments(arguments);
                 }
                 return source;
+            }
+
+            private String getImportToRemove(J.Annotation annotation) {
+                if (CollectionUtils.isNotEmpty(annotation.getArguments()) &&
+                        annotation.getArguments().getFirst().getType() instanceof JavaType.Parameterized parameterized &&
+                        CollectionUtils.isNotEmpty(parameterized.getTypeParameters())) {
+                    return parameterized.getTypeParameters().getFirst().toString();
+                }
+                throw new RuntimeException("Annotation doesn't hold a parameterized type in annotation: " + annotation.print(getCursor()));
+            }
+
+            private J.FieldAccess replaceTargetType(J.Annotation annotation, Expression expression) {
+                if (expression instanceof J.FieldAccess fieldAccess) {
+                    return fieldAccess.withTarget(fieldAccess.getTarget().withType(JavaType.ShallowClass.build(getFullClassName())));
+                }
+                throw new RuntimeException("Invalid expression type: " + expression.getClass().getSimpleName() + " in annotation: " + annotation.print(getCursor()));
             }
         };
     }
