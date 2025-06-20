@@ -1,7 +1,9 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -14,8 +16,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import java.util.List;
 
 /**
  * This class represents a recipe to replace a specific annotation with another in Java source code.
@@ -47,6 +48,16 @@ public class ReplaceClassAnnotation extends Recipe {
     @NonNull
     String fullClassName;
 
+    @JsonCreator
+    public ReplaceClassAnnotation(
+            @JsonProperty("annotationPatternToReplace") String annotationPatternToReplace,
+            @JsonProperty("annotationTemplateToInsert") String annotationTemplateToInsert,
+            @JsonProperty("fullClassName") @NonNull String fullClassName) {
+        this.annotationPatternToReplace = annotationPatternToReplace;
+        this.annotationTemplateToInsert = annotationTemplateToInsert;
+        this.fullClassName = fullClassName;
+    }
+
     @Override
     public String getDisplayName() {
         return "Replace annotation";
@@ -64,10 +75,14 @@ public class ReplaceClassAnnotation extends Recipe {
 
             /**
              * This adds a printout of which types are missing in the LST.
+             *
+             * Don't use in production
              */
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
-                doAfterVisit(new FindMissingTypes().getVisitor());
+                if (false) {
+                    doAfterVisit(new FindMissingTypes().getVisitor());
+                }
                 return super.visitVariableDeclarations(multiVariable, executionContext);
             }
 
