@@ -101,7 +101,7 @@ public class ReplaceClassAnnotationTest extends BaseRewriteTest {
                                     public static String TABLE_NAME = "test";
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package org.incode.module.document.dom.impl.applicability;
                                 
