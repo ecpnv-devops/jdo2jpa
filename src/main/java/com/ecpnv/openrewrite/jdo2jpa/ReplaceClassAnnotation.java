@@ -1,9 +1,10 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
@@ -17,7 +18,8 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.List;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 /**
  * This class represents a recipe to replace a specific annotation with another in Java source code.
@@ -107,9 +109,12 @@ public class ReplaceClassAnnotation extends Recipe {
 
             private String getImportToRemove(J.Annotation annotation) {
                 if (CollectionUtils.isNotEmpty(annotation.getArguments()) &&
-                        annotation.getArguments().getFirst().getType() instanceof JavaType.Parameterized parameterized &&
-                        CollectionUtils.isNotEmpty(parameterized.getTypeParameters())) {
-                    return parameterized.getTypeParameters().getFirst().toString();
+                        annotation.getArguments().getFirst() instanceof J.FieldAccess argument) {
+                    if (argument.getType() instanceof JavaType.Parameterized parameterized &&
+                            CollectionUtils.isNotEmpty(parameterized.getTypeParameters())) {
+                        return parameterized.getTypeParameters().getFirst().toString();
+                    }
+                    return argument.getTarget().toString();
                 }
                 throw new RuntimeException("Annotation doesn't hold a parameterized type in annotation: " + annotation.print(getCursor()));
             }
