@@ -158,7 +158,7 @@ public class ReplaceClassAnnotationTest extends BaseRewriteTest {
                                 
                                 }
                                 """
-                        ,
+                ,
                         """
                                 package org.estatio.base.prod.util.dom;
                                 
