@@ -346,13 +346,15 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @PersistenceCapable
                                 @Indices({
                                   @Index(name = "Person_name_IDX", members = {"name"}),
-                                  @Index(name = "Person_entity_IDX", members = {"someEntity"})
+                                  @Index(name = "Person_entity_IDX", members = {"someEntity", "name", "type"})
                                 })
                                 public class Person {
                                     @Column(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
                                     private String name;
+                                    @Column(name = "someEntity_type")
+                                    private String type;
                                 }
                                 """,
                         """
@@ -363,7 +365,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 @Table(indexes = {
-                                        @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
+                                        @Index(name = "Person_entity_IDX", columnList = "someEntity_id, someEntity_name, someEntity_type"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person extends EntityAbstract {
                                     @ManyToOne()
@@ -371,6 +373,8 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
                                     private String name;
+                                    @Column(name = "someEntity_type")
+                                    private String type;
                                 }
                                 """
                 ),

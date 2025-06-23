@@ -149,7 +149,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                                             result = addOrUpdateAnnotationAttribute(executionContext, a, newArray);
                                         }
                                     }
-                                    changed = result != a;
+                                    changed = changed || result != a;
                                     return result;
                                 })
                                 .orElse(a);
