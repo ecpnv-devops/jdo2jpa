@@ -974,6 +974,22 @@ recipeList:
       annotationType: org.eclipse.persistence.annotations.Customizer
       annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
       declarationType: CLASS
+# add no arg constructors forced
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '.*Named.*EstatioSharedKernelPartyModule.*MODULE_NAMESPACE.*Permit.*'
+      annotationType: lombok.NoArgsConstructor
+      annotationTemplate: '@NoArgsConstructor(force = true)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '.*Named.*PermitForIndex.*LOGICAL_TYPE_NAMED.*'
+      annotationType: lombok.NoArgsConstructor
+      annotationTemplate: '@NoArgsConstructor(force = true)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '.*Named.*PermitForLease.*LOGICAL_TYPE_NAMED.*'
+      annotationType: lombok.NoArgsConstructor
+      annotationTemplate: '@NoArgsConstructor(force = true)'
+      declarationType: CLASS
   - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
 ---
 type: specs.openrewrite.org/v1beta/recipe

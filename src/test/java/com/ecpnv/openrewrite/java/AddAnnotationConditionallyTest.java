@@ -274,4 +274,33 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                 )
         );
     }
+
+    @DocumentExample
+    @Test
+    void addNoArgsConstructorForce() {
+        rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway"),
+                //language=java
+                java(
+                        """
+                                import javax.inject.Named;
+                                import javax.persistence.Entity;
+                                
+                                @Entity
+                                @Named(PermitForIndex.LOGICAL_TYPE_NAMED)
+                                public class SomeClass {}
+                                """,
+                        """
+                                import lombok.NoArgsConstructor;
+                                
+                                import javax.inject.Named;
+                                import javax.persistence.Entity;
+                                
+                                @Entity
+                                @Named(PermitForIndex.LOGICAL_TYPE_NAMED)
+                                @NoArgsConstructor(force = true)
+                                public class SomeClass {}
+                                """
+                )
+        );
+    }
 }
