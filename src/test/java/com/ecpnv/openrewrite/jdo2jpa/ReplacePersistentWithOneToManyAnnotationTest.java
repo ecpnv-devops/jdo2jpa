@@ -132,7 +132,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {
-                                    @ManyToOne()
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                 }
@@ -360,6 +360,8 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 
+                                import javax.persistence.CascadeType;
+                                
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
@@ -368,7 +370,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id, someEntity_name, someEntity_type"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person extends EntityAbstract {
-                                    @ManyToOne()
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
@@ -449,6 +451,8 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 
+                                import javax.persistence.CascadeType;
+                                
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
@@ -457,7 +461,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person extends EntityAbstract {
-                                    @OneToOne()
+                                    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
