@@ -216,9 +216,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                 }
 
 
-                // Find optional source annotation (@Persistent)
                 List<J.Annotation> leadAnnos = new ArrayList<>(multiVariable.getLeadingAnnotations());
-                Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
                 // Search for @Column
                 StringBuilder colTemplate = new StringBuilder("@")
                         .append(Constants.Jpa.JOIN_COLUMN_ANNOTATION_NAME)
@@ -276,30 +274,25 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                     }
                 });
 
+                // Find optional source annotation (@Persistent)
+                Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
+                // Search for dependentElement
+                boolean isDependent = sourceAnnotationIfAny
+                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT))
+                        .orElse(false);
                 sourceAnnotationIfAny.ifPresent(annotation -> {
                     // When @Persistence is found replace
                     leadAnnos.remove(annotation);
 
-                    // Search for dependentElement
-                    RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
-                            .filter(isDependent -> isDependent)
-                            .ifPresentOrElse(isDependent -> {
-                                template
-                                        .append(added.get() ? ", " : "")
-                                        .append("cascade = {CascadeType.REMOVE")
-                                        .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
-                                        .append("}");
-                                added.set(true);
-                            }, () -> {
-                                if (!StringUtils.isBlank(defaultCascade)) {
-                                    template
-                                            .append(added.get() ? ", " : "")
-                                            .append(" cascade = {")
-                                            .append(defaultCascade)
-                                            .append("}");
-                                    added.set(true);
-                                }
-                            });
+                    // dependentElement
+                    if (isDependent) {
+                        template
+                                .append(added.get() ? ", " : "")
+                                .append("cascade = {CascadeType.REMOVE")
+                                .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                                .append("}");
+                        added.set(true);
+                    }
 
                     // Search for defaultFetchGroup
                     template
@@ -313,7 +306,18 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                                     template.append("LAZY");
                             }, () -> template.append("LAZY")
                             );
+                    added.set(true);
                 });
+                if (sourceAnnotationIfAny.isEmpty() || !isDependent) {
+                    // Add the default cascade only
+                    if (!StringUtils.isBlank(defaultCascade)) {
+                        template
+                                .append(added.get() ? ", " : "")
+                                .append(" cascade = {")
+                                .append(defaultCascade)
+                                .append("}");
+                    }
+                }
 
                 template.append(")");
                 // Add @OneToMany and CascadeType

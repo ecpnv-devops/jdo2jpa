@@ -49,10 +49,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                         """
                                 package module.country.dom;
                                 
-                                import javax.persistence.Entity;
-                                import javax.persistence.JoinColumn;
-                                import javax.persistence.ManyToOne;
-                                import javax.persistence.Column;
+                                import javax.persistence.*;
                                 
                                 import lombok.Getter;
                                 import lombok.Setter;
@@ -74,7 +71,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 
                                     @Getter 
                                     @Setter
-                                    @ManyToOne(optional = false)
+                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(nullable = false, name = "countryId")
                                     private Country country;
                                 }
@@ -119,6 +116,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                         """
                                 package module.country.dom;
                                 
+                                import javax.persistence.CascadeType;
                                 import javax.persistence.Entity;
                                 import javax.persistence.ManyToOne;
                                 
@@ -140,7 +138,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 
                                     @Getter
                                     @Setter
-                                    @ManyToOne()
+                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Country country;
                                 }
                                 """

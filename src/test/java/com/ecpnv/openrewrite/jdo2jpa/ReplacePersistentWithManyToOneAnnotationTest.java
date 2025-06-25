@@ -75,7 +75,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+                                    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
@@ -125,7 +125,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
@@ -176,7 +176,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
@@ -319,7 +319,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
@@ -372,7 +372,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(nullable = false, name = "personId")
                                     private Person person;
                                 }
@@ -440,7 +440,7 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(nullable = false, name = iPerson.NAME)
                                     private Person person;
                                 }
