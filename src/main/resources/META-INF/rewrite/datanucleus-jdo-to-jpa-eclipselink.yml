@@ -166,12 +166,12 @@ recipeList:
   # Replace variables of type SortedSet with Set type and correct instance
   - com.ecpnv.openrewrite.jdo2jpa.ChangeTypesForAnnotatedVariables:
       annotationType: javax.persistence.OneToMany
-      oldFullyQualifiedTypeNames: 'java.util.SortedSet,java.util.TreeSet,java.util.Collections.unmodifiableSortedSet'
-      newFullyQualifiedTypeNames: 'java.util.Set,java.util.HashSet,java.util.Collections.unmodifiableSet'
+      oldFullyQualifiedTypeNames: 'java.util.SortedSet,java.util.Collections.unmodifiableSortedSet'
+      newFullyQualifiedTypeNames: 'java.util.TreeSet,java.util.Collections.unmodifiableNavigableSet'
   - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
       fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
-      newFullyQualifiedTypeNames: 'java.util.Set'
+      newFullyQualifiedTypeNames: 'java.util.TreeSet'
   # Add sorted method to streams
   - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
       annotationType: org.apache.isis.applib.annotation.Programmatic
@@ -955,7 +955,7 @@ recipeList:
       annotationType: org.eclipse.persistence.annotations.Customizer
       annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
       declarationType: CLASS
-# add no arg constructors forced
+  # add no arg constructors forced
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '.*Named.*EstatioSharedKernelPartyModule.*MODULE_NAMESPACE.*Permit.*'
       annotationType: lombok.NoArgsConstructor
