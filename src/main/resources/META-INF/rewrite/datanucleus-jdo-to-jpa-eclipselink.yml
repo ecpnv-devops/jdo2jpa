@@ -899,6 +899,16 @@ recipeList:
       annotationTemplate: '@IdClass(UserSettingForEstatioId.class)'
       declarationType: CLASS
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Named\(DocFlowZip\.LOGICAL_TYPE_NAMED\)'
+      annotationType: javax.persistence.IdClass
+      annotationTemplate: '@IdClass(DocFlowZipId.class)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Named\(UnitMetricsInEcp\.LOGICAL_TYPE_NAMED\)'
+      annotationType: javax.persistence.IdClass
+      annotationTemplate: '@IdClass(UnitMetricsInEcpId.class)'
+      declarationType: CLASS
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@.*Import\(.(.|\n|\s)*BackgroundCommandsOrchestration.class(.|\n|\s)*.\)'
       annotationType: org.springframework.boot.autoconfigure.domain.EntityScan
       annotationTemplate: '@EntityScan({"org.estatio.integration.orchestration.dom"})'
