@@ -805,15 +805,6 @@ recipeList:
       annotationPattern: '@org.apache.isis.persistence.jdo.applib.types..*'
   # Extend specific classes
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.settings.dom.SettingAbstract
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.docflow.dom.DocFlowZip
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.luxs.orchestrations.dom.unit.metricsecp.UnitMetricsInEcp
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.incode.module.document.dom.impl.paperclips.Paperclip
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
@@ -887,26 +878,6 @@ recipeList:
       matchByRegularExpression: '@Named\(InvoiceSummary\.LOGICAL_TYPE_NAMED\)'
       annotationType: javax.persistence.IdClass
       annotationTemplate: '@IdClass(InvoiceSummaryId.class)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Named\(ApplicationSettingForEstatio\.LOGICAL_TYPE_NAMED\)'
-      annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(ApplicationSettingForEstatioId.class)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Named\(UserSettingForEstatio\.LOGICAL_TYPE_NAMED\)'
-      annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(UserSettingForEstatioId.class)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Named\(DocFlowZip\.LOGICAL_TYPE_NAMED\)'
-      annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(DocFlowZipId.class)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Named\(UnitMetricsInEcp\.LOGICAL_TYPE_NAMED\)'
-      annotationType: javax.persistence.IdClass
-      annotationTemplate: '@IdClass(UnitMetricsInEcpId.class)'
       declarationType: CLASS
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@.*Import\(.(.|\n|\s)*BackgroundCommandsOrchestration.class(.|\n|\s)*.\)'
