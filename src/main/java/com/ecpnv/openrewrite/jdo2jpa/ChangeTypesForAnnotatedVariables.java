@@ -60,6 +60,12 @@ public class ChangeTypesForAnnotatedVariables extends Recipe {
     @Nullable
     Boolean ignoreDefinition;
 
+    @Option(displayName = "Ignore method definition",
+            description = "When set to `true` the methods that refer to the field of the annotation type will be leftuntouched. ",
+            required = false)
+    @Nullable
+    Boolean ignoreMethods;
+
     List<Pair> typesList = new ArrayList<>();
     List<Pattern> patternList = new ArrayList<>();
 
@@ -68,11 +74,13 @@ public class ChangeTypesForAnnotatedVariables extends Recipe {
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("oldFullyQualifiedTypeNames") String oldFullyQualifiedTypeNames,
             @NonNull @JsonProperty("newFullyQualifiedTypeNames") String newFullyQualifiedTypeNames,
-            @Nullable @JsonProperty("ignoreDefinition") Boolean ignoreDefinition) {
+            @Nullable @JsonProperty("ignoreDefinition") Boolean ignoreDefinition,
+            @Nullable @JsonProperty("ignoreMethods") Boolean ignoreMethods) {
         this.annotationType = annotationType;
         this.oldFullyQualifiedTypeNames = oldFullyQualifiedTypeNames;
         this.newFullyQualifiedTypeNames = newFullyQualifiedTypeNames;
         this.ignoreDefinition = ignoreDefinition;
+        this.ignoreMethods = ignoreMethods;
 
         final List<String> oldTypes = Arrays.asList(oldFullyQualifiedTypeNames.split(","));
         final List<String> newTypes = Arrays.asList(newFullyQualifiedTypeNames.split(","));
@@ -121,7 +129,8 @@ public class ChangeTypesForAnnotatedVariables extends Recipe {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration newMethod = super.visitMethodDeclaration(method, ctx);
-                if (method.getMethodType() != null &&
+                if (!Boolean.TRUE.equals(ignoreMethods) &&
+                        method.getMethodType() != null &&
                         method.getMethodType().getReturnType() instanceof JavaType oldReturn &&
                         patternList.stream().anyMatch(oldReturn::isAssignableFrom) &&
                         containsVariable(method.getBody(), visitedVariableDeclarations)) {
