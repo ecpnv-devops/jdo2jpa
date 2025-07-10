@@ -16,9 +16,11 @@ import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaCoordinates;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
@@ -70,16 +72,33 @@ public class AddAnnotationConditionally extends Recipe {
             example = "VAR")
     DeclarationType declarationType;
 
+    @Option(displayName = "Which modifier types are not allowed",
+            description = "When specified, these modifier types may not exist on the declaration.",
+            required = false,
+            example = "Abstract")
+    J.Modifier.Type disallowedModifierType;
+
+    @Option(displayName = "Add the annotation also to inherited classes",
+            description = "When true (default), the annotation will also added to child classes. " +
+                    "Only applicable to class declarations.",
+            required = false,
+            example = "false")
+    Boolean allowInherited;
+
     @JsonCreator
     public AddAnnotationConditionally(
             @NonNull @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("annotationTemplate") String annotationTemplate,
-            @NonNull @JsonProperty("declarationType") DeclarationType declarationType) {
+            @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
+            @JsonProperty("disallowedModifierType") J.Modifier.Type disallowedModifierType,
+            @JsonProperty("allowInherited") Boolean allowInherited) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
         this.declarationType = declarationType;
+        this.disallowedModifierType = disallowedModifierType;
+        this.allowInherited = allowInherited == null || allowInherited;
     }
 
     @Override
@@ -99,7 +118,7 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations vars = super.visitVariableDeclarations(multiVariable, ctx);
-                if (declarationType != DeclarationType.VAR) {
+                if (declarationType != DeclarationType.VAR || isDisallowedModifierTypes(vars.getModifiers())) {
                     return vars;
                 }
                 return (J.VariableDeclarations) addAnnotationConditionally(vars, vars.getLeadingAnnotations(), ctx,
@@ -109,9 +128,12 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration classD = super.visitClassDeclaration(classDecl, ctx);
-                if (declarationType != DeclarationType.CLASS) {
+                if (declarationType != DeclarationType.CLASS
+                        || isDisallowedModifierTypes(classD.getModifiers())
+                        || !isInheritedAllowed(classD)) {
                     return classD;
                 }
+
                 Pattern pattern = Pattern.compile(annotationType);
                 if (classD.getLeadingAnnotations().isEmpty() || classD.getLeadingAnnotations().stream()
                         .anyMatch(a -> Optional.ofNullable(a)
@@ -130,11 +152,43 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-                if (declarationType != DeclarationType.METHOD) {
+                if (declarationType != DeclarationType.METHOD || isDisallowedModifierTypes(m.getModifiers())) {
                     return m;
                 }
                 return (J.MethodDeclaration) addAnnotationConditionally(m, m.getLeadingAnnotations(), ctx,
                         () -> m.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            }
+
+            protected boolean isDisallowedModifierTypes(List<J.Modifier> modifiers) {
+                if (disallowedModifierType == null || modifiers == null) {
+                    return false;
+                }
+                return modifiers.stream()
+                        .anyMatch(m -> m.getType() == disallowedModifierType);
+            }
+
+            protected boolean isInheritedAllowed(J.ClassDeclaration classD) {
+                var pc = classD.getExtends();
+                // Is not extended and inherited allowed
+                if (pc == null || allowInherited) {
+                    return true;
+                }
+                // Parent is Object
+                var pt = pc.getType();
+                if (pt == null || TypeUtils.isObject(pt)) {
+                    return true;
+                }
+                // Parent has different optional modifier
+                Flag flag = null;
+                try {
+                    flag = disallowedModifierType == null ? null : Flag.valueOf(disallowedModifierType.name());
+                } catch (IllegalArgumentException e) {
+                    // do nothing
+                }
+                if (flag == null || TypeUtils.asClass(pt).hasFlags(flag)) {
+                    return true;
+                }
+                return false;
             }
 
             public Statement addAnnotationConditionally(Statement j, List<J.Annotation> annotations, ExecutionContext ctx,
