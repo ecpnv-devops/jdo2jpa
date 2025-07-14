@@ -703,6 +703,8 @@ recipeList:
       annotationTemplate: '@EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)'
       #      annotationTemplate: '@EntityListeners(org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener.class)'
       declarationType: CLASS
+      disallowedModifierType: Abstract
+      allowInherited: false
   # Remove the properties with id one of [datanucleusVersionLong, datanucleusVersionTimestamp, datanucleusId]
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:
       matchByRegularExpression: '.*property(.|\s|\n)*id(.|\s|\n)*datanucleusVersionLong(.|\s|\n)*'

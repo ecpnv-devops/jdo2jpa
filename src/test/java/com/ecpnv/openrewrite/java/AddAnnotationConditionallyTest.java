@@ -17,6 +17,7 @@ package com.ecpnv.openrewrite.java;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
@@ -34,7 +35,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR));
+        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR, null, null));
     }
 
     /**
@@ -86,7 +87,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForClass() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null)),
                 //language=java
                 java(
                         """
@@ -119,6 +120,39 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void noAddForAbstractClass() {
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB,
+                        AddAnnotationConditionally.DeclarationType.CLASS, J.Modifier.Type.Abstract, null)),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Column;
+                                
+                                @Column(jdbcType = "CLOB")
+                                public abstract class SomeEntity {}
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void noAddForAbstractClassCauseway() {
+        rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.causeway"),
+                //language=java
+                java(
+                        """
+                                import javax.persistence.Entity;
+                                
+                                @Entity
+                                public abstract class SomeEntity {}
+                                """
+                )
+        );
+    }
+
     /**
      * Verifies the functionality of adding an `@Lob` annotation to methods based on
      * conditions defined in the `AddAnnotationConditionally` recipe.
@@ -126,7 +160,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForMethod() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD, null, null)),
                 //language=java
                 //language=java
                 java(
@@ -255,10 +289,24 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Verifies that no modifications are made when the target annotation (`@Lob` in this case)
+     * already exists on a class, ensuring that the `AddAnnotationConditionally` recipe does not add
+     * duplicate annotations or introduce unnecessary changes.
+     * <p>
+     * This test evaluates the behavior of the recipe when applied to an annotated class where
+     * one of its existing annotations already fulfills the transformation's target condition.
+     * <p>
+     * Key behaviors validated:
+     * - Ensures that no additional `@Lob` annotation is added if it already exists on the class.
+     * - Confirms that the recipe does not alter unrelated annotations or class structure.
+     * - Validates that no unnecessary imports are added or removed when the transformation
+     * criteria are already satisfied.
+     */
     @DocumentExample
     @Test
     void noChangeWhenTargetAlreadyExist() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null)),
                 //language=java
                 java(
                         """
@@ -275,6 +323,21 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * Tests the functionality of adding a `@NoArgsConstructor(force = true)` annotation
+     * to a class when using the specified rewrite recipe.
+     * <p>
+     * The test validates the transformation of a class definition by ensuring that
+     * the `@NoArgsConstructor(force = true)` annotation is added to the class.
+     * This operation is tested in the context of a class already annotated with
+     * `@Entity` and additional annotations such as `@Named`.
+     * <p>
+     * Key behaviors validated:
+     * - Ensures that previously existing annotations, such as `@Entity` and `@Named`, are preserved.
+     * - Adds the `@NoArgsConstructor` annotation with the `force = true` attribute when absent.
+     * - Validates that necessary imports (e.g., `lombok.NoArgsConstructor`) are added properly.
+     * - Confirms the final output matches the expected transformed Java code.
+     */
     @DocumentExample
     @Test
     void addNoArgsConstructorForce() {
@@ -299,6 +362,70 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 @Named(PermitForIndex.LOGICAL_TYPE_NAMED)
                                 @NoArgsConstructor(force = true)
                                 public class SomeClass {}
+                                """
+                )
+        );
+    }
+
+    /**
+     * Tests the functionality of a recipe that updates Java classes to include appropriate annotations
+     * for compatibility with Causeway framework's JPA integration, specifically adding the
+     * `@EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)` annotation
+     * where required.
+     * <p>
+     * The test validates the transformation of a code example featuring inheritance with `@Entity` classes.
+     * Key behaviors include:
+     * - Ensuring that the `@EntityListeners` annotation is added to classes directly annotated
+     * with `@Entity` and not abstract.
+     * - Retaining the existing `@Entity` annotations without modification.
+     * - Preserving the hierarchical structure and existing fields of the class.
+     * - Verifying that only relevant imports are added to the classes influenced by the transformation.
+     */
+    @DocumentExample
+    @Test
+    void addAnnotationsForCauseway() {
+        rewriteRun(s -> s.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.causeway"),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                
+                                @Entity
+                                public abstract class Base {
+                                        private int id;
+                                }
+                                
+                                @Entity
+                                public class Person extends Base {
+                                        private String name;
+                                }
+                                
+                                @Entity
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.persistence.EntityListeners;
+                                
+                                @Entity
+                                public abstract class Base {
+                                        private int id;
+                                }
+                                
+                                @Entity
+                                @EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)
+                                public class Person extends Base {
+                                        private String name;
+                                }
+                                
+                                @Entity
+                                public class Manager extends Person {
+                                        private List<Person> managedPersons;
+                                }
                                 """
                 )
         );
