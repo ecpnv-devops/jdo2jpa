@@ -185,7 +185,8 @@ public class AddAnnotationConditionally extends Recipe {
                 } catch (IllegalArgumentException e) {
                     // do nothing
                 }
-                if (flag == null || TypeUtils.asClass(pt).hasFlags(flag)) {
+                var cls = TypeUtils.asClass(pt);
+                if (flag == null || (cls != null && cls.hasFlags(flag))) {
                     return true;
                 }
                 return false;
