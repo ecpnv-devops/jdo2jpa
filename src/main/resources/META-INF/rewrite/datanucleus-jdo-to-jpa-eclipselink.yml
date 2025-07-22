@@ -163,16 +163,16 @@ recipeList:
       annotationType: javax.persistence.OrderColumn
       oldAttributeName: column
       newAttributeName: name
-  # Replace variables of type SortedSet with Set type and correct instance
+#  # Replace variables of type SortedSet with Set type and correct instance
   - com.ecpnv.openrewrite.jdo2jpa.ChangeTypesForAnnotatedVariables:
       annotationType: javax.persistence.OneToMany
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
       newFullyQualifiedTypeNames: 'java.util.TreeSet'
       ignoreMethods: true
-  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
-      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
-      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
-      newFullyQualifiedTypeNames: 'java.util.TreeSet'
+#  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
+#      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
+#      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
+#      newFullyQualifiedTypeNames: 'java.util.TreeSet'
   # Add sorted method to streams
   - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
       annotationType: org.apache.isis.applib.annotation.Programmatic
