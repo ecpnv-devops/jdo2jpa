@@ -163,16 +163,16 @@ recipeList:
       annotationType: javax.persistence.OrderColumn
       oldAttributeName: column
       newAttributeName: name
-#  # Replace variables of type SortedSet with Set type and correct instance
+  #  # Replace variables of type SortedSet with Set type and correct instance
   - com.ecpnv.openrewrite.jdo2jpa.ChangeTypesForAnnotatedVariables:
       annotationType: javax.persistence.OneToMany
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
       newFullyQualifiedTypeNames: 'java.util.TreeSet'
       ignoreMethods: true
-#  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
-#      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
-#      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
-#      newFullyQualifiedTypeNames: 'java.util.TreeSet'
+  #  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
+  #      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
+  #      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
+  #      newFullyQualifiedTypeNames: 'java.util.TreeSet'
   # Add sorted method to streams
   - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
       annotationType: org.apache.isis.applib.annotation.Programmatic
@@ -850,9 +850,6 @@ recipeList:
       fullClassName: org.estatio.module.asset.dom.registration.LandRegistration
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.capex.dom.invoice.IncomingInvoiceItemSynopsis
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.estatio.module.assetfinancial.dom.FixedAssetFinancialAccount
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
@@ -1003,3 +1000,23 @@ recipeList:
       matchByRegularExpressionForRemoval: '@Transient'
       fullyQualifiedType: org.estatio.module.asset.dom.Property
       declarationType: VAR
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.eclipselink
+displayName: Migrate from JDO to JPA v2.x
+description: This recipe applies EclipseLink specific migrations from JDO to JPA.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - eclipselink
+preconditions:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+recipeList:
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@org.datanucleus.api.jdo.annotations.ReadOnly'
+      annotationTemplateToInsert: '@org.eclipse.persistence.annotations.ReadOnly'
