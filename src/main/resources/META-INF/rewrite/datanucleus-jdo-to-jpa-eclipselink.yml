@@ -1020,3 +1020,26 @@ recipeList:
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@org.datanucleus.api.jdo.annotations.ReadOnly'
       annotationTemplateToInsert: '@org.eclipse.persistence.annotations.ReadOnly'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.optional
+displayName: JPA Optional migrations
+description: This recipe applies optional migrations for JPA.
+tags:
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+preconditions:
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+recipeList:
+  # Add an explicit default for decimal fields when they do not have precision specified, but have a scale
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'
+      annotationType: javax.persistence.Column
+      attributeName: precision
+      attributeValue: 19
+      operation: ADD
+      appendArray: false
