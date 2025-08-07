@@ -1,12 +1,12 @@
 package com.ecpnv.openrewrite.java;
 
-import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 
 import static org.openrewrite.java.Assertions.java;
+
+import com.ecpnv.openrewrite.jdo2jpa.BaseRewriteTest;
 
 class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
 
@@ -22,6 +22,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 "test",
                                 null,
                                 AddOrUpdateAnnotationAttribute.Operation.ADD)),
+                //language=java
                 java("""
                                 package a;
                                 
@@ -54,6 +55,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 "test",
                                 null,
                                 AddOrUpdateAnnotationAttribute.Operation.ADD)),
+                //language=java
                 java("""
                         package a;
                         
@@ -70,6 +72,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
     @Test
     void attribute() {
         rewriteRun(spec -> spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.causeway"),
+                //language=java
                 java("""
                                 package org.incode.module.document.dom.impl.applicability;
                                 
@@ -90,6 +93,43 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 @EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)
                                 public class Applicability {
                                     public static String TABLE_NAME = "test";
+                                }
+                                """));
+    }
+
+    @DocumentExample
+    @Test
+    void addAttributeWhenMissing() {
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipes(new AddOrUpdateAnnotationAttribute(
+                                "javax.persistence.Column",
+                                false,
+                                "precision",
+                                "19",
+                                null,
+                                AddOrUpdateAnnotationAttribute.Operation.ADD,
+                                "@Column\\([^{]*?(?!precision)(?=.*?scale)[^}]*?\\)")),
+                //language=java
+                java("""
+                                import java.math.BigDecimal;
+                                import javax.persistence.Column;
+                                
+                                public class SomeEntity {
+                                    @Column(name = "shouldHavePrecision", scale = 2)
+                                    public BigDecimal shouldHavePrecision;
+                                    @Column(name = "noPrecision")
+                                    public BigDecimal noPrecision;
+                                }
+                                """,
+                        """
+                                import java.math.BigDecimal;
+                                import javax.persistence.Column;
+                                
+                                public class SomeEntity {
+                                    @Column(precision = 19, name = "shouldHavePrecision", scale = 2)
+                                    public BigDecimal shouldHavePrecision;
+                                    @Column(name = "noPrecision")
+                                    public BigDecimal noPrecision;
                                 }
                                 """));
     }

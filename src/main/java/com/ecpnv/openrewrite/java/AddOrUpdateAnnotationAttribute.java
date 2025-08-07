@@ -120,6 +120,12 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
                     "`addOnly=false`, only append if the value is not already present.")
     Boolean appendArray;
 
+    @Option(displayName = "Regular expression to match",
+            description = "Only annotations that match the regular expression will be changed.",
+            required = false,
+            example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
+    String matchByRegularExpression;
+
     @JsonIgnore
     @Getter
     AddOrUpdateAnnotationAttributeVisitor addOrUpdateAnnotationAttributeVisitor;
@@ -131,7 +137,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             @Nullable @JsonProperty("attributeName") String attributeName,
             @NonNull @JsonProperty("attributeValue") Object attributeValue,
             @Nullable @JsonProperty("oldAttributeValue") String oldAttributeValue,
-            @NonNull @JsonProperty("operation") Operation operation) {
+            @NonNull @JsonProperty("operation") Operation operation,
+            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression) {
         this.annotationType = annotationType;
         this.appendArray = appendArray;
         this.attributeName = attributeName;
@@ -139,6 +146,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
         this.oldAttributeValue = "null".equals(oldAttributeValue) ? null : oldAttributeValue;
         this.operation = operation;
         this.addOrUpdateAnnotationAttributeVisitor = new AddOrUpdateAnnotationAttributeVisitor();
+        this.matchByRegularExpression = matchByRegularExpression;
     }
 
     @Override
@@ -151,7 +159,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
         @Override
         public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             J.Annotation original = super.visitAnnotation(annotation, ctx);
-            if (!TypeUtils.isOfClassType(annotation.getType(), annotationType)) {
+            if (!TypeUtils.isOfClassType(annotation.getType(), annotationType)
+                    || (matchByRegularExpression != null && !original.toString().matches(matchByRegularExpression))) {
                 return original;
             }
 
