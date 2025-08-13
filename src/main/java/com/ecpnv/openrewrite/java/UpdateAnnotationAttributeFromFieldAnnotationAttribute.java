@@ -29,9 +29,26 @@ import com.ecpnv.openrewrite.util.RewriteUtils;
 import lombok.EqualsAndHashCode;
 
 
-// TODO docs
-// * @author Original Open Rewrite authors
-// * @author Patrick Deenen @ Open Circle Solutions
+/**
+ * Recipe to update an attribute of a specified annotation within a Java class by referencing
+ * a corresponding field annotation in the same class. This is useful when annotations in a
+ * class are interdependent and rely on field-specific attributes.
+ * <p>
+ * This recipe identifies the target annotation and its attribute, locates the associated field
+ * annotations, and updates the target annotation's attribute using the value from the
+ * corresponding field annotation attribute.
+ * <p>
+ * Key features:
+ * - Updates the target annotation's indicated attribute.
+ * - Resolves the value of a field's annotation attribute.
+ * - Supports values existing as constants or arrays within annotations.
+ * <p>
+ * Configuration options allow specifying both the target annotation and field annotation types,
+ * as well as their respective attributes to be used in the operation.
+ *
+ * @author Original Open Rewrite authors
+ * @author Patrick Deenen @ Open Circle Solutions
+ */
 @EqualsAndHashCode(callSuper = false)
 public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recipe {
 
