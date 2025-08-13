@@ -1035,6 +1035,11 @@ tags:
 preconditions:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
 recipeList:
+  - com.ecpnv.openrewrite.java.ChangeAnnotationAttributeNameConditionally:
+      matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'
+      annotationType: javax.persistence.Column
+      oldAttributeName: length
+      newAttributeName: precision
   # Add an explicit default for decimal fields when they do not have precision specified, but have a scale
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'

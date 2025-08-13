@@ -100,36 +100,40 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addAttributeWhenMissing() {
-        rewriteRun(spec -> spec.parser(PARSER)
-                        .recipes(new AddOrUpdateAnnotationAttribute(
-                                "javax.persistence.Column",
-                                false,
-                                "precision",
-                                "19",
-                                null,
-                                AddOrUpdateAnnotationAttribute.Operation.ADD,
-                                "@Column\\([^{]*?(?!precision)(?=.*?scale)[^}]*?\\)")),
+        rewriteRun(spec -> spec.parser(PARSER).recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.optional"),
                 //language=java
                 java("""
                                 import java.math.BigDecimal;
                                 import javax.persistence.Column;
+                                import javax.persistence.Entity;
                                 
+                                @Entity
                                 public class SomeEntity {
-                                    @Column(name = "shouldHavePrecision", scale = 2)
-                                    public BigDecimal shouldHavePrecision;
-                                    @Column(name = "noPrecision")
+                                    @Column(scale = 2)
+                                    public BigDecimal shouldHavePrecisionOfDefaultLength;
+                                    @Column(length = 8, scale = 2)
+                                    public BigDecimal shouldHavePrecisionOf8;
+                                    @Column
                                     public BigDecimal noPrecision;
+                                    @Column(length = 8)
+                                    public BigDecimal noPrecisionWhenNoScale;
                                 }
                                 """,
                         """
                                 import java.math.BigDecimal;
                                 import javax.persistence.Column;
+                                import javax.persistence.Entity;
                                 
+                                @Entity
                                 public class SomeEntity {
-                                    @Column(precision = 19, name = "shouldHavePrecision", scale = 2)
-                                    public BigDecimal shouldHavePrecision;
-                                    @Column(name = "noPrecision")
+                                    @Column(precision = 19, scale = 2)
+                                    public BigDecimal shouldHavePrecisionOfDefaultLength;
+                                    @Column(precision = 8, scale = 2)
+                                    public BigDecimal shouldHavePrecisionOf8;
+                                    @Column
                                     public BigDecimal noPrecision;
+                                    @Column(length = 8)
+                                    public BigDecimal noPrecisionWhenNoScale;
                                 }
                                 """));
     }
