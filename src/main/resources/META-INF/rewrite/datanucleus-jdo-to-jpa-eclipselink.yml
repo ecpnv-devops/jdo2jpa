@@ -841,9 +841,6 @@ recipeList:
       fullClassName: org.estatio.module.asset.dom.Site
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.invoiceforlease.dom.reminderletter.ReminderLetterLineViewModel
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.estatio.module.asset.dom.tax.PropertyTaxForUnit
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
@@ -851,12 +848,6 @@ recipeList:
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.estatio.module.assetfinancial.dom.FixedAssetFinancialAccount
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.fastnet.dom.FastNetRentRollOnLeaseDataLine
-      extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
-  - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
-      fullClassName: org.estatio.module.fastnet.dom.FastNetChargingOnLeaseDataLine
       extendsFullClassName: org.estatio.base.prod.dom.EntityAbstract
   - com.ecpnv.openrewrite.java.ExtendWithClassForClass:
       fullClassName: org.estatio.module.asset.dom.energylabel.EnergyPerformanceCertification
