@@ -15,6 +15,7 @@
  */
 package com.ecpnv.openrewrite.java;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.tree.J;
@@ -35,7 +36,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR, null, null));
+        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR, null, null, null));
     }
 
     /**
@@ -87,7 +88,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForClass() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
                 //language=java
                 java(
                         """
@@ -124,7 +125,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @Test
     void noAddForAbstractClass() {
         rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB,
-                        AddAnnotationConditionally.DeclarationType.CLASS, J.Modifier.Type.Abstract, null)),
+                        AddAnnotationConditionally.DeclarationType.CLASS, J.Modifier.Type.Abstract, null, null)),
                 //language=java
                 java(
                         """
@@ -160,7 +161,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForMethod() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD, null, null, null)),
                 //language=java
                 //language=java
                 java(
@@ -306,7 +307,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void noChangeWhenTargetAlreadyExist() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
                 //language=java
                 java(
                         """
@@ -429,5 +430,200 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 """
                 )
         );
+    }
+
+    @Nested
+    class testWithKind {
+
+        /**
+         * Tests the functionality of adding an annotation to an enum field conditionally.
+         * <p>
+         * This method verifies that the `@Enumerated(EnumType.STRING)` annotation is
+         * added to an enum field.
+         * <p>
+         * Features validated:
+         * - Ensures that the `@Enumerated(EnumType.STRING)` annotation is applied on the specified enum field.
+         * - Confirms the desired modification in the source code through a defined rewrite process.
+         */
+        @DocumentExample
+        @Test
+        void addToEnumField() {
+            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                            null, "javax.persistence.Enumerated",
+                            "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.VAR,
+                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+                    //language=java
+                    java(
+                            """
+                                    public class SomeClass {
+                                        private System.Logger.Level someEnum;
+                                    }
+                                    """,
+                            """
+                                    import javax.persistence.Enumerated;
+                                    
+                                    public class SomeClass {
+                                        @Enumerated(EnumType.STRING)
+                                        private System.Logger.Level someEnum;
+                                    }
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Tests the functionality of conditionally adding an annotation to an enum field.
+         * <p>
+         * This method ensures that the `@Enumerated(EnumType.STRING)` annotation is added to
+         * a specified enum field only when certain conditions are met, as defined by the recipe.
+         * <p>
+         * Features validated:
+         * - Verifies that the `@Enumerated(EnumType.STRING)` annotation is applied to the proper field.
+         * - Ensures that fields not meeting the specified condition remain unmodified.
+         * - Confirms accurate modifications in the source code through a defined rewrite process.
+         */
+        @DocumentExample
+        @Test
+        void addToEnumFieldConditionally() {
+            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                            "@Column\\(name = \"someEnum\"\\)", "javax.persistence.Enumerated",
+                            "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.VAR,
+                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+                    //language=java
+                    java(
+                            """
+                                    import javax.persistence.Column;
+                                    public class SomeClass {
+                                        @Column(name = "someEnum")
+                                        private System.Logger.Level someEnum;
+                                        private System.Logger.Level someOtherEnum;
+                                    }
+                                    """,
+                            """
+                                    import javax.persistence.Column;
+                                    import javax.persistence.Enumerated;
+                                    
+                                    public class SomeClass {
+                                        @Column(name = "someEnum")
+                                        @Enumerated(EnumType.STRING)
+                                        private System.Logger.Level someEnum;
+                                        private System.Logger.Level someOtherEnum;
+                                    }
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Tests the functionality of adding an annotation to a method that returns an enum type.
+         * <p>
+         * This method verifies that the `@Enumerated(EnumType.STRING)` annotation is correctly added
+         * to methods with a return type of an enum, based on specified conditions.
+         * <p>
+         * Features validated:
+         * - Ensures that the `@Enumerated(EnumType.STRING)` annotation is applied correctly
+         * to methods returning an enum.
+         * - Confirms that methods returning non-enum types remain unmodified.
+         * - Validates correct source code transformation through a defined rewrite process.
+         */
+        @DocumentExample
+        @Test
+        void addToEnumMethod() {
+            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                            null, "javax.persistence.Enumerated",
+                            "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.METHOD,
+                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+                    //language=java
+                    java(
+                            """
+                                    public class SomeClass {
+                                        public System.Logger.Level someMethod(){
+                                            return System.Logger.Level.INFO;
+                                        }
+                                    }
+                                    """,
+                            """
+                                    import javax.persistence.Enumerated;
+                                    
+                                    public class SomeClass {
+                                        @Enumerated(EnumType.STRING)
+                                        public System.Logger.Level someMethod() {
+                                            return System.Logger.Level.INFO;
+                                        }
+                                    }
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Verifies that no annotation is added to a method with a void return type.
+         * <p>
+         * This method ensures that the recipe does not apply the `@Enumerated(EnumType.STRING)`
+         * annotation to methods that have a void return type. It validates that the source
+         * code remains unmodified under these conditions.
+         * <p>
+         * Features validated:
+         * - Ensures that void methods are unaffected by the annotation modification recipe.
+         * - Confirms that no unintended annotation addition occurs for methods with incompatible return types.
+         * - Validates the source code integrity through the rewrite process.
+         */
+        @DocumentExample
+        @Test
+        void noAddToVoidMethod() {
+            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                            null, "javax.persistence.Enumerated",
+                            "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.METHOD,
+                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+                    //language=java
+                    java(
+                            """
+                                    public class SomeClass {
+                                        public void someMethod(){
+                                            // do things
+                                        }
+                                    }
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Tests the functionality of adding an annotation to an enum class.
+         * <p>
+         * This method ensures that the `@Entity` annotation is added
+         * to an enum class as specified by the recipe.
+         * <p>
+         * Features validated:
+         * - Verifies that the `@Entity` annotation is applied to the specified enum class.
+         * - Ensures accurate source code transformation through a defined rewrite process.
+         * - Confirms that only the target enum class is modified while maintaining
+         * the correctness of the remaining source code.
+         */
+        @DocumentExample
+        @Test
+        void addToEnumClass() {
+            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                            null, "javax.persistence.Entity",
+                            "@Entity", AddAnnotationConditionally.DeclarationType.CLASS,
+                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+                    //language=java
+                    java(
+                            """
+                                    public enum SomeEnum {
+                                        V1,V2;
+                                    }
+                                    """,
+                            """
+                                    import javax.persistence.Entity;
+                                    
+                                    @Entity
+                                    public enum SomeEnum {
+                                        V1,V2;
+                                    }
+                                    """
+                    )
+            );
+        }
     }
 }

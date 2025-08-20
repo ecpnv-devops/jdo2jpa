@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -19,6 +20,7 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaCoordinates;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
@@ -54,6 +56,7 @@ public class AddAnnotationConditionally extends Recipe {
 
     @Option(displayName = "Regular expression to match",
             description = "Only annotations that match the regular expression will be changed.",
+            required = false,
             example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
     String matchByRegularExpression;
 
@@ -85,20 +88,28 @@ public class AddAnnotationConditionally extends Recipe {
             example = "false")
     Boolean allowInherited;
 
+    @Option(displayName = "Kind of class to process",
+            description = "When given should equals var kind, method return kind or class declaration kind.",
+            required = false,
+            example = "Enum")
+    J.ClassDeclaration.Kind.Type kindOfClassToProcess;
+
     @JsonCreator
     public AddAnnotationConditionally(
-            @NonNull @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
+            @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("annotationTemplate") String annotationTemplate,
             @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
             @JsonProperty("disallowedModifierType") J.Modifier.Type disallowedModifierType,
-            @JsonProperty("allowInherited") Boolean allowInherited) {
+            @JsonProperty("allowInherited") Boolean allowInherited,
+            @JsonProperty("kindOfClassToProcess") J.ClassDeclaration.Kind.Type kindOfClassToProcess) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
         this.declarationType = declarationType;
         this.disallowedModifierType = disallowedModifierType;
         this.allowInherited = allowInherited == null || allowInherited;
+        this.kindOfClassToProcess = kindOfClassToProcess;
     }
 
     @Override
@@ -121,6 +132,10 @@ public class AddAnnotationConditionally extends Recipe {
                 if (declarationType != DeclarationType.VAR || isDisallowedModifierTypes(vars.getModifiers())) {
                     return vars;
                 }
+                if (kindOfClassToProcess != null && vars.getTypeAsFullyQualified() != null
+                        && !vars.getTypeAsFullyQualified().getKind().name().equals(kindOfClassToProcess.name())) {
+                    return vars;
+                }
                 return (J.VariableDeclarations) addAnnotationConditionally(vars, vars.getLeadingAnnotations(), ctx,
                         () -> vars.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             }
@@ -133,9 +148,12 @@ public class AddAnnotationConditionally extends Recipe {
                         || !isInheritedAllowed(classD)) {
                     return classD;
                 }
+                if (kindOfClassToProcess != null && !classD.getKind().name().equals(kindOfClassToProcess.name())) {
+                    return classD;
+                }
 
                 Pattern pattern = Pattern.compile(annotationType);
-                if (classD.getLeadingAnnotations().isEmpty() || classD.getLeadingAnnotations().stream()
+                if (!classD.getLeadingAnnotations().isEmpty() && classD.getLeadingAnnotations().stream()
                         .anyMatch(a -> Optional.ofNullable(a)
                                 .map(J.Annotation::getAnnotationType)
                                 .map(TypedTree::getType)
@@ -153,6 +171,10 @@ public class AddAnnotationConditionally extends Recipe {
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
                 if (declarationType != DeclarationType.METHOD || isDisallowedModifierTypes(m.getModifiers())) {
+                    return m;
+                }
+                if (kindOfClassToProcess != null && (m.getMethodType() == null || !(m.getMethodType().getReturnType()
+                        instanceof JavaType.Class jtc) || !jtc.getKind().name().equals(kindOfClassToProcess.name()))) {
                     return m;
                 }
                 return (J.MethodDeclaration) addAnnotationConditionally(m, m.getLeadingAnnotations(), ctx,
@@ -203,18 +225,22 @@ public class AddAnnotationConditionally extends Recipe {
 
             public Optional<Statement> addAnnotationConditionally(List<J.Annotation> annotations, ExecutionContext ctx,
                                                                   Supplier<JavaCoordinates> coordinates) {
-                return annotations.stream()
-                        .filter(a -> a.toString().matches(matchByRegularExpression))
-                        .findFirst()
-                        .map(a -> {
-                            // Add annotation to variable
-                            maybeAddImport(annotationType, null, false);
-                            return (Statement) JavaTemplate.builder(annotationTemplate)
+                var matchRegEx = StringUtils.isNotBlank(matchByRegularExpression);
+                var annotation = annotations.stream()
+                        .filter(a -> !matchRegEx
+                                || a.toString().matches(matchByRegularExpression))
+                        .findFirst();
+                if (annotation.isPresent() || (!matchRegEx && kindOfClassToProcess != null)) {
+                    // Add annotation to variable
+                    maybeAddImport(annotationType, null, false);
+                    return Optional.of(
+                            (Statement) JavaTemplate.builder(annotationTemplate)
                                     .javaParser(JavaParserFactory.create(ctx))
                                     .imports(annotationType)
                                     .build()
-                                    .apply(getCursor(), coordinates.get());
-                        });
+                                    .apply(getCursor(), coordinates.get()));
+                }
+                return Optional.empty();
             }
         };
     }
