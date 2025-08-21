@@ -448,23 +448,32 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         @DocumentExample
         @Test
         void addToEnumField() {
-            rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
-                            null, "javax.persistence.Enumerated",
-                            "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.VAR,
-                            null, null, J.ClassDeclaration.Kind.Type.Enum)),
+            rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.optional"),
                     //language=java
                     java(
                             """
+                                    import javax.persistence.Entity;
+                                    @Entity
                                     public class SomeClass {
                                         private System.Logger.Level someEnum;
+                                        public void someMethod(){
+                                            boolean useNumerator = "reference" == null;
+                                            System.Logger.Level someLocalEnum;
+                                        }
                                     }
                                     """,
                             """
+                                    import javax.persistence.Entity;
                                     import javax.persistence.Enumerated;
                                     
+                                    @Entity
                                     public class SomeClass {
-                                        @Enumerated(EnumType.STRING)
+                                        @Enumerated(javax.persistence.EnumType.STRING)
                                         private System.Logger.Level someEnum;
+                                        public void someMethod(){
+                                            boolean useNumerator = "reference" == null;
+                                            System.Logger.Level someLocalEnum;
+                                        }
                                     }
                                     """
                     )
