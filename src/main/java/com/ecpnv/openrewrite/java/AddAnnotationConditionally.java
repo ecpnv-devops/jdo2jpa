@@ -19,6 +19,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaCoordinates;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
@@ -129,13 +130,21 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations vars = super.visitVariableDeclarations(multiVariable, ctx);
+                // Match on modifiers
                 if (declarationType != DeclarationType.VAR || isDisallowedModifierTypes(vars.getModifiers())) {
                     return vars;
                 }
-                if (kindOfClassToProcess != null && vars.getTypeAsFullyQualified() != null
-                        && !vars.getTypeAsFullyQualified().getKind().name().equals(kindOfClassToProcess.name())) {
+                // Match on kind
+                if (!isKindAllowed(() -> vars.getTypeAsFullyQualified() != null ?
+                        vars.getTypeAsFullyQualified().getKind().name() : "")) {
                     return vars;
                 }
+                // Only allow changes in fields and not in local variables
+                var classDeclOrNot = getCursor().dropParentWhile(o -> o instanceof J.Block || o instanceof JRightPadded<?>);
+                if (classDeclOrNot == null || !(classDeclOrNot.getValue() instanceof J.ClassDeclaration)) {
+                    return vars;
+                }
+                // Add annotation
                 return (J.VariableDeclarations) addAnnotationConditionally(vars, vars.getLeadingAnnotations(), ctx,
                         () -> vars.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             }
@@ -143,12 +152,14 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration classD = super.visitClassDeclaration(classDecl, ctx);
+                // Match on modifiers
                 if (declarationType != DeclarationType.CLASS
                         || isDisallowedModifierTypes(classD.getModifiers())
                         || !isInheritedAllowed(classD)) {
                     return classD;
                 }
-                if (kindOfClassToProcess != null && !classD.getKind().name().equals(kindOfClassToProcess.name())) {
+                // Match on kind
+                if (!isKindAllowed(() -> classD.getKind().name())) {
                     return classD;
                 }
 
@@ -162,6 +173,7 @@ public class AddAnnotationConditionally extends Recipe {
                     // Do nothing when the annotation already is present
                     return classD;
                 }
+                // Add annotation
                 return (J.ClassDeclaration) addAnnotationConditionally(classD.getLeadingAnnotations(), ctx,
                         () -> classD.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)))
                         .orElse(classD);
@@ -170,15 +182,23 @@ public class AddAnnotationConditionally extends Recipe {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+                // Match on modifiers
                 if (declarationType != DeclarationType.METHOD || isDisallowedModifierTypes(m.getModifiers())) {
                     return m;
                 }
-                if (kindOfClassToProcess != null && (m.getMethodType() == null || !(m.getMethodType().getReturnType()
-                        instanceof JavaType.Class jtc) || !jtc.getKind().name().equals(kindOfClassToProcess.name()))) {
+                // Match on kind
+                if (!isKindAllowed(() -> m.getMethodType() != null && m.getMethodType().getReturnType()
+                        instanceof JavaType.Class jtc ? jtc.getKind().name() : "")) {
                     return m;
                 }
+                // Add annotation
                 return (J.MethodDeclaration) addAnnotationConditionally(m, m.getLeadingAnnotations(), ctx,
                         () -> m.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            }
+
+            protected boolean isKindAllowed(Supplier<String> kindNameSupplier) {
+                String kindName = kindNameSupplier.get();
+                return kindOfClassToProcess == null || kindOfClassToProcess.name().equals(kindName);
             }
 
             protected boolean isDisallowedModifierTypes(List<J.Modifier> modifiers) {
