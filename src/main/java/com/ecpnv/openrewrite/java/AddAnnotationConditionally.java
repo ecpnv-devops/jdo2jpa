@@ -19,7 +19,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaCoordinates;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
@@ -27,6 +26,7 @@ import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
 
 import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.RewriteUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -140,8 +140,7 @@ public class AddAnnotationConditionally extends Recipe {
                     return vars;
                 }
                 // Only allow changes in fields and not in local variables
-                var classDeclOrNot = getCursor().dropParentWhile(o -> o instanceof J.Block || o instanceof JRightPadded<?>);
-                if (classDeclOrNot == null || !(classDeclOrNot.getValue() instanceof J.ClassDeclaration)) {
+                if (RewriteUtils.isMethodOwnerOfVar(vars)) {
                     return vars;
                 }
                 // Add annotation

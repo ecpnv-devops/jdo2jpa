@@ -342,6 +342,8 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.PersistenceCapable;
                                 import javax.jdo.annotations.Index;
                                 import javax.jdo.annotations.Indices;
+                                import javax.jdo.annotations.NotPersistent;
+                                import javax.persistence.Transient;
                                 
                                 @PersistenceCapable
                                 @Indices({
@@ -355,15 +357,18 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                     private String name;
                                     @Column(name = "someEntity_type")
                                     private String type;
+                                    @NotPersistent
+                                    private Person personNotPersistent;
+                                    @Transient
+                                    private Person personTransient;
                                 }
                                 """,
                         """
                                 import java.util.List;
                                 
-                                import javax.persistence.CascadeType;
-                                
                                 import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
+                                import javax.persistence.Transient;
                                 
                                 @Entity
                                 @Table(indexes = {
@@ -377,6 +382,10 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                     private String name;
                                     @Column(name = "someEntity_type")
                                     private String type;
+                                    @javax.persistence.Transient
+                                    private Person personNotPersistent;
+                                    @Transient
+                                    private Person personTransient;
                                 }
                                 """
                 ),

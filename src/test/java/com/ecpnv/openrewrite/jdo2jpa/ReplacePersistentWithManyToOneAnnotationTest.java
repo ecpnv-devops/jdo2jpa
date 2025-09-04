@@ -350,6 +350,8 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.persistence.Entity;
+                                import javax.persistence.Transient;
+                                import javax.jdo.annotations.NotPersistent;
                                 import javax.jdo.annotations.Persistent;
                                 import javax.jdo.annotations.Column;
                                 
@@ -361,11 +363,16 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                     @Persistent
                                     @Column(name = "personId", allowsNull = "false")
                                     private Person person;
+                                    @NotPersistent
+                                    private Person personNotPersistent;
+                                    @Transient
+                                    private Person personTransient;
                                 }
                                 """,
                         """
                                 import java.util.List;
                                 import javax.persistence.*;
+                                import javax.jdo.annotations.NotPersistent;
                                 
                                 @Entity
                                 public class Person {}
@@ -375,6 +382,10 @@ class ReplacePersistentWithManyToOneAnnotationTest extends BaseRewriteTest {
                                     @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(nullable = false, name = "personId")
                                     private Person person;
+                                    @NotPersistent
+                                    private Person personNotPersistent;
+                                    @Transient
+                                    private Person personTransient;
                                 }
                                 """
                 )

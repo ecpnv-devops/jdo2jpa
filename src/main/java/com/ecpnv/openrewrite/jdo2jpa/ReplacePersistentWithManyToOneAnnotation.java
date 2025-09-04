@@ -178,6 +178,11 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
             if (multiVariable.getType() == null || multiVariable.getType().isAssignableFrom(Pattern.compile(Collection.class.getName()))) {
                 return multiVariable;
             }
+            // Exit if transient or nonPersistent
+            if (!RewriteUtils.findLeadingAnnotations(multiVariable, Constants.Jdo.NON_PERSISTENT_FULL).isEmpty()
+                    || !RewriteUtils.findLeadingAnnotations(multiVariable, Constants.Jpa.TRANSIENT_ANNOTATION_FULL).isEmpty()) {
+                return multiVariable;
+            }
             // Exit if already has target annotation
             if (!RewriteUtils.findLeadingAnnotations(multiVariable, TARGET_ANNOTATION_TYPE).isEmpty()
                     || !RewriteUtils.findLeadingAnnotations(multiVariable, Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL).isEmpty()) {
