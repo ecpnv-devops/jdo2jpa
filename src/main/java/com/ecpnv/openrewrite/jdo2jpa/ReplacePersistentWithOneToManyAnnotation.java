@@ -174,6 +174,11 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
             multiVariable = super.visitVariableDeclarations(multiVariable, ctx);
+            // Exit if transient or nonPersistent
+            if (!RewriteUtils.findLeadingAnnotations(multiVariable, Constants.Jdo.NON_PERSISTENT_FULL).isEmpty()
+                    || !RewriteUtils.findLeadingAnnotations(multiVariable, Constants.Jpa.TRANSIENT_ANNOTATION_FULL).isEmpty()) {
+                return multiVariable;
+            }
             // Find @Element annotation
             Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
             // Find source annotation == @Persistent

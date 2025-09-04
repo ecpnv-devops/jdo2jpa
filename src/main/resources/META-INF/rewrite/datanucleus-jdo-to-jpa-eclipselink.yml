@@ -7,7 +7,8 @@
 # NOTE: The main recipe doesn't cover all possible JDO ORM mapping variations possible, but is restricted to most
 #       common cases. Please feel free to extend the recipes with additional JDO mapping coverage.
 #
-# @author Patrick Deenen & Wouter Veltmaat @ Open Circle Solutions
+# @author Patrick Deenen @ Open Circle Solutions
+# @author Wouter Veltmaat @ Open Circle Solutions
 #
 
 ---
@@ -24,7 +25,7 @@ tags:
   - javax
   - persistence
 preconditions:
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntitiesAndServicesAndAnnotations
 recipeList:
   # Pre code changes
   - com.ecpnv.openrewrite.java.RemoveTrailingComma
@@ -44,7 +45,7 @@ recipeList:
       annotationTemplateToInsert: '@javax.persistence.Transient'
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntitiesAndServicesAndAnnotations
 displayName: Filter on spring configurations, entity classes and some edge-cases
 recipeList:
   - org.openrewrite.java.search.FindTypes:
@@ -79,6 +80,15 @@ recipeList:
       fullyQualifiedTypeName: org.apache.isis.applib.annotation.Collection
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.apache.isis.applib.annotation.Action
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntities
+displayName: Filter on entity classes
+recipeList:
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: javax.jdo.annotations.PersistenceCapable
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: javax.persistence.Entity
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable
@@ -927,7 +937,7 @@ tags:
   - causeway
   - isis
 preconditions:
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntitiesAndServicesAndAnnotations
 recipeList:
   # Inherited classes also need Entity annotation because of QueryDSL
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
@@ -936,16 +946,16 @@ recipeList:
       annotationTemplate: '@Entity'
       declarationType: CLASS
   # add eclipselink customizers
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Table\(schema = InvoiceItem.SCHEMA(.|\n|\s)*\)'
-      annotationType: org.eclipse.persistence.annotations.Customizer
-      annotationTemplate: '@Customizer(InvoiceItemCustomizer.class)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Table\(schema = Invoice.SCHEMA(.|\n|\s)*'
-      annotationType: org.eclipse.persistence.annotations.Customizer
-      annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
-      declarationType: CLASS
+  #  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+  #      matchByRegularExpression: '@Table\(schema = InvoiceItem.SCHEMA(.|\n|\s)*\)'
+  #      annotationType: org.eclipse.persistence.annotations.Customizer
+  #      annotationTemplate: '@Customizer(InvoiceItemCustomizer.class)'
+  #      declarationType: CLASS
+  #  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+  #      matchByRegularExpression: '@Table\(schema = Invoice.SCHEMA(.|\n|\s)*'
+  #      annotationType: org.eclipse.persistence.annotations.Customizer
+  #      annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
+  #      declarationType: CLASS
   # add no arg constructors forced
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '.*Named.*EstatioSharedKernelPartyModule.*MODULE_NAMESPACE.*Permit.*'
@@ -1006,7 +1016,7 @@ tags:
   - persistence
   - eclipselink
 preconditions:
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntitiesAndServicesAndAnnotations
 recipeList:
   - org.openrewrite.java.ReplaceAnnotation:
       annotationPatternToReplace: '@org.datanucleus.api.jdo.annotations.ReadOnly'
@@ -1024,7 +1034,7 @@ tags:
   - javax
   - persistence
 preconditions:
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptOnlyEntitiesAndAnnotations
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntities
 recipeList:
   # Replace attribute length with precision for decimal fields when they do not have precision specified, but have a scale
   - com.ecpnv.openrewrite.java.ChangeAnnotationAttributeNameConditionally:
@@ -1046,3 +1056,8 @@ recipeList:
       annotationTemplate: '@Enumerated(javax.persistence.EnumType.STRING)'
       declarationType: VAR
       kindOfClassToProcess: Enum
+#  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+#      annotationType: javax.persistence.Enumerated
+#      attributeValue: 'javax.persistence.EnumType.STRING'
+#      operation: ADD
+#      appendArray: false

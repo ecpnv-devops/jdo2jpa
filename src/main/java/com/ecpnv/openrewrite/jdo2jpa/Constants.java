@@ -33,6 +33,8 @@ public final class Constants {
         public static final String JOIN_ANNOTATION_NAME = "Join";
         public static final String JOIN_ANNOTATION_FULL = BASE_PACKAGE + JOIN_ANNOTATION_NAME;
         public static final String JOIN_ARGUMENT_COLUMN = "column";
+        public static final String NON_PERSISTENT_NAME = "NotPersistent";
+        public static final String NON_PERSISTENT_FULL = BASE_PACKAGE + NON_PERSISTENT_NAME;
         public static final String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
         public static final String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
         public static final String PERSISTENT_ANNOTATION_NAME = "Persistent";
@@ -40,9 +42,6 @@ public final class Constants {
         public static final String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
         public static final String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
         public static final String PERSISTENT_ARGUMENT_TABLE = "table";
-        public static final String IDENTITY_TYPE_ANNOTATION_NAME = "identityType";
-        public static final String IDENTITY_TYPE_APPLICATION = "APPLICATION";
-        public static final String IDENTITY_TYPE_DATASTORE = "DATASTORE";
     }
 
     public static class Jpa {
@@ -80,6 +79,8 @@ public final class Constants {
         public final static String TABLE_ARGUMENT_TABLE = "table";
         public static final String TABLE_ARGUMENT_UNIQUE_CONSTRAINTS = "uniqueConstraints";
         public static final String TABLE_ARGUMENT_INDEXES = "indexes";
+        public static final String TRANSIENT_ANNOTATION_NAME = "Transient";
+        public static final String TRANSIENT_ANNOTATION_FULL = BASE_PACKAGE + TRANSIENT_ANNOTATION_NAME;
         public static final String UNIQUE_CONSTRAINT_ANNOTATION_NAME = "UniqueConstraint";
         public static final String UNIQUE_CONSTRAINT_ANNOTATION_FULL = BASE_PACKAGE + UNIQUE_CONSTRAINT_ANNOTATION_NAME;
 

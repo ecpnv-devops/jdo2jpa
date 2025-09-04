@@ -250,10 +250,12 @@ public class RewriteUtils {
             return new ArrayList<>();
         }
         Pattern pattern = Pattern.compile(annotationType);
+        var at = annotationType.startsWith("@") ? annotationType.substring(1) : annotationType;
         List<J.Annotation> annotations = Stream.concat(
                 // Find all root annotations on class
                 leadingAnnotations.stream()
-                        .filter(annotation -> annotation.getType().isAssignableFrom(pattern)),
+                        .filter(annotation -> annotation.getType().isAssignableFrom(pattern)
+                                || at.equals(annotation.getAnnotationType().toString())),
                 // Should we search for sub-annotations?
                 subAnnotations ? leadingAnnotations.stream()
                         .filter(a -> !a.getType().isAssignableFrom(pattern))
@@ -266,7 +268,6 @@ public class RewriteUtils {
                         : Stream.empty()
         ).toList();
         if (CollectionUtils.isEmpty(annotations)) {
-            var at = annotationType.startsWith("@") ? annotationType.substring(1) : annotationType;
             annotations = FindAnnotations.find(javaElement, annotationType).stream()
                     .filter(a -> TypeUtils.isOfClassType(a.getType(), at))
                     .sorted(Comparator.comparing(a -> getOrder(leadingAnnotations, a)))
