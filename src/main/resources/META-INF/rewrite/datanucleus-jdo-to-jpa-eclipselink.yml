@@ -53,6 +53,8 @@ recipeList:
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: javax.jdo.annotations.PersistenceCapable
   - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: javax.jdo.annotations.Discriminator
+  - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: javax.persistence.Entity
   - org.openrewrite.java.search.FindTypes:
       fullyQualifiedTypeName: org.springframework.stereotype.Service
