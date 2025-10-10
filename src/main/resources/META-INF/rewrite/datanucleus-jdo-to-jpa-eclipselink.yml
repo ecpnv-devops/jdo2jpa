@@ -493,48 +493,33 @@ recipeList:
       annotationType: javax.jdo.annotations.Inheritance
       attributeToCopyToParent: strategy
       copyToBaseClassOnly: true
-  # Change type of @Inheritance
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.jdo.annotations.Inheritance
-      newFullyQualifiedTypeName: javax.persistence.Inheritance
   # Set inheritance strategy to the causeway default: table_per_class(==new table) translates into JOINED
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      annotationType: javax.persistence.Inheritance
-      attributeName: strategy
-      oldAttributeValue: "null"
-      attributeValue: javax.persistence.InheritanceType.JOINED
-      operation: ADD
-      appendArray: false
+  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '@Inheritance\s*\(\s*(?!(.|\s)*strategy)(.|\s)*?\)'
+      annotationType: javax.jdo.annotations.Inheritance
+      annotationTemplate: '@javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)'
+      declarationType: CLASS
   # Change inheritance strategy from NEW_TABLE to JOINED
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      annotationType: javax.persistence.Inheritance
-      attributeName: strategy
-      oldAttributeValue: InheritanceStrategy.NEW_TABLE
-      attributeValue: javax.persistence.InheritanceType.JOINED
-      operation: UPDATE
-      appendArray: false
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.Inheritance(strategy=javax.jdo.annotations.InheritanceStrategy.NEW_TABLE)'
+      annotationTemplateToInsert: '@javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)'
   # Change inheritance strategy from SUPERCLASS_TABLE to SINGLE_TABLE
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      annotationType: javax.persistence.Inheritance
-      attributeName: strategy
-      oldAttributeValue: InheritanceStrategy.SUPERCLASS_TABLE
-      attributeValue: javax.persistence.InheritanceType.SINGLE_TABLE
-      operation: UPDATE
-      appendArray: false
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.Inheritance(strategy=javax.jdo.annotations.InheritanceStrategy.SUPERCLASS_TABLE)'
+      annotationTemplateToInsert: '@javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)'
   # Change inheritance strategy from COMPLETE_TABLE to TABLE_PER_CLASS
-  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      annotationType: javax.persistence.Inheritance
-      attributeName: strategy
-      oldAttributeValue: InheritanceStrategy.COMPLETE_TABLE
-      attributeValue: javax.persistence.InheritanceType.TABLE_PER_CLASS
-      operation: UPDATE
-      appendArray: false
+  - org.openrewrite.java.ReplaceAnnotation:
+      annotationPatternToReplace: '@javax.jdo.annotations.Inheritance(strategy=javax.jdo.annotations.InheritanceStrategy.COMPLETE_TABLE)'
+      annotationTemplateToInsert: '@javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.TABLE_PER_CLASS)'
   # Remove customStrategy
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.persistence.Inheritance
       attributeName: customStrategy
+  # Remove imports of replaced annotations
   - com.ecpnv.openrewrite.java.MaybeRemoveImport:
       type: javax.jdo.annotations.InheritanceStrategy
+  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
+      type: javax.jdo.annotations.Inheritance
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Query
