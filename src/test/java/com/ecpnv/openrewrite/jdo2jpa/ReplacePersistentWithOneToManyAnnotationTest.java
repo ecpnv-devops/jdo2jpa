@@ -97,7 +97,8 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
      * when multiple annotations are present on the field. The other annotations should be preserved.
      */
     @DocumentExample
-    @Tag("broken")//does not work on build server and is disabled until there is time to fix the underlying problems
+    @Tag("broken")
+    //does not work on build server and is disabled until there is time to fix the underlying problems
     @Test
     void replacePersistentWithOneToManyAnnotationWithMultipleAnnotations() {
         rewriteRun(

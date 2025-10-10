@@ -75,9 +75,8 @@ class InheritanceTest {
                                     """,
                             """
                                     import java.util.List;
-                                    import javax.persistence.Inheritance;
                                     
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                     public class Person {
                                             private int id;
                                             private String name;
@@ -190,9 +189,8 @@ class InheritanceTest {
                                     """,
                             """
                                     import java.util.List;
-                                    import javax.persistence.Inheritance;
                                     
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
                                     public class Person {
                                             private int id;
                                             private String name;
@@ -245,9 +243,8 @@ class InheritanceTest {
                                     """,
                             """
                                     import java.util.List;
-                                    import javax.persistence.Inheritance;
                                     
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.TABLE_PER_CLASS)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.TABLE_PER_CLASS)
                                     public class Person {
                                             private int id;
                                             private String name;
@@ -301,9 +298,8 @@ class InheritanceTest {
                                     """,
                             """
                                     import java.util.List;
-                                    import javax.persistence.Inheritance;
                                     
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                     public abstract class Person {
                                             private int id;
                                             private String name;
@@ -325,7 +321,7 @@ class InheritanceTest {
         public void defaults(RecipeSpec spec) {
             spec.parser(PARSER)
                     .typeValidationOptions(TypeValidation.builder().allowMissingType(o -> true).build())
-                    .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x");
+                    .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x", "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup");
         }
 
         /**
@@ -384,7 +380,7 @@ class InheritanceTest {
                                     @DiscriminatorValue("Person")
                                     @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                     public class Person extends EntityAbstract {
                                             private int id;
                                             private String name;
@@ -461,7 +457,7 @@ class InheritanceTest {
                                     @DiscriminatorValue("Person")
                                     @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.SINGLE_TABLE)
                                     public class Person extends EntityAbstract {
                                             private int id;
                                             private String name;
@@ -529,7 +525,7 @@ class InheritanceTest {
                                     @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
                                     @Table(schema = "schemaname", name = "person")
-                                    @Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                     public abstract class Person extends EntityAbstract {
                                             private int id;
                                             private String name;
