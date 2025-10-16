@@ -909,6 +909,9 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.module.capex.dom.codamapping.CodaMapping'
       importFullClassName: 'javax.persistence.UniqueConstraint'
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.estatio.integration.gotenbergfake.dom.FakeGotenbergClientService'
+      importFullClassName: 'com.ecpnv.platform.subdomains.base.applib.utils.ResourceUtil'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
