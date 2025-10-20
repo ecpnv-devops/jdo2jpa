@@ -912,6 +912,12 @@ recipeList:
   - com.ecpnv.openrewrite.java.AddImport:
       fullClassName: 'org.estatio.integration.gotenbergfake.dom.FakeGotenbergClientService'
       importFullClassName: 'com.ecpnv.platform.subdomains.base.applib.utils.ResourceUtil'
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.estatio.module.codaorchestrationpaymentproposal.dom.codapayproposal.CodaPayProposalService_Test'
+      importFullClassName: 'org.junit.jupiter.api.extension.ExtendWith'
+  - com.ecpnv.openrewrite.java.AddImport:
+      fullClassName: 'org.estatio.module.codaorchestrationpaymentproposal.dom.codapayproposal.CodaPayProposalService_Test'
+      importFullClassName: 'org.mockito.junit.jupiter.MockitoExtension'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway
