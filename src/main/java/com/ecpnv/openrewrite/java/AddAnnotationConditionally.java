@@ -61,6 +61,12 @@ public class AddAnnotationConditionally extends Recipe {
             example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
     String matchByRegularExpression;
 
+    @Option(displayName = "Skip when regular expression matches",
+            description = "When false process only annotations that match the regular expression. " +
+                    "When true process only annotations that NOT match the regular expression.",
+            required = false)
+    Boolean skipIfMatch;
+
     @Option(displayName = "Annotation type",
             description = "The fully qualified name of the annotation to add.",
             example = "javax.persistence.Lob")
@@ -98,6 +104,7 @@ public class AddAnnotationConditionally extends Recipe {
     @JsonCreator
     public AddAnnotationConditionally(
             @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
+            @JsonProperty("skipIfMatch") Boolean skipIfMatch,
             @NonNull @JsonProperty("annotationType") String annotationType,
             @NonNull @JsonProperty("annotationTemplate") String annotationTemplate,
             @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
@@ -105,6 +112,7 @@ public class AddAnnotationConditionally extends Recipe {
             @JsonProperty("allowInherited") Boolean allowInherited,
             @JsonProperty("kindOfClassToProcess") J.ClassDeclaration.Kind.Type kindOfClassToProcess) {
         this.matchByRegularExpression = matchByRegularExpression;
+        this.skipIfMatch = skipIfMatch != null && skipIfMatch;
         this.annotationType = annotationType;
         this.annotationTemplate = annotationTemplate;
         this.declarationType = declarationType;
@@ -261,7 +269,8 @@ public class AddAnnotationConditionally extends Recipe {
                         .filter(a -> !matchRegEx
                                 || a.toString().matches(matchByRegularExpression))
                         .findFirst();
-                if (annotation.isPresent() || (!matchRegEx && kindOfClassToProcess != null)) {
+                if ((matchRegEx && (skipIfMatch ^ annotation.isPresent()))
+                        || (!matchRegEx && kindOfClassToProcess != null)) {
                     // Add annotation to variable
                     maybeAddImport(annotationType, null, false);
                     return Optional.of(

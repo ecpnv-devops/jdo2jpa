@@ -247,11 +247,11 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 template.append("fetch = FetchType.");
                 RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                         .ifPresentOrElse(isDefault -> {
-                            if (Boolean.TRUE.equals(isDefault))
-                                template.append("EAGER");
-                            else
-                                template.append("LAZY");
-                        }, () -> template.append("LAZY")
+                                    if (Boolean.TRUE.equals(isDefault))
+                                        template.append("EAGER");
+                                    else
+                                        template.append("LAZY");
+                                }, () -> template.append("LAZY")
                         );
 
                 template.append(")");
@@ -311,7 +311,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     joinTableTemplate.append(")");
                     // Add @JoinTable
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
-                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
+                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
                             Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL, joinTableTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null)
                             .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                     // Remove @Join
@@ -331,7 +331,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                     .append("\""));
                     joinColTemplate.append(")\n");
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
-                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*",
+                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
                             Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, joinColTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null)
                             .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                 }

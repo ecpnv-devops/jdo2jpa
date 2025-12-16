@@ -972,6 +972,8 @@ recipeList:
       appendArray: false
   # Add @Enumerated(STRING) to enum field when one prefers to store Enum as string in the DB
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
+      matchByRegularExpression: '.*@Transient.*'
+      skipIfMatch: true
       annotationType: javax.persistence.Enumerated
       annotationTemplate: '@Enumerated(javax.persistence.EnumType.STRING)'
       declarationType: VAR
