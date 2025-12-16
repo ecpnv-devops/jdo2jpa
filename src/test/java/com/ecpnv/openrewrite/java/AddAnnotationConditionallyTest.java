@@ -36,7 +36,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.VAR, null, null, null));
+        spec.parser(PARSER).recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, null, LOB_TYPE, LOB,
+                AddAnnotationConditionally.DeclarationType.VAR, null, null, null));
     }
 
     /**
@@ -88,7 +89,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForClass() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, null, LOB_TYPE,
+                        LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
                 //language=java
                 java(
                         """
@@ -124,7 +126,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void noAddForAbstractClass() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB,
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, null, LOB_TYPE, LOB,
                         AddAnnotationConditionally.DeclarationType.CLASS, J.Modifier.Type.Abstract, null, null)),
                 //language=java
                 java(
@@ -161,7 +163,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void addLobForMethod() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.METHOD, null, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, null, LOB_TYPE,
+                        LOB, AddAnnotationConditionally.DeclarationType.METHOD, null, null, null)),
                 //language=java
                 //language=java
                 java(
@@ -307,7 +310,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     @DocumentExample
     @Test
     void noChangeWhenTargetAlreadyExist() {
-        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, LOB_TYPE, LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(MATCH_COLUMN_JDBC, null, LOB_TYPE,
+                        LOB, AddAnnotationConditionally.DeclarationType.CLASS, null, null, null)),
                 //language=java
                 java(
                         """
@@ -453,9 +457,12 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                     java(
                             """
                                     import javax.persistence.Entity;
+                                    import javax.persistence.Transient;
                                     @Entity
                                     public class SomeClass {
                                         private System.Logger.Level someEnum;
+                                        @Transient
+                                        private System.Logger.Level someEnumA;
                                         public void someMethod(){
                                             boolean useNumerator = "reference" == null;
                                             System.Logger.Level someLocalEnum;
@@ -465,11 +472,14 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                             """
                                     import javax.persistence.Entity;
                                     import javax.persistence.Enumerated;
+                                    import javax.persistence.Transient;
                                     
                                     @Entity
                                     public class SomeClass {
                                         @Enumerated(javax.persistence.EnumType.STRING)
                                         private System.Logger.Level someEnum;
+                                        @Transient
+                                        private System.Logger.Level someEnumA;
                                         public void someMethod(){
                                             boolean useNumerator = "reference" == null;
                                             System.Logger.Level someLocalEnum;
@@ -495,7 +505,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         @Test
         void addToEnumFieldConditionally() {
             rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
-                            "@Column\\(name = \"someEnum\"\\)", "javax.persistence.Enumerated",
+                            "@Column\\(name = \"someEnum\"\\)", null, "javax.persistence.Enumerated",
                             "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.VAR,
                             null, null, J.ClassDeclaration.Kind.Type.Enum)),
                     //language=java
@@ -539,7 +549,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         @Test
         void addToEnumMethod() {
             rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
-                            null, "javax.persistence.Enumerated",
+                            null, null, "javax.persistence.Enumerated",
                             "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.METHOD,
                             null, null, J.ClassDeclaration.Kind.Type.Enum)),
                     //language=java
@@ -581,7 +591,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         @Test
         void noAddToVoidMethod() {
             rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
-                            null, "javax.persistence.Enumerated",
+                            null, null, "javax.persistence.Enumerated",
                             "@Enumerated(EnumType.STRING)", AddAnnotationConditionally.DeclarationType.METHOD,
                             null, null, J.ClassDeclaration.Kind.Type.Enum)),
                     //language=java
@@ -613,7 +623,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         @Test
         void addToEnumClass() {
             rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
-                            null, "javax.persistence.Entity",
+                            null, null, "javax.persistence.Entity",
                             "@Entity", AddAnnotationConditionally.DeclarationType.CLASS,
                             null, null, J.ClassDeclaration.Kind.Type.Enum)),
                     //language=java
