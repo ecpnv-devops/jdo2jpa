@@ -261,6 +261,8 @@ recipeList:
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: sqlType
+  # Add column definition for temporal types
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Column.temporal
   # Change column type
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
@@ -271,7 +273,34 @@ recipeList:
 #      attributeName: "name"
 #      keywords: "key,user,value,values"
 #      escapeString: "\\\""
-
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Column.temporal
+displayName: Migrate JDO > JPA-v2.x for @Column temporal
+description: Migrate @Column temporal.
+tags:
+  - jdo
+  - jpa
+  - migrate
+  - modernize
+  - java
+  - javax
+  - persistence
+  - Column
+  - Date
+  - Time
+  - Temporal
+preconditions:
+  - org.openrewrite.java.search.FindTypes:
+      fullyQualifiedTypeName: org.joda.time.DateTime
+recipeList:
+  # Add column definition for joda DateTime types
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: "dateTime2"
+      operation: ADD
+      appendArray: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Unique

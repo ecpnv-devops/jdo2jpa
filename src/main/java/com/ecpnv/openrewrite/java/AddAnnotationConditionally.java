@@ -242,6 +242,18 @@ public class AddAnnotationConditionally extends Recipe {
                 return addAnnotationConditionally(annotations, ctx, coordinates).orElse(j);
             }
 
+            /**
+             * Conditionally adds an annotation to the given element based on the provided list of annotations
+             * and a set of conditions.
+             *
+             * @param annotations A list of {@code J.Annotation} objects used to determine if the annotation
+             *                     should be added.
+             * @param ctx The {@code ExecutionContext} which provides the execution environment for processing.
+             * @param coordinates A supplier of {@code JavaCoordinates} that specifies where the annotation
+             *                     should be added within the Java source code.
+             * @return An {@code Optional<Statement>} representing the added annotation if the conditions are met,
+             *         or an empty {@code Optional} if no annotation was added.
+             */
             public Optional<Statement> addAnnotationConditionally(List<J.Annotation> annotations, ExecutionContext ctx,
                                                                   Supplier<JavaCoordinates> coordinates) {
                 var matchRegEx = StringUtils.isNotBlank(matchByRegularExpression);
