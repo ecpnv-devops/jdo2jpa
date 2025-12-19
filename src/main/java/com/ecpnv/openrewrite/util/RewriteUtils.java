@@ -36,7 +36,8 @@ import lombok.experimental.UtilityClass;
  * Utility class providing helper methods for handling and analyzing Java annotation metadata,
  * variable declarations, and related structures.
  *
- * @author Patrick Deenen & Wouter Veltmaat @ Open Circle Solutions
+ * @author Patrick Deenen @ Open Circle Solutions
+ * @author Wouter Veltmaat @ Open Circle Solutions
  */
 @UtilityClass
 public class RewriteUtils {
@@ -57,6 +58,48 @@ public class RewriteUtils {
             return classDeclaration;
         }
         return findParentClass(cursor.getParentTreeCursor());
+    }
+
+    /**
+     * Recursively finds the nearest parent of type {@code J.VariableDeclarations} from the given cursor.
+     *
+     * @param cursor the current {@code Cursor} instance used to traverse the abstract syntax tree.
+     * @return the nearest {@code J.VariableDeclarations} instance found in the parent chain, or {@code null} if not found.
+     */
+    public static J.VariableDeclarations findParentVar(Cursor cursor) {
+        if (cursor == null) {
+            return null;
+        }
+        if (cursor.getValue() instanceof J.ClassDeclaration classDeclaration) {
+            return null;
+        }
+        if (cursor.getValue() instanceof J.VariableDeclarations varDeclarations) {
+            return varDeclarations;
+        }
+        return findParentVar(cursor.getParentTreeCursor());
+    }
+
+    /**
+     * Finds the closest parent variable declaration of a specific type from the given cursor.
+     *
+     * @param cursor the cursor representing the current position in the syntax tree
+     * @param type   the fully qualified name of the type to match against the parent variable declaration
+     * @return the parent variable declaration of the specified type if found, otherwise null
+     */
+    public static J.VariableDeclarations findParentVarOfType(Cursor cursor, String type) {
+        if (StringUtils.isBlank(type)) {
+            return null;
+        }
+        var parentVar = findParentVar(cursor);
+        if (parentVar != null) {
+            if (parentVar.getTypeAsFullyQualified() != null &&
+                    parentVar.getTypeAsFullyQualified().getFullyQualifiedName().equals(type)) {
+                return parentVar;
+            } else if (parentVar.getTypeExpression() != null && type.equals(parentVar.getTypeExpression().toString())) {
+                return parentVar;
+            }
+        }
+        return null;
     }
 
     /**

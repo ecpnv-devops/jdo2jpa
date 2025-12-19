@@ -33,6 +33,7 @@ public class JavaParserFactory {
                 Constants.Jdo.CLASS_PATH,
                 Constants.SPRING_CONTEXT_CLASS_PATH,
                 Constants.SPRING_BOOT_AUTOCONFIGURATION_CLASS_PATH,
+                Constants.JODA_TIME_CLASS_PATH,
                 Constants.LOMBOK_CLASS_PATH,
                 Constants.JAVAX_INJECT};
         //hack to include a jar file for testing extending abstract classes

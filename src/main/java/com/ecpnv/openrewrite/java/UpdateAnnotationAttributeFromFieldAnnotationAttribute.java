@@ -188,7 +188,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                         var ov = oldValue.getInitializer().toString();
                         ov = ov.substring(1, ov.length() - 1);
                         return (J.Annotation) new AddOrUpdateAnnotationAttribute(annotationType, false,
-                                attributeName, StringUtils.join(newValue, ","), ov, AddOrUpdateAnnotationAttribute.Operation.UPDATE, null)
+                                attributeName, StringUtils.join(newValue, ","), ov, AddOrUpdateAnnotationAttribute.Operation.UPDATE, null, null)
                                 .getVisitor().visit(a, executionContext);
                     }
 
@@ -215,7 +215,7 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                         if (newValue == null || newValue == oldValue)
                             return a;
                         return (J.Annotation) new AddOrUpdateAnnotationAttribute(annotationType, false,
-                                attributeName, newValue, ov, AddOrUpdateAnnotationAttribute.Operation.UPDATE, null)
+                                attributeName, newValue, ov, AddOrUpdateAnnotationAttribute.Operation.UPDATE, null, null)
                                 .getVisitor().visit(a, executionContext);
                     }
 

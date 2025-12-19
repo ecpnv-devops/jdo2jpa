@@ -126,6 +126,12 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             example = "@Column\\(.*jdbcType\\s*=\\s*\"CLOB\".*\\)")
     String matchByRegularExpression;
 
+    @Option(displayName = "Var type",
+            description = "The fully qualified name of the variable type.",
+            required = false,
+            example = "java.lang.String")
+    String varType;
+
     @JsonIgnore
     @Getter
     AddOrUpdateAnnotationAttributeVisitor addOrUpdateAnnotationAttributeVisitor;
@@ -138,7 +144,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
             @NonNull @JsonProperty("attributeValue") Object attributeValue,
             @Nullable @JsonProperty("oldAttributeValue") String oldAttributeValue,
             @NonNull @JsonProperty("operation") Operation operation,
-            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression) {
+            @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
+            @Nullable @JsonProperty("varType") String varType) {
         this.annotationType = annotationType;
         this.appendArray = appendArray;
         this.attributeName = attributeName;
@@ -147,6 +154,7 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
         this.operation = operation;
         this.addOrUpdateAnnotationAttributeVisitor = new AddOrUpdateAnnotationAttributeVisitor();
         this.matchByRegularExpression = matchByRegularExpression;
+        this.varType = varType;
     }
 
     @Override
@@ -160,7 +168,8 @@ public class AddOrUpdateAnnotationAttribute extends Recipe {
         public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             J.Annotation original = super.visitAnnotation(annotation, ctx);
             if (!TypeUtils.isOfClassType(annotation.getType(), annotationType)
-                    || (matchByRegularExpression != null && !original.toString().matches(matchByRegularExpression))) {
+                    || (matchByRegularExpression != null && !original.toString().matches(matchByRegularExpression))
+                    || (varType != null && RewriteUtils.findParentVarOfType(getCursor(), varType) == null)) {
                 return original;
             }
 

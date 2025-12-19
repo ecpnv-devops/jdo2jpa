@@ -223,10 +223,10 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     void testColumnComplete() {
         rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Column"),
                 //language=java
-                //language=java
                 java(
                         """
                                 import javax.jdo.annotations.Column;
+                                import org.joda.time.DateTime;
                                 
                                 public class SomeEntity {
                                     private int id;
@@ -236,11 +236,15 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     public String getHelp(){ return "Help";}
                                     @Column(name = "name")
                                     private String name;
+                                    @Column(name = "dateTime")
+                                    private DateTime dateTime;
                                 }
                                 """,
                         """
                                 import javax.persistence.Column;
                                 import javax.persistence.Lob;
+                                
+                                import org.joda.time.DateTime;
                                 
                                 public class SomeEntity {
                                     private int id;
@@ -253,6 +257,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     public String getHelp() { return "Help";}
                                     @Column(name = "name")
                                     private String name;
+                                    @Column(columnDefinition = "dateTime2", name = "dateTime")
+                                    private DateTime dateTime;
                                 }
                                 """
                 )
