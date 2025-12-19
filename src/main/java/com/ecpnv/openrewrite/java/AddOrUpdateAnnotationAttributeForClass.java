@@ -93,7 +93,8 @@ public class AddOrUpdateAnnotationAttributeForClass extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new FindClassesVistor(fullyQualifiedTypeName),
-                new AddOrUpdateAnnotationAttribute(annotationType, appendArray, attributeName, attributeValue, oldAttributeValue, operation, null).getVisitor());
+                new AddOrUpdateAnnotationAttribute(annotationType, appendArray, attributeName, attributeValue,
+                        oldAttributeValue, operation, null, null).getVisitor());
     }
 
 }

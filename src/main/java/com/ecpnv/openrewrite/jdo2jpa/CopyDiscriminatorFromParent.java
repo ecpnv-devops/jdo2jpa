@@ -68,9 +68,9 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                 J.Annotation newAnno = (J.Annotation) new AddOrUpdateAnnotationAttribute(
                         Constants.Jdo.DISCRIMINATOR_ANNOTATION_FULL, false,
                         null, classDeclaration.getType().getFullyQualifiedName(), "null",
-                        AddOrUpdateAnnotationAttribute.Operation.BOTH, null)
+                        AddOrUpdateAnnotationAttribute.Operation.BOTH, null, null)
                         .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx,
-                        new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
+                                new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
                 if (newAnno == null) {
                     return classDeclaration;
                 }
