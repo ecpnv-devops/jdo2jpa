@@ -531,7 +531,6 @@ class InheritanceTest {
                                             private String name;
                                     }
                                     
-                                    @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
                                     @Table(schema = "schemaname", name = "manager")
                                     public class Manager extends Person {

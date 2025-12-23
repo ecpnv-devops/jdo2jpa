@@ -35,8 +35,8 @@ recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Index
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Column
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Query
   - com.ecpnv.openrewrite.jdo2jpa.v2x.Identity
   # Post code changes
