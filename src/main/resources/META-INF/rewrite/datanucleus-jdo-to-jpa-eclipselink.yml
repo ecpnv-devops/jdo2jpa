@@ -481,6 +481,13 @@ recipeList:
       annotationTypes:
         - javax.jdo.annotations.Inheritance
       annotationTypesToMatch:
+        - javax.jdo.annotations.PersistenceCapable
+  # Move @Inheritance to parent when parent is not an object
+  - com.ecpnv.openrewrite.java.CopyAnnotationToSuper:
+      move: true
+      annotationTypes:
+        - javax.jdo.annotations.Inheritance
+      annotationTypesToMatch:
         - javax.persistence.Entity
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
