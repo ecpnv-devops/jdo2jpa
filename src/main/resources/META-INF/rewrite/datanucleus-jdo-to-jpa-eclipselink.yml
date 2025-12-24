@@ -437,7 +437,7 @@ recipeList:
   # Set discriminator column length: 255
   # Note that from v5.0.2 DataNucleus will use a discriminator by default for inheritance strategy single table
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@.*(Discriminator|Inheritance)(.|\s|\n)*'
+      matchByRegularExpression: '@.*Inheritance(.|\s|\n)*'
       annotationType: javax.persistence.DiscriminatorColumn
       annotationTemplate: '@DiscriminatorColumn( name = "discriminator", length = 255)'
       declarationType: CLASS
@@ -480,9 +480,8 @@ recipeList:
       move: true
       annotationTypes:
         - javax.jdo.annotations.Inheritance
-      typesToStopAt:
-        - java.lang.Object
-        - org.estatio.base.prod.dom.EntityAbstract
+      annotationTypesToMatch:
+        - javax.persistence.Entity
   # Change inheritance strategy from SUBCLASS_TABLE to mapped superclass
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Inheritance\((.|\s|\n)*strategy(.|\s|\n)*=(.|\s|\n)*InheritanceStrategy.SUBCLASS_TABLE(.|\s|\n)*\)'

@@ -70,7 +70,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                         null, classDeclaration.getType().getFullyQualifiedName(), "null",
                         AddOrUpdateAnnotationAttribute.Operation.BOTH, null, null)
                         .getAddOrUpdateAnnotationAttributeVisitor().visit(annotation, ctx,
-                                new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
+                        new Cursor(getCursor().getParent(), classDeclaration)); //hack to create a cursor containing an actual annotation
                 if (newAnno == null) {
                     return classDeclaration;
                 }

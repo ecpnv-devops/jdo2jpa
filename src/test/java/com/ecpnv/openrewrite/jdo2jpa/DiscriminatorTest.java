@@ -56,7 +56,9 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.jdo.annotations.Discriminator;
                                 import javax.jdo.annotations.DiscriminatorStrategy;
+                                import javax.jdo.annotations.Inheritance;
                                 
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 @Discriminator(strategy = DiscriminatorStrategy.CLASS_NAME)
                                 public class Person {
                                         private int id;
@@ -68,9 +70,11 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
                                 import javax.persistence.DiscriminatorColumn;
                                 import javax.persistence.DiscriminatorValue;
                                 
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 @DiscriminatorValue(value = "Person")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Person {
@@ -78,8 +82,8 @@ class DiscriminatorTest extends BaseRewriteTest {
                                         private String name;
                                 }
                                 
+                                
                                 @DiscriminatorValue(value = "Manager")
-                                @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -111,7 +115,9 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 import java.util.List;
                                 import javax.jdo.annotations.Discriminator;
                                 import javax.jdo.annotations.DiscriminatorStrategy;
+                                import javax.jdo.annotations.Inheritance;
                                 
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 @Discriminator("person_discriminator")
                                 public class Person {
                                         private int id;
@@ -124,18 +130,18 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
+                                import javax.jdo.annotations.Inheritance;
                                 import javax.persistence.DiscriminatorColumn;
                                 import javax.persistence.DiscriminatorValue;
                                 
+                                @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                 @DiscriminatorValue("person_discriminator")
                                 @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Person {
                                         private int id;
                                         private String name;
                                 }
-                                
                                 @DiscriminatorValue("manager_discriminator")
-                                @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
