@@ -108,10 +108,7 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getType() != null && cd.getType().getSupertype() != null) {
                     String classFqn = cd.getType().getSupertype().getFullyQualifiedName();
-                    if (!typesToStopAt.contains(classFqn)
-                            // All given match annotations should be available
-                            && annotationTypesToMatch.stream().allMatch(annotationType -> RewriteUtils.hasAnnotation(
-                            cd.getLeadingAnnotations(), annotationType, getCursor()))) {
+                    if (!typesToStopAt.contains(classFqn)) {
                         for (J.Annotation annotation : cd.getLeadingAnnotations()) {
                             JavaType.FullyQualified annoFq = TypeUtils.asFullyQualified(annotation.getType());
                             // Match on annotation name to copy or move
@@ -135,15 +132,18 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
             return TreeVisitor.noop();
         }
 
-        return new CopyAnnoVisitor(acc.getChildAnnotationsByParentType(), move);
+        return new CopyAnnoVisitor(acc.getChildAnnotationsByParentType(), annotationTypesToMatch, move);
     }
 
     public static class CopyAnnoVisitor extends JavaIsoVisitor<ExecutionContext> {
         protected final Map<String, List<J.Annotation>> childAnnotationsByParentType;
+        protected final Set<String> annotationTypesToMatch;
         protected final boolean move;
 
-        public CopyAnnoVisitor(Map<String, List<J.Annotation>> childAnnotationsByParentType, boolean move) {
+        public CopyAnnoVisitor(Map<String, List<J.Annotation>> childAnnotationsByParentType,
+                               Set<String> annotationTypesToMatch, boolean move) {
             this.childAnnotationsByParentType = childAnnotationsByParentType;
+            this.annotationTypesToMatch = annotationTypesToMatch;
             this.move = move;
         }
 
@@ -153,10 +153,26 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
 
             JavaType.FullyQualified currentFq = cd.getType();
 
+            // For every child this has an annotation that is copied remove the annotation, when move is true
+            if (move
+                    && currentFq != null
+                    && currentFq.getSupertype() != null
+                    && childAnnotationsByParentType.containsKey(currentFq.getSupertype().getFullyQualifiedName())) {
+                final var clsdecl = cd;
+                cd = cd.withLeadingAnnotations(clsdecl.getLeadingAnnotations().stream()
+                        .filter(la -> childAnnotationsByParentType.get(currentFq.getSupertype().getFullyQualifiedName()).stream()
+                                .noneMatch(ca -> TypeUtils.asFullyQualified(la.getType()).getFullyQualifiedName()
+                                        .equals(TypeUtils.asFullyQualified(ca.getType()).getFullyQualifiedName())))
+                        .toList());
+            }
+
             // For every found child annotation
             List<J.Annotation> annotationsToAdd = new ArrayList<>();
             final var clsdecl = cd;
-            if (currentFq != null && childAnnotationsByParentType.containsKey(currentFq.getFullyQualifiedName())) {
+            if (currentFq != null && childAnnotationsByParentType.containsKey(currentFq.getFullyQualifiedName())
+                    // All given match annotations should be available
+                    && annotationTypesToMatch.stream().allMatch(annotationType -> RewriteUtils.hasAnnotation(
+                    clsdecl.getLeadingAnnotations(), annotationType, getCursor()))) {
                 annotationsToAdd.addAll(
                         childAnnotationsByParentType.get(currentFq.getFullyQualifiedName()).stream()
                                 // Verify it is not already available on this class (the parent)
@@ -177,18 +193,6 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                         maybeAddImport(fullyQualified.getFullyQualifiedName());
                     }
                 }
-            }
-
-            // For every child this has an annotation that is copied remove the annotation, when move is true
-            if (move
-                    && currentFq != null
-                    && currentFq.getSupertype() != null
-                    && childAnnotationsByParentType.containsKey(currentFq.getSupertype().getFullyQualifiedName())) {
-                cd = cd.withLeadingAnnotations(clsdecl.getLeadingAnnotations().stream()
-                        .filter(la -> childAnnotationsByParentType.get(currentFq.getSupertype().getFullyQualifiedName()).stream()
-                                .noneMatch(ca -> TypeUtils.asFullyQualified(la.getType()).getFullyQualifiedName()
-                                        .equals(TypeUtils.asFullyQualified(ca.getType()).getFullyQualifiedName())))
-                        .toList());
             }
 
             return cd;
