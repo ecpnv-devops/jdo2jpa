@@ -286,11 +286,14 @@ class InheritanceTest {
                                     import java.util.List;
                                     import javax.jdo.annotations.Inheritance;
                                     import javax.jdo.annotations.InheritanceStrategy;
+                                    import javax.persistence.Entity;
                                     
+                                    @Entity
                                     public abstract class Person {
                                             private int id;
                                             private String name;
                                     }
+                                    @Entity
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public class Manager extends Person {
                                             private List<Person> managedPersons;
@@ -298,13 +301,15 @@ class InheritanceTest {
                                     """,
                             """
                                     import java.util.List;
+                                    import javax.persistence.Entity;
                                     
+                                    @Entity                                    
                                     @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
                                     public abstract class Person {
                                             private int id;
                                             private String name;
                                     }
-                                    
+                                    @Entity
                                     public class Manager extends Person {
                                             private List<Person> managedPersons;
                                     }
@@ -389,7 +394,6 @@ class InheritanceTest {
                                     @Entity
                                     @Table(schema = "schemaname", name = "manager")
                                     @DiscriminatorValue("Manager")
-                                    @DiscriminatorColumn(name = "discriminator", length = 255)
                                     public class Manager extends Person {
                                             @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                             private List<Person> managedPersons;
@@ -465,7 +469,6 @@ class InheritanceTest {
                                     
                                     @Table(schema = "schemaname", name = "manager")
                                     @DiscriminatorValue(Manager.DISCRIMINATOR_VALUE)
-                                    @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
                                     public class Manager extends Person {
                                             public static final String DISCRIMINATOR_VALUE = "Manager_discriminator";
@@ -541,5 +544,70 @@ class InheritanceTest {
                     )
             );
         }
+
+        @DocumentExample
+        @Test
+        void testInheritanceWith2AbstractParents() {
+            rewriteRun(
+                    //language=java
+                    java(
+                            """
+                                    package org.estatio.base.prod.dom;
+                                    
+                                    import java.util.List;
+                                    import javax.jdo.annotations.Discriminator;
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+                                    import javax.jdo.annotations.Persistent;
+                                    import javax.jdo.annotations.PersistenceCapable;
+                                    
+                                    public abstract class ParentClass{
+                                        int version;
+                                    }
+                                    
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public abstract class Person extends ParentClass {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Manager extends Person {
+                                            @Persistent( mappedBy = "person")
+                                            private List<Person> managedPersons;
+                                    }
+                                    """,
+                            """
+                                    package org.estatio.base.prod.dom;
+                                    
+                                    import java.util.List;
+                                    import javax.persistence.*;
+                                    
+                                    public abstract class ParentClass{
+                                        int version;
+                                    }
+                                    
+                                    @DiscriminatorColumn(name = "discriminator", length = 255)
+                                    @Entity
+                                    @Table(schema = "schemaname", name = "person")
+                                    @javax.persistence.Inheritance(strategy = javax.persistence.InheritanceType.JOINED)
+                                    public abstract class Person extends ParentClass {
+                                            private int id;
+                                            private String name;
+                                    }
+                                    
+                                    @Entity
+                                    @Table(schema = "schemaname", name = "manager")
+                                    public class Manager extends Person {
+                                            @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                            private List<Person> managedPersons;
+                                    }
+                                    """
+                    )
+            );
+        }
+
     }
 }

@@ -35,6 +35,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import com.ecpnv.openrewrite.util.RewriteUtils;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -48,8 +50,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.Accumulator> {
 
-    @Option(displayName = "Set of annotations to match",
-            description = "Only annotations that match this set will be copied.",
+    @Option(displayName = "Set of annotations to match and copy",
+            description = "Only annotations that match this set will be copied or moved.",
             example = "@javax.jdo.annotations.Discriminator")
     Set<String> annotationTypes;
 
@@ -57,7 +59,7 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
             description = "Traversing the parents stops when one of these types is found. Default is java.lang.Object.",
             required = false,
             example = "java.lang.Object")
-    Set<String> typesToStopAt = Set.of("java.lang.Object");
+    Set<String> typesToStopAt;
 
     @Option(displayName = "Move instead of copy",
             description = "When true then move instead of copy, e.g. delete the annotation on the subclass. Default is false.",
@@ -65,14 +67,22 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
             example = "true")
     boolean move;
 
+    @Option(displayName = "Set of annotations to match",
+            description = "Skip types that don't have all of these annotations.",
+            required = false,
+            example = "@javax.jdo.annotations.PersistenceCapable")
+    Set<String> annotationTypesToMatch;
+
     @JsonCreator
     public CopyAnnotationToSuper(
             @NonNull @JsonProperty("annotationTypes") Set<String> annotationTypes,
             @NonNull @JsonProperty("typesToStopAt") Set<String> typesToStopAt,
-            @NonNull @JsonProperty("move") boolean move) {
+            @NonNull @JsonProperty("move") boolean move,
+            @NonNull @JsonProperty("annotationTypesToMatch") Set<String> annotationTypesToMatch) {
         this.annotationTypes = annotationTypes;
-        this.typesToStopAt = typesToStopAt;
+        this.typesToStopAt = typesToStopAt == null ? Set.of("java.lang.Object") : typesToStopAt;
         this.move = move;
+        this.annotationTypesToMatch = annotationTypesToMatch == null ? Set.of() : annotationTypesToMatch;
     }
 
     @Override
@@ -98,9 +108,13 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getType() != null && cd.getType().getSupertype() != null) {
                     String classFqn = cd.getType().getSupertype().getFullyQualifiedName();
-                    if (!typesToStopAt.contains(classFqn)) {
+                    if (!typesToStopAt.contains(classFqn)
+                            // All given match annotations should be available
+                            && annotationTypesToMatch.stream().allMatch(annotationType -> RewriteUtils.hasAnnotation(
+                            cd.getLeadingAnnotations(), annotationType, getCursor()))) {
                         for (J.Annotation annotation : cd.getLeadingAnnotations()) {
                             JavaType.FullyQualified annoFq = TypeUtils.asFullyQualified(annotation.getType());
+                            // Match on annotation name to copy or move
                             if (annoFq != null && annotationTypes.stream().anyMatch(fqn -> fqn.equals(annoFq.getFullyQualifiedName()))
                                     && (acc.childAnnotationsByParentType.get(classFqn) == null ||
                                     acc.childAnnotationsByParentType.get(classFqn).stream()

@@ -247,11 +247,11 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 template.append("fetch = FetchType.");
                 RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
                         .ifPresentOrElse(isDefault -> {
-                                    if (Boolean.TRUE.equals(isDefault))
-                                        template.append("EAGER");
-                                    else
-                                        template.append("LAZY");
-                                }, () -> template.append("LAZY")
+                            if (Boolean.TRUE.equals(isDefault))
+                                template.append("EAGER");
+                            else
+                                template.append("LAZY");
+                        }, () -> template.append("LAZY")
                         );
 
                 template.append(")");
