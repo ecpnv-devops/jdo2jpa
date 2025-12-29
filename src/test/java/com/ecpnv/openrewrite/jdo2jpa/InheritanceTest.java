@@ -394,6 +394,7 @@ class InheritanceTest {
                                     @Entity
                                     @Table(schema = "schemaname", name = "manager")
                                     @DiscriminatorValue("Manager")
+                                    @DiscriminatorColumn(name = "discriminator", length = 255)
                                     public class Manager extends Person {
                                             @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                             private List<Person> managedPersons;
@@ -469,6 +470,7 @@ class InheritanceTest {
                                     
                                     @Table(schema = "schemaname", name = "manager")
                                     @DiscriminatorValue(Manager.DISCRIMINATOR_VALUE)
+                                    @DiscriminatorColumn(name = "discriminator", length = 255)
                                     @Entity
                                     public class Manager extends Person {
                                             public static final String DISCRIMINATOR_VALUE = "Manager_discriminator";
