@@ -437,7 +437,7 @@ recipeList:
   # Set discriminator column length: 255
   # Note that from v5.0.2 DataNucleus will use a discriminator by default for inheritance strategy single table
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@.*Inheritance(.|\s|\n)*'
+      matchByRegularExpression: '@.*(Discriminator|Inheritance)(\n|$|\((.|\s|\n)*)'
       annotationType: javax.persistence.DiscriminatorColumn
       annotationTemplate: '@DiscriminatorColumn( name = "discriminator", length = 255)'
       declarationType: CLASS
@@ -475,13 +475,6 @@ tags:
   - persistence
   - Inheritance
 recipeList:
-  # Move @Inheritance to parent when parent is not an object
-  - com.ecpnv.openrewrite.java.CopyAnnotationToSuper:
-      move: true
-      annotationTypes:
-        - javax.jdo.annotations.Inheritance
-      annotationTypesToMatch:
-        - javax.jdo.annotations.PersistenceCapable
   # Move @Inheritance to parent when parent is not an object
   - com.ecpnv.openrewrite.java.CopyAnnotationToSuper:
       move: true
@@ -940,6 +933,10 @@ tags:
 preconditions:
   - com.ecpnv.openrewrite.jdo2jpa.v2x.acceptEntities
 recipeList:
+  # Remove @DiscriminatorColumn from subclasses
+  - com.ecpnv.openrewrite.java.RemoveInheritedAnnotations:
+      nonInheritedAnnotationTypes:
+        - javax.persistence.DiscriminatorColumn
   # Replace attribute length with precision for decimal fields when they do not have precision specified, but have a scale
   - com.ecpnv.openrewrite.java.ChangeAnnotationAttributeNameConditionally:
       matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'

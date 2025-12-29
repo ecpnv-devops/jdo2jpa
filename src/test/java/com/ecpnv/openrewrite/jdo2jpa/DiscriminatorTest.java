@@ -84,6 +84,7 @@ class DiscriminatorTest extends BaseRewriteTest {
                                 
                                 
                                 @DiscriminatorValue(value = "Manager")
+                                @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }
@@ -141,7 +142,9 @@ class DiscriminatorTest extends BaseRewriteTest {
                                         private int id;
                                         private String name;
                                 }
+                                
                                 @DiscriminatorValue("manager_discriminator")
+                                @DiscriminatorColumn(name = "discriminator", length = 255)
                                 public class Manager extends Person {
                                         private List<Person> managedPersons;
                                 }

@@ -269,8 +269,7 @@ public class AddAnnotationConditionally extends Recipe {
                         .filter(a -> !matchRegEx
                                 || a.toString().matches(matchByRegularExpression))
                         .findFirst();
-                if ((matchRegEx && (skipIfMatch ^ annotation.isPresent()))
-                        || (!matchRegEx && kindOfClassToProcess != null)) {
+                if (!matchRegEx || (skipIfMatch ^ annotation.isPresent())) {
                     // Add annotation to variable
                     maybeAddImport(annotationType, null, false);
                     return Optional.of(
