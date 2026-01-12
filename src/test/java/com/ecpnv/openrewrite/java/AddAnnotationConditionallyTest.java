@@ -248,11 +248,11 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 
                                 public class SomeEntity {
                                     private int id;
-                                    @Column
+                                    @Column(columnDefinition = "VARCHAR(MAX)")
                                     @Lob
                                     private String notes;
                                 
-                                    @Column(nullable = false)
+                                    @Column(columnDefinition = "VARCHAR(MAX)", nullable = false)
                                     @Lob
                                     public String getHelp() { return "Help";}
                                     @Column(name = "name")
@@ -289,7 +289,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 import javax.persistence.Column;
                                 import javax.persistence.Lob;
                                 
-                                @Column(length = Notes.MAX_LEN)
+                                @Column(columnDefinition = "VARCHAR(MAX)", length = Notes.MAX_LEN)
                                 @Lob
                                 public @interface Notes {
                                     int MAX_LEN = 4000;
