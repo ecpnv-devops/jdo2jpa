@@ -239,7 +239,7 @@ recipeList:
       attributeValue: false
       operation: UPDATE
       appendArray: false
-  # replace 'jdbcType = "CLOB", sqlType = "LONGVARCHAR"' with @Lob
+  # replace 'jdbcType = "CLOB"' with @Lob
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"CLOB"(.|\s|\n)*\)'
       annotationType: javax.persistence.Lob
@@ -255,6 +255,14 @@ recipeList:
       annotationType: javax.persistence.Lob
       annotationTemplate: '@Lob'
       declarationType: CLASS
+  # add attribute columnDefinition = "VARCHAR(MAX)" to @Column with sqlType = "LONGVARCHAR"
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"VARCHAR(MAX)"'
+      operation: ADD
+      appendArray: false
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: jdbcType
