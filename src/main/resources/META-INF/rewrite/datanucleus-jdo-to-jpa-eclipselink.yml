@@ -257,6 +257,13 @@ recipeList:
       declarationType: CLASS
   # add attribute columnDefinition = "VARCHAR(MAX)" to @Column with sqlType = "LONGVARCHAR"
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((?=[^)]*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR")(?=[^)]*allowsNull(.|\s|\n)*=(.|\s|\n)*"false")[^)]*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"VARCHAR(MAX) NOT NULL"'
+      operation: ADD
+      appendArray: false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       matchByRegularExpression: '@Column\((.|\s|\n)*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR"(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
@@ -271,12 +278,28 @@ recipeList:
       attributeName: sqlType
   # Add column definition for joda DateTime types
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*allowsNull(.|\s|\n)*=(.|\s|\n)*"false"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"dateTime2 NOT NULL"'
+      operation: ADD
+      appendArray: false
+      varType: org.joda.time.DateTime
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
       attributeValue: '"dateTime2"'
       operation: ADD
       appendArray: false
       varType: org.joda.time.DateTime
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*allowsNull(.|\s|\n)*=(.|\s|\n)*"false"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"date NOT NULL"'
+      operation: ADD
+      appendArray: false
+      varType: org.joda.time.LocalDate
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
