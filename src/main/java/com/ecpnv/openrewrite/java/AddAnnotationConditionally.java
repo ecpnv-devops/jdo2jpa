@@ -101,6 +101,12 @@ public class AddAnnotationConditionally extends Recipe {
             example = "Enum")
     J.ClassDeclaration.Kind.Type kindOfClassToProcess;
 
+    @Option(displayName = "Process only primitives",
+            description = "When true should equals var or method return of type primitive. Default = false.",
+            required = false,
+            example = "true")
+    Boolean primitiveOnly;
+
     @JsonCreator
     public AddAnnotationConditionally(
             @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
@@ -110,7 +116,8 @@ public class AddAnnotationConditionally extends Recipe {
             @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
             @JsonProperty("disallowedModifierType") J.Modifier.Type disallowedModifierType,
             @JsonProperty("allowInherited") Boolean allowInherited,
-            @JsonProperty("kindOfClassToProcess") J.ClassDeclaration.Kind.Type kindOfClassToProcess) {
+            @JsonProperty("kindOfClassToProcess") J.ClassDeclaration.Kind.Type kindOfClassToProcess,
+            @JsonProperty("primitiveOnly") Boolean primitiveOnly) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.skipIfMatch = skipIfMatch != null && skipIfMatch;
         this.annotationType = annotationType;
@@ -119,6 +126,7 @@ public class AddAnnotationConditionally extends Recipe {
         this.disallowedModifierType = disallowedModifierType;
         this.allowInherited = allowInherited == null || allowInherited;
         this.kindOfClassToProcess = kindOfClassToProcess;
+        this.primitiveOnly = primitiveOnly != null && primitiveOnly;
     }
 
     @Override
@@ -149,6 +157,10 @@ public class AddAnnotationConditionally extends Recipe {
                 }
                 // Only allow changes in fields and not in local variables
                 if (RewriteUtils.isMethodOwnerOfVar(vars)) {
+                    return vars;
+                }
+                // Only allow primitives when required
+                if (primitiveOnly && !(vars.getTypeExpression() instanceof J.Primitive)) {
                     return vars;
                 }
                 // Add annotation
@@ -196,6 +208,10 @@ public class AddAnnotationConditionally extends Recipe {
                 // Match on kind
                 if (!isKindAllowed(() -> m.getMethodType() != null && m.getMethodType().getReturnType()
                         instanceof JavaType.Class jtc ? jtc.getKind().name() : "")) {
+                    return m;
+                }
+                // Only allow primitives when required
+                if (primitiveOnly && !(m.getReturnTypeExpression() instanceof J.Primitive)) {
                     return m;
                 }
                 // Add annotation
