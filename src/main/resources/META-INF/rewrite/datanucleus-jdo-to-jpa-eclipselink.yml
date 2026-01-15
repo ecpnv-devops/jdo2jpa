@@ -257,7 +257,7 @@ recipeList:
       declarationType: CLASS
   # add attribute columnDefinition = "VARCHAR(MAX)" to @Column with sqlType = "LONGVARCHAR"
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      matchByRegularExpression: '@Column\((?=[^)]*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR")(?=[^)]*allowsNull(.|\s|\n)*=(.|\s|\n)*"false")[^)]*\)'
+      matchByRegularExpression: '@Column\((?=[^)]*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR")(?=[^)]*nullable(.|\s|\n)*=(.|\s|\n)*false)[^)]*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
       attributeValue: '"VARCHAR(MAX) NOT NULL"'
@@ -278,7 +278,7 @@ recipeList:
       attributeName: sqlType
   # Add column definition for joda DateTime types
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      matchByRegularExpression: '@Column\((.|\s|\n)*allowsNull(.|\s|\n)*=(.|\s|\n)*"false"(.|\s|\n)*\)'
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable(.|\s|\n)*=(.|\s|\n)*false(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
       attributeValue: '"dateTime2 NOT NULL"'
@@ -293,7 +293,7 @@ recipeList:
       appendArray: false
       varType: org.joda.time.DateTime
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-      matchByRegularExpression: '@Column\((.|\s|\n)*allowsNull(.|\s|\n)*=(.|\s|\n)*"false"(.|\s|\n)*\)'
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable(.|\s|\n)*=(.|\s|\n)*false(.|\s|\n)*\)'
       annotationType: javax.jdo.annotations.Column
       attributeName: columnDefinition
       attributeValue: '"date NOT NULL"'

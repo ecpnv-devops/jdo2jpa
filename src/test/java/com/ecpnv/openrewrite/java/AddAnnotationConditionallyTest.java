@@ -227,6 +227,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                         """
                                 import javax.jdo.annotations.Column;
                                 import org.joda.time.DateTime;
+                                import org.joda.time.LocalDate;
                                 
                                 public class SomeEntity {
                                     private int id;
@@ -238,6 +239,12 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     private String name;
                                     @Column(name = "dateTime")
                                     private DateTime dateTime;
+                                    @Column(name = "dateTimeMandatory", allowsNull = "false")
+                                    private DateTime dateTimeMandatory;
+                                    @Column(name = "date")
+                                    private LocalDate date;
+                                    @Column(name = "dateMandatory", allowsNull = "false")
+                                    private LocalDate dateMandatory;
                                 }
                                 """,
                         """
@@ -245,6 +252,7 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 import javax.persistence.Lob;
                                 
                                 import org.joda.time.DateTime;
+                                import org.joda.time.LocalDate;
                                 
                                 public class SomeEntity {
                                     private int id;
@@ -252,13 +260,19 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     @Lob
                                     private String notes;
                                 
-                                    @Column(columnDefinition = "VARCHAR(MAX)", nullable = false)
+                                    @Column(columnDefinition = "VARCHAR(MAX) NOT NULL", nullable = false)
                                     @Lob
                                     public String getHelp() { return "Help";}
                                     @Column(name = "name")
                                     private String name;
                                     @Column(columnDefinition = "dateTime2", name = "dateTime")
                                     private DateTime dateTime;
+                                    @Column(columnDefinition = "dateTime2 NOT NULL", name = "dateTimeMandatory", nullable = false)
+                                    private DateTime dateTimeMandatory;
+                                    @Column(columnDefinition = "date", name = "date")
+                                    private LocalDate date;
+                                    @Column(columnDefinition = "date NOT NULL", name = "dateMandatory", nullable = false)
+                                    private LocalDate dateMandatory;
                                 }
                                 """
                 )
