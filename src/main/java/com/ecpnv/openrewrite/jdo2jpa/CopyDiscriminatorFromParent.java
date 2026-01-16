@@ -1,5 +1,6 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,7 +75,7 @@ public class CopyDiscriminatorFromParent extends CopyNonInheritedAnnotations {
                 if (newAnno == null) {
                     return classDeclaration;
                 }
-                var annos = classDeclaration.getLeadingAnnotations();
+                var annos = new ArrayList<>(classDeclaration.getLeadingAnnotations());
                 annos.remove(annotation);
                 annos.add(newAnno);
                 return classDeclaration.withLeadingAnnotations(annos);
