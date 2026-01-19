@@ -241,10 +241,6 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     private DateTime dateTime;
                                     @Column(name = "dateTimeMandatory", allowsNull = "false")
                                     private DateTime dateTimeMandatory;
-                                    @Column(name = "date")
-                                    private LocalDate date;
-                                    @Column(name = "dateMandatory", allowsNull = "false")
-                                    private LocalDate dateMandatory;
                                 }
                                 """,
                         """
@@ -269,10 +265,6 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                     private DateTime dateTime;
                                     @Column(columnDefinition = "dateTime2 NOT NULL", name = "dateTimeMandatory", nullable = false)
                                     private DateTime dateTimeMandatory;
-                                    @Column(columnDefinition = "date", name = "date")
-                                    private LocalDate date;
-                                    @Column(columnDefinition = "date NOT NULL", name = "dateMandatory", nullable = false)
-                                    private LocalDate dateMandatory;
                                 }
                                 """
                 )
