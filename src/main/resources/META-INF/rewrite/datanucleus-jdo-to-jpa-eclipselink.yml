@@ -292,6 +292,21 @@ recipeList:
       operation: ADD
       appendArray: false
       varType: org.joda.time.DateTime
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*nullable(.|\s|\n)*=(.|\s|\n)*false(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"date NOT NULL"'
+      operation: ADD
+      appendArray: false
+      varType: org.joda.time.LocalDate
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: columnDefinition
+      attributeValue: '"date"'
+      operation: ADD
+      appendArray: false
+      varType: org.joda.time.LocalDate
   # Change column type
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column

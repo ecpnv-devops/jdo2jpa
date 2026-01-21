@@ -107,6 +107,12 @@ public class AddAnnotationConditionally extends Recipe {
             example = "true")
     Boolean primitiveOnly;
 
+    @Option(displayName = "Parent type to match",
+            description = "When given the fully qualified name of the parent type to match.",
+            required = false,
+            example = "your.app.SomeClass")
+    String parentType;
+
     @JsonCreator
     public AddAnnotationConditionally(
             @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
@@ -117,7 +123,8 @@ public class AddAnnotationConditionally extends Recipe {
             @JsonProperty("disallowedModifierType") J.Modifier.Type disallowedModifierType,
             @JsonProperty("allowInherited") Boolean allowInherited,
             @JsonProperty("kindOfClassToProcess") J.ClassDeclaration.Kind.Type kindOfClassToProcess,
-            @JsonProperty("primitiveOnly") Boolean primitiveOnly) {
+            @JsonProperty("primitiveOnly") Boolean primitiveOnly,
+            @JsonProperty("parentType") String parentType) {
         this.matchByRegularExpression = matchByRegularExpression;
         this.skipIfMatch = skipIfMatch != null && skipIfMatch;
         this.annotationType = annotationType;
@@ -127,6 +134,7 @@ public class AddAnnotationConditionally extends Recipe {
         this.allowInherited = allowInherited == null || allowInherited;
         this.kindOfClassToProcess = kindOfClassToProcess;
         this.primitiveOnly = primitiveOnly != null && primitiveOnly;
+        this.parentType = parentType;
     }
 
     @Override
@@ -153,6 +161,10 @@ public class AddAnnotationConditionally extends Recipe {
                 // Match on kind
                 if (!isKindAllowed(() -> vars.getTypeAsFullyQualified() != null ?
                         vars.getTypeAsFullyQualified().getKind().name() : "")) {
+                    return vars;
+                }
+                // Match on parent type
+                if (!hasParentType()) {
                     return vars;
                 }
                 // Only allow changes in fields and not in local variables
@@ -210,6 +222,10 @@ public class AddAnnotationConditionally extends Recipe {
                         instanceof JavaType.Class jtc ? jtc.getKind().name() : "")) {
                     return m;
                 }
+                // Match on parent type
+                if (!hasParentType()) {
+                    return m;
+                }
                 // Only allow primitives when required
                 if (primitiveOnly && !(m.getReturnTypeExpression() instanceof J.Primitive)) {
                     return m;
@@ -221,7 +237,14 @@ public class AddAnnotationConditionally extends Recipe {
 
             protected boolean isKindAllowed(Supplier<String> kindNameSupplier) {
                 String kindName = kindNameSupplier.get();
-                return kindOfClassToProcess == null || kindOfClassToProcess.name().equals(kindName);
+                return kindOfClassToProcess == null || kindOfClassToProcess.name().equalsIgnoreCase(kindName);
+            }
+
+            protected boolean hasParentType() {
+                // Match on parent type
+                var parent = RewriteUtils.findParentClass(getCursor());
+                return parentType == null || (parent != null && parent.getType() != null
+                        && parent.getType().isAssignableFrom(Pattern.compile(parentType)));
             }
 
             protected boolean isDisallowedModifierTypes(List<J.Modifier> modifiers) {

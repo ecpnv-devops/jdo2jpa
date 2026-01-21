@@ -312,7 +312,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     // Add @JoinTable
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
                             ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
-                            Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL, joinTableTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null)
+                            Constants.Jpa.JOIN_TABLE_ANNOTATION_FULL, joinTableTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null, null)
                             .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                     // Remove @Join
                     multiVariable = (J.VariableDeclarations) new RemoveAnnotation(Constants.Jdo.JOIN_ANNOTATION_FULL).getVisitor().visit(multiVariable, ctx);
@@ -332,7 +332,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     joinColTemplate.append(")\n");
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
                             ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
-                            Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, joinColTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null)
+                            Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, joinColTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null, null)
                             .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                 }
                 return multiVariable;
