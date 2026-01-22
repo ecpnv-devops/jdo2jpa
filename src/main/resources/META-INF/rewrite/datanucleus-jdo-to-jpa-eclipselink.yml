@@ -498,6 +498,11 @@ recipeList:
       attributeName: indexed
   - com.ecpnv.openrewrite.java.MaybeRemoveImport:
       type: javax.jdo.annotations.DiscriminatorStrategy
+  # Remove @DiscriminatorValue when the class is abstract
+  - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
+      matchByRegularExpressionForRemoval: '@.*DiscriminatorValue.*'
+      modifiersToSkip: [ Abstract ]
+      declarationType: CLASS
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Inheritance
