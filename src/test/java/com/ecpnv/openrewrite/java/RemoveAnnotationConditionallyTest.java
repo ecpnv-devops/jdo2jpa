@@ -15,8 +15,11 @@
  */
 package com.ecpnv.openrewrite.java;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
@@ -34,7 +37,7 @@ class RemoveAnnotationConditionallyTest extends BaseRewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(PARSER).recipe(new RemoveAnnotationConditionally(MATCH_MAPPED_BY, MATCH_GETTER,
-                RemoveAnnotationConditionally.DeclarationType.VAR, "java.util.Collection"));
+                RemoveAnnotationConditionally.DeclarationType.VAR, "java.util.Collection", null));
     }
 
     @DocumentExample
@@ -73,6 +76,77 @@ class RemoveAnnotationConditionallyTest extends BaseRewriteTest {
                                 """ + "    \n" + """
                                     @Persistent( mappedBy = "person")
                                     private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void changeWhenFinal() {
+        rewriteRun(spec -> spec.parser(PARSER).recipe(new RemoveAnnotationConditionally(MATCH_MAPPED_BY, MATCH_GETTER,
+                        RemoveAnnotationConditionally.DeclarationType.VAR, "java.util.Collection",
+                        Set.of(J.Modifier.Type.Abstract, J.Modifier.Type.Final))),
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Persistent;
+                                import lombok.Getter;
+                                import java.util.List;
+                                
+                                public class Person {
+                                    public void setSomeEntity(SomeEntity someEntity) {}
+                                }
+                                public class SomeEntity {
+                                    @Getter
+                                    private int id;
+                                    @Getter
+                                    @Persistent( mappedBy = "person")
+                                    private final List<Person> persons;
+                                }
+                                """,
+                        """
+                                import javax.jdo.annotations.Persistent;
+                                import lombok.Getter;
+                                import java.util.List;
+                                
+                                public class Person {
+                                    public void setSomeEntity(SomeEntity someEntity) {}
+                                }
+                                public class SomeEntity {
+                                    @Getter
+                                    private int id;
+                                """ + "    \n" + """
+                                    @Persistent( mappedBy = "person")
+                                    private final List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void changeClassWhenAbstract() {
+        rewriteRun(recipeSpec -> recipeSpec.parser(PARSER)
+                        .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator"),
+                //language=java
+                java(
+                        """
+                                import javax.persistence.DiscriminatorValue;
+                                @DiscriminatorValue(value = "Person")
+                                public abstract class Person {
+                                        private int id;
+                                        private String name;
+                                }
+                                """,
+                        """
+                                import javax.persistence.DiscriminatorValue;
+                                
+                                public abstract class Person {
+                                        private int id;
+                                        private String name;
                                 }
                                 """
                 )

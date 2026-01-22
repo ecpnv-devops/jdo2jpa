@@ -1,6 +1,8 @@
 package com.ecpnv.openrewrite.java;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -55,16 +57,24 @@ public class RemoveAnnotationConditionally extends Recipe {
             example = "java.util.Collection")
     String fullyQualifiedType;
 
+    @Option(displayName = "Match modifiers",
+            description = "When one of given modifiers matches the variable, method or class, then apply removal.",
+            required = false,
+            example = "abstract")
+    Set<J.Modifier.Type> modifiersToMatch;
+
     @JsonCreator
     public RemoveAnnotationConditionally(
             @Nullable @JsonProperty("matchByRegularExpression") String matchByRegularExpression,
             @NonNull @JsonProperty("matchByRegularExpressionForRemoval") String matchByRegularExpressionForRemoval,
             @NonNull @JsonProperty("declarationType") DeclarationType declarationType,
-            @Nullable @JsonProperty("fullyQualifiedType") String fullyQualifiedType) {
+            @Nullable @JsonProperty("fullyQualifiedType") String fullyQualifiedType,
+            @Nullable @JsonProperty("modifiersToMatch") Set<J.Modifier.Type> modifiersToMatch) {
         this.matchByRegularExpression = matchByRegularExpression != null ? matchByRegularExpression : matchByRegularExpressionForRemoval;
         this.matchByRegularExpressionForRemoval = matchByRegularExpressionForRemoval;
         this.declarationType = declarationType;
         this.fullyQualifiedType = fullyQualifiedType;
+        this.modifiersToMatch = modifiersToMatch != null ? modifiersToMatch : Collections.emptySet();
     }
 
     @Override
@@ -82,12 +92,13 @@ public class RemoveAnnotationConditionally extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             protected final TypeMatcher typeMatcher = new TypeMatcher(fullyQualifiedType, true);
 
+
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 J.VariableDeclarations vars = super.visitVariableDeclarations(multiVariable, ctx);
 
                 return (J.VariableDeclarations) removeAnnotationConditionally(DeclarationType.VAR, vars,
-                        vars.getType(), vars.getLeadingAnnotations(), vars::withLeadingAnnotations);
+                        vars.getType(), vars.getLeadingAnnotations(), vars::withLeadingAnnotations, vars.getModifiers());
             }
 
             @Override
@@ -95,7 +106,7 @@ public class RemoveAnnotationConditionally extends Recipe {
                 J.ClassDeclaration classD = super.visitClassDeclaration(classDecl, ctx);
 
                 return (J.ClassDeclaration) removeAnnotationConditionally(DeclarationType.CLASS, classD,
-                        classD.getType(), classD.getLeadingAnnotations(), classD::withLeadingAnnotations);
+                        classD.getType(), classD.getLeadingAnnotations(), classD::withLeadingAnnotations, classD.getModifiers());
             }
 
             @Override
@@ -103,18 +114,23 @@ public class RemoveAnnotationConditionally extends Recipe {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 return (J.MethodDeclaration) removeAnnotationConditionally(DeclarationType.METHOD, m, m.getType(),
-                        m.getLeadingAnnotations(), m::withLeadingAnnotations);
+                        m.getLeadingAnnotations(), m::withLeadingAnnotations, m.getModifiers());
             }
 
             public J removeAnnotationConditionally(
                     DeclarationType currentDeclarationType, J j, JavaType type, List<J.Annotation> annotations,
-                    Function<List<J.Annotation>, J> applyAnnotations) {
+                    Function<List<J.Annotation>, J> applyAnnotations, List<J.Modifier> modifiers) {
                 // Match type when applicable
                 if (StringUtils.isNotBlank(fullyQualifiedType) && !typeMatcher.matches(type)) {
                     return j;
                 }
                 // Match declarationType or exit
                 if (declarationType != currentDeclarationType) {
+                    return j;
+                }
+                // When given, match modifier(s) or exit
+                if (modifiers != null && !modifiersToMatch.isEmpty()
+                        && modifiers.stream().map(J.Modifier::getType).noneMatch(modifiersToMatch::contains)) {
                     return j;
                 }
                 // Does the declaration has a match annotation?
