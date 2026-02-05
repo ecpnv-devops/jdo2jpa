@@ -995,13 +995,13 @@ recipeList:
       oldAttributeName: length
       newAttributeName: precision
   # Add an explicit default for decimal fields when they do not have precision specified, but have a scale
-  #  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-  #      matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'
-  #      annotationType: javax.persistence.Column
-  #      attributeName: precision
-  #      attributeValue: 19
-  #      operation: ADD
-  #      appendArray: false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\([^{]*?(?!precision)(?=.*?scale)[^}]*?\)'
+      annotationType: javax.persistence.Column
+      attributeName: precision
+      attributeValue: 19
+      operation: ADD
+      appendArray: false
   # Add @Enumerated(STRING) to enum field when one prefers to store Enum as string in the DB
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
       matchByRegularExpression: '.*@Transient.*'
