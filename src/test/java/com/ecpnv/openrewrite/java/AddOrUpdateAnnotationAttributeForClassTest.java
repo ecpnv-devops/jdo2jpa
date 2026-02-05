@@ -126,7 +126,7 @@ class AddOrUpdateAnnotationAttributeForClassTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class SomeEntity {
-                                    @Column(precision = 19, scale = 2)
+                                    @Column(scale = 2)
                                     public BigDecimal shouldHavePrecisionOfDefaultLength;
                                     @Column(precision = 8, scale = 2)
                                     public BigDecimal shouldHavePrecisionOf8;
