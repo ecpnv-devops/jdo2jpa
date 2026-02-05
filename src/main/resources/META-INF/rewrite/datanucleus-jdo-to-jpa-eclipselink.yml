@@ -501,7 +501,8 @@ recipeList:
   # Remove @DiscriminatorValue when the class is abstract
   - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
       matchByRegularExpressionForRemoval: '@.*DiscriminatorValue.*'
-      modifiersToSkip: [ Abstract ]
+      modifiersToMatch:
+        - Abstract
       declarationType: CLASS
 ---
 type: specs.openrewrite.org/v1beta/recipe
