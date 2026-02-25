@@ -790,9 +790,6 @@ recipeList:
       oldFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jdo.CausewayModuleExtSecmanPersistenceJdo
       newFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jpa.CausewayModuleExtSecmanPersistenceJpa
   - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jdo.util.RegexReplacer
-      newFullyQualifiedTypeName: org.apache.causeway.extensions.secman.jpa.util.RegexReplacer
-  - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.causeway.persistence.jdo.datanucleus.CausewayModulePersistenceJdoDatanucleus
       newFullyQualifiedTypeName: org.apache.causeway.persistence.jpa.eclipselink.CausewayModulePersistenceJpaEclipselink
   - org.openrewrite.java.ChangeType:
@@ -816,6 +813,14 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.causeway.testing.fixtures.applib.teardown.jdo.TeardownFixtureJdoAbstract
       newFullyQualifiedTypeName: org.apache.causeway.testing.fixtures.applib.teardown.jpa.TeardownFixtureJpaAbstract
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.causeway.extensions.commandlog.jdo
+      newPackageName: org.apache.causeway.extensions.commandlog.jpa
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.causeway.extensions.secman.jdo
+      newPackageName: org.apache.causeway.extensions.secman.jpa
+      recursive: true
   # Replace Jdo modules with Jpa modules with isis naming instead of causeway
   # Note: that org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleusMixins has to be removed
   #       manually as there is no Jpa alternative
@@ -828,9 +833,6 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.IsisModuleExtSecmanPersistenceJdo
       newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.IsisModuleExtSecmanPersistenceJpa
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: org.apache.isis.extensions.secman.jdo.util.RegexReplacer
-      newFullyQualifiedTypeName: org.apache.isis.extensions.secman.jpa.util.RegexReplacer
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.isis.persistence.jdo.datanucleus.IsisModulePersistenceJdoDatanucleus
       newFullyQualifiedTypeName: org.apache.isis.persistence.jpa.eclipselink.IsisModulePersistenceJpaEclipselink
@@ -855,6 +857,14 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jdo.TeardownFixtureJdoAbstract
       newFullyQualifiedTypeName: org.apache.isis.testing.fixtures.applib.teardown.jpa.TeardownFixtureJpaAbstract
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.isis.extensions.commandlog.jdo
+      newPackageName: org.apache.isis.extensions.commandlog.jpa
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.isis.extensions.secman.jdo
+      newPackageName: org.apache.isis.extensions.secman.jpa
+      recursive: true
   # Remove all types because there are none in Causeway JPA
   - org.openrewrite.java.RemoveAnnotation:
       annotationPattern: '@org.apache.causeway.persistence.jdo.applib.types..*'
