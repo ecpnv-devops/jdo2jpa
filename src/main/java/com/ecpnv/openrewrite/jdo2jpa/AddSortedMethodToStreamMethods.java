@@ -17,6 +17,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
@@ -58,6 +59,7 @@ public class AddSortedMethodToStreamMethods extends Recipe {
             @Override
             public J.@NotNull MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 if (method.getMethodType() != null && method.getBody() != null &&
+                        !FindAnnotations.find(method, annotationType).isEmpty() &&
                         method.getMethodType().getReturnType().isAssignableFrom(STREAM) &&
                         method.getBody().getStatements().getFirst() instanceof J.Return oldReturn &&
                         oldReturn.getExpression() instanceof J.MethodInvocation oldMethodInvocation &&
@@ -66,7 +68,7 @@ public class AddSortedMethodToStreamMethods extends Recipe {
                     /*
                         Uses a template to create a new J.MethodInvocation instance that can be placed into the LST hierarchy.
                      */
-                    final String template = oldReturn.print(getCursor()) + ".sorted()";
+                    final String template = oldReturn.print(getCursor()) + ".sorted();";
                     J.Return newReturn = JavaTemplate.builder(template)
                             .build()
                             .apply(new Cursor(getCursor(), oldReturn), oldReturn.getCoordinates().replace());
