@@ -274,7 +274,9 @@ public class AddAnnotationConditionally extends Recipe {
                     // do nothing
                 }
                 var cls = TypeUtils.asClass(pt);
-                if (flag == null || (cls != null && cls.hasFlags(flag))) {
+                if (flag == null
+                        || (pt instanceof JavaType.FullyQualified && ((JavaType.FullyQualified) pt).hasFlags(flag))
+                        || (cls != null && cls.hasFlags(flag))) {
                     return true;
                 }
                 return false;
