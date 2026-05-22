@@ -91,6 +91,98 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         );
     }
 
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAddsOrphanRemovalWhenBackReferenceMandatory() {
+        rewriteRun(spec -> spec.recipe(new ReplacePersistentWithOneToManyAnnotation("CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                public class Person {
+                                    @Column(allowsNull = "false")
+                                    private SomeEntity someEntity;
+                                }
+                                @Entity
+                                public class SomeEntity {
+                                    @Persistent(mappedBy = "someEntity")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.OneToMany;
+
+                                @Entity
+                                public class Person {
+                                    @Column(allowsNull = "false")
+                                    private SomeEntity someEntity;
+                                }
+                                @Entity
+                                public class SomeEntity {
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManySkipsOrphanRemovalWhenBackReferenceOptional() {
+        rewriteRun(spec -> spec.recipe(new ReplacePersistentWithOneToManyAnnotation("CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")),
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                public class Person {
+                                    @Column(allowsNull = "true")
+                                    private SomeEntity someEntity;
+                                }
+                                @Entity
+                                public class SomeEntity {
+                                    @Persistent(mappedBy = "someEntity")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.jdo.annotations.Column;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.OneToMany;
+
+                                @Entity
+                                public class Person {
+                                    @Column(allowsNull = "true")
+                                    private SomeEntity someEntity;
+                                }
+                                @Entity
+                                public class SomeEntity {
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
 
     /**
      * Validates the transformation of the `@Persistent` annotation to the JPA-compliant `@OneToMany` annotation

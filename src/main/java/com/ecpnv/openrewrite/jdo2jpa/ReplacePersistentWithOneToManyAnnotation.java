@@ -111,15 +111,17 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                         Optional<J.Annotation> persistentAnno = getPersistentAnnotation(mv);
                         if (hasNoTargetAnnotation(mv) && persistentAnno.isPresent()) {
                             // Find mappedby argument
-                            RewriteUtils.findArgumentAssignment(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
-                                    .ifPresent(assignment -> {
+                            RewriteUtils.findArgumentValueAsString(persistentAnno.get(), Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY)
+                                    .map(ReplacePersistentWithOneToManyAnnotation::normalizeStringLiteral)
+                                    .ifPresent(mappedBy -> {
                                         // Add fqn#varname,column-name-value to accumulator
                                         RewriteUtils.getParameterType(multiVariable, 0, 0)
                                                 .map(JavaType.FullyQualified::getFullyQualifiedName)
                                                 .ifPresent(name -> acc.varPersistentWithMappedBy
-                                                        .put(name, assignment.getAssignment().toString()));
+                                                        .put(name, mappedBy));
                                     });
                         }
+                        var varKey = RewriteUtils.toFullyQualifiedNameWithVar(mv.getVariables().get(0));
                         // Find @Column#name
                         FindAnnotations.find(mv, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream()
                                 .findFirst()
@@ -129,10 +131,17 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                             .map(J.Assignment::getAssignment)
                                             .ifPresent(e -> {
                                                 // Add fqn#varname,column-name-value to accumulator
-                                                var name = RewriteUtils.toFullyQualifiedNameWithVar(mv.getVariables().get(0));
-                                                acc.varColumnWithName.put(name, e.toString());
+                                                acc.varColumnWithName.put(varKey, e.toString());
                                             });
+                                    RewriteUtils.findArgumentAsBoolean(ca, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
+                                            .filter(allowsNull -> !allowsNull)
+                                            .ifPresent(ignored -> acc.varMandatoryInverseField.put(varKey, true));
                                 });
+                        FindAnnotations.find(mv, Constants.Jpa.MANY_TO_ONE_ANNOTATION_FULL).stream()
+                                .findFirst()
+                                .ifPresent(manyToOne -> RewriteUtils.findArgumentAsBoolean(manyToOne, "optional")
+                                        .filter(optional -> !optional)
+                                        .ifPresent(ignored -> acc.varMandatoryInverseField.put(varKey, true)));
                         return mv;
                     }
                 });
@@ -240,6 +249,15 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                             }
                         });
 
+                // mappedBy points to a mandatory inverse reference, so deleting children should remove orphans.
+                if (mustEnableOrphanRemoval(multiVariable, mappedBy)) {
+                    if (mappedBy.isPresent() || added.get()) {
+                        template.append(", ");
+                    }
+                    template.append("orphanRemoval = true");
+                    added.set(true);
+                }
+
                 // Search for defaultFetchGroup
                 if (mappedBy.isPresent() || added.get()) {
                     template.append(", ");
@@ -340,6 +358,19 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             return multiVariable;
         }
 
+        private boolean mustEnableOrphanRemoval(J.VariableDeclarations multiVariable, Optional<J.Assignment> mappedBy) {
+            return hasCollection(multiVariable)
+                    && mappedBy
+                    .map(J.Assignment::getAssignment)
+                    .map(Object::toString)
+                    .map(ReplacePersistentWithOneToManyAnnotation::normalizeStringLiteral)
+                    .flatMap(mappedByField -> RewriteUtils.getParameterType(multiVariable, 0, 0)
+                            .map(JavaType.FullyQualified::getFullyQualifiedName)
+                            .map(elementType -> elementType + "#" + mappedByField))
+                    .map(key -> Boolean.TRUE.equals(acc.varMandatoryInverseField.get(key)))
+                    .orElse(false);
+        }
+
         private void addJoinColumns(
                 Optional<J.Annotation> joinAnno, StringBuilder joinTableTemplate,
                 String joinColumnsName, boolean hasPreviousArg) {
@@ -361,9 +392,20 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
         }
     }
 
+    private static String normalizeStringLiteral(String value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
+    }
+
     @Data
     protected static class Accumulator {
         Map<String, String> varColumnWithName = new java.util.HashMap<>();
         Map<String, String> varPersistentWithMappedBy = new java.util.HashMap<>();
+        Map<String, Boolean> varMandatoryInverseField = new java.util.HashMap<>();
     }
 }
