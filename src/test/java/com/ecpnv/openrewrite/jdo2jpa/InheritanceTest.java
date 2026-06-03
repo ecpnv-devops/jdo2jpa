@@ -326,7 +326,7 @@ class InheritanceTest {
         public void defaults(RecipeSpec spec) {
             spec.parser(PARSER)
                     .typeValidationOptions(TypeValidation.builder().allowMissingType(o -> true).build())
-                    .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x", "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup");
+                    .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x");
         }
 
         /**
