@@ -340,49 +340,6 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         );
     }
 
-    /**
-     * Tests the functionality of adding a `@NoArgsConstructor(force = true)` annotation
-     * to a class when using the specified rewrite recipe.
-     * <p>
-     * The test validates the transformation of a class definition by ensuring that
-     * the `@NoArgsConstructor(force = true)` annotation is added to the class.
-     * This operation is tested in the context of a class already annotated with
-     * `@Entity` and additional annotations such as `@Named`.
-     * <p>
-     * Key behaviors validated:
-     * - Ensures that previously existing annotations, such as `@Entity` and `@Named`, are preserved.
-     * - Adds the `@NoArgsConstructor` annotation with the `force = true` attribute when absent.
-     * - Validates that necessary imports (e.g., `lombok.NoArgsConstructor`) are added properly.
-     * - Confirms the final output matches the expected transformed Java code.
-     */
-    @DocumentExample
-    @Test
-    void addNoArgsConstructorForce() {
-        rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.post.causeway"),
-                //language=java
-                java(
-                        """
-                                import javax.inject.Named;
-                                import javax.persistence.Entity;
-                                
-                                @Entity
-                                @Named(PermitForIndex.LOGICAL_TYPE_NAMED)
-                                public class SomeClass {}
-                                """,
-                        """
-                                import lombok.NoArgsConstructor;
-                                
-                                import javax.inject.Named;
-                                import javax.persistence.Entity;
-                                
-                                @Entity
-                                @Named(PermitForIndex.LOGICAL_TYPE_NAMED)
-                                @NoArgsConstructor(force = true)
-                                public class SomeClass {}
-                                """
-                )
-        );
-    }
 
     /**
      * Tests the functionality of a recipe that updates Java classes to include appropriate annotations

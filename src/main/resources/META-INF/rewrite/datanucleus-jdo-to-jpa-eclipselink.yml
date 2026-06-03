@@ -181,10 +181,6 @@ recipeList:
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
       newFullyQualifiedTypeNames: 'java.util.TreeSet'
       ignoreMethods: true
-  #  - com.ecpnv.openrewrite.jdo2jpa.ChangeTypeForClass:
-  #      fullyQualifiedTypeName: org.estatio.module.codaproxy.dom._proj.ProjectionOwner
-  #      oldFullyQualifiedTypeNames: 'java.util.SortedSet'
-  #      newFullyQualifiedTypeNames: 'java.util.TreeSet'
   # Add sorted method to streams
   - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
       annotationType: org.apache.isis.applib.annotation.Programmatic
@@ -915,50 +911,6 @@ recipeList:
   #      annotationTemplate: '@Customizer(InvoiceCustomizer.class)'
   #      declarationType: CLASS
   # add no arg constructors forced
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '.*Named.*EstatioSharedKernelPartyModule.*MODULE_NAMESPACE.*Permit.*'
-      annotationType: lombok.NoArgsConstructor
-      annotationTemplate: '@NoArgsConstructor(force = true)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '.*Named.*PermitForIndex.*LOGICAL_TYPE_NAMED.*'
-      annotationType: lombok.NoArgsConstructor
-      annotationTemplate: '@NoArgsConstructor(force = true)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '.*Named.*PermitForLease.*LOGICAL_TYPE_NAMED.*'
-      annotationType: lombok.NoArgsConstructor
-      annotationTemplate: '@NoArgsConstructor(force = true)'
-      declarationType: CLASS
-  - com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup
-displayName: Cleanup
-description: Run cleanup.
-tags:
-  - cleanup
-recipeList:
-  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedTypeReferencesConditionally:
-      excludePackages: lombok,org.estatio.module.atpath.dom,org.incode.module.classification.dom.impl.category,org.estatio.module.asset.dom,org.incode.module.document.dom.impl.docs,org.apache.isis.applib.value,org.apache.causeway.applib.value
-  - com.ecpnv.openrewrite.java.ShortenFullyQualifiedAnnotation
-  - com.ecpnv.openrewrite.java.RemovedUnusedImports
-  # too soon
-  #  - org.openrewrite.java.format.AutoFormat
-  # This specific class has an inner class that extends from an abstract class defined in an interface and rewrite doesn't support this
-  - com.ecpnv.openrewrite.java.AddImport:
-      fullClassName: 'org.incode.module.communications.integtests.dom.communications.dom.demowithnotes.DemoObjectWithNotes_invoices'
-      importFullClassName: 'org.incode.module.communications.EstatioSharedKernelCommunicationsModule'
-  - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
-      matchByRegularExpression: '(@.*ManyToOne.*)|(@.*OneToMany.*)'
-      matchByRegularExpressionForRemoval: '@Transient'
-      fullyQualifiedType: org.estatio.module.party.dom.Party
-      declarationType: VAR
-  - com.ecpnv.openrewrite.java.RemoveAnnotationConditionally:
-      matchByRegularExpression: '(@.*ManyToOne.*)|(@.*OneToMany.*)'
-      matchByRegularExpressionForRemoval: '@Transient'
-      fullyQualifiedType: org.estatio.module.asset.dom.Property
-      declarationType: VAR
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.eclipselink
@@ -1014,7 +966,7 @@ recipeList:
       appendArray: false
   # Add @Enumerated(STRING) to enum field when one prefers to store Enum as string in the DB
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '.*@Transient.*'
+      matchByRegularExpression: '.*@.*(NotPersistent|Transient).*'
       skipIfMatch: true
       annotationType: javax.persistence.Enumerated
       annotationTemplate: '@Enumerated(javax.persistence.EnumType.STRING)'

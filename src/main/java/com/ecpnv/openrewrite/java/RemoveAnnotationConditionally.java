@@ -130,7 +130,7 @@ public class RemoveAnnotationConditionally extends Recipe {
                 }
                 // When given, match modifier(s) or exit
                 if (modifiers != null && !modifiersToMatch.isEmpty()
-                        && modifiers.stream().map(J.Modifier::getType).noneMatch(modifiersToMatch::contains)) {
+                        && !modifiers.stream().map(J.Modifier::getType).anyMatch(modifiersToMatch::contains)) {
                     return j;
                 }
                 // Does the declaration has a match annotation?

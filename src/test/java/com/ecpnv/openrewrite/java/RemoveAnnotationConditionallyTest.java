@@ -84,7 +84,7 @@ class RemoveAnnotationConditionallyTest extends BaseRewriteTest {
 
     @DocumentExample
     @Test
-    void changeWhenFinal() {
+    void changeWhenAbstractAndFinal() {
         rewriteRun(spec -> spec.parser(PARSER).recipe(new RemoveAnnotationConditionally(MATCH_MAPPED_BY, MATCH_GETTER,
                         RemoveAnnotationConditionally.DeclarationType.VAR, "java.util.Collection",
                         Set.of(J.Modifier.Type.Abstract, J.Modifier.Type.Final))),
@@ -98,7 +98,7 @@ class RemoveAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class Person {
                                     public void setSomeEntity(SomeEntity someEntity) {}
                                 }
-                                public class SomeEntity {
+                                public abstract class SomeEntity {
                                     @Getter
                                     private int id;
                                     @Getter
@@ -114,7 +114,7 @@ class RemoveAnnotationConditionallyTest extends BaseRewriteTest {
                                 public class Person {
                                     public void setSomeEntity(SomeEntity someEntity) {}
                                 }
-                                public class SomeEntity {
+                                public abstract class SomeEntity {
                                     @Getter
                                     private int id;
                                 """ + "    \n" + """

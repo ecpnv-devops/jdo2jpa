@@ -29,8 +29,7 @@ class DiscriminatorTest extends BaseRewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(PARSER).recipeFromResources(
-                "com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator",
-                "com.ecpnv.openrewrite.jdo2jpa.v2x.cleanup");
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.Discriminator");
     }
 
     /**
