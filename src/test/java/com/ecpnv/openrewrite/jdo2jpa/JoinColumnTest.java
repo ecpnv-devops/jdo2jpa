@@ -71,7 +71,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 
                                     @Getter 
                                     @Setter
-                                    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     @JoinColumn(nullable = false, name = "countryId")
                                     private Country country;
                                 }
@@ -118,6 +118,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 
                                 import javax.persistence.CascadeType;
                                 import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
                                 import javax.persistence.ManyToOne;
                                 
                                 import lombok.Getter;
@@ -138,7 +139,7 @@ public class JoinColumnTest extends BaseRewriteTest {
                                 
                                     @Getter
                                     @Setter
-                                    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Country country;
                                 }
                                 """
