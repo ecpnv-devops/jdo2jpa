@@ -141,8 +141,9 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                                                 .map(JavaType.FullyQualified::getFullyQualifiedName)
                                                 // Is it an entity with a mappedBy definition?
                                                 .ifPresent(name -> acc.varPersistentWithMappedBy
-                                                        // Then add fqn#varname,column-name-value to accumulator
-                                                        .put(name, assignment.getAssignment().toString()));
+                                                        // Register the mappedBy field name under the target type
+                                                        .computeIfAbsent(name, k -> new HashSet<>())
+                                                        .add(assignment.getAssignment().toString()));
                                     });
                         }
                         return mv;
@@ -192,7 +193,9 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
             if (RewriteUtils.isMethodOwnerOfVar(multiVariable)) {
                 return multiVariable;
             }
-            // Exit if an annotation with mappedBy exists
+            // Exit if an annotation with mappedBy exists. The inverse (non-owning) side of a
+            // bi-directional relationship is migrated to @OneToOne by
+            // ReplacePersistentWithOneToManyAnnotation, so it is intentionally skipped here.
             if (RewriteUtils.findArgumentAssignment(
                     FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE),
                     Constants.Jpa.ONE_TO_MANY_ARGUMENT_MAPPED_BY).isPresent()) {
@@ -207,19 +210,13 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                         .findFirst()
                         .map(J.VariableDeclarations.NamedVariable::getSimpleName)
                         .orElse(null);
-                if (Optional.ofNullable(RewriteUtils.findParentClass(getCursor()))
-                        .map(J.ClassDeclaration::getType)
-                        .map(JavaType.FullyQualified::getFullyQualifiedName)
-                        .map(fqn -> acc.varPersistentWithMappedBy.get(fqn))
-                        .map(mappedByName -> mappedByName.equals(fieldName))
-                        .orElse(false)) {
-                    // It is a bi-directional relationship using a @OneToOne relationship
+                if (isOwningSideOfBidirectionalOneToOne(fieldName)) {
+                    // It is the owning side of a bi-directional @OneToOne relationship
                     template.append(Constants.Jpa.ONE_TO_ONE_ANNOTATION_NAME).append("(");
                 } else {
                     // Using the ManyToOne
                     template.append(TARGET_TYPE_NAME).append("(");
                 }
-
 
                 List<J.Annotation> leadAnnos = new ArrayList<>(multiVariable.getLeadingAnnotations());
                 // Search for @Column
@@ -281,47 +278,44 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
 
                 // Find optional source annotation (@Persistent)
                 Optional<J.Annotation> sourceAnnotationIfAny = FindAnnotations.find(multiVariable, SOURCE_ANNOTATION_TYPE).stream().findFirst();
-                // Search for dependentElement
+                // For single-valued references JDO uses `dependent` (`dependentElement` applies to
+                // collection elements). Check `dependent` first and fall back to `dependentElement`.
                 boolean isDependent = sourceAnnotationIfAny
-                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT))
+                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT)
+                                .or(() -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)))
                         .orElse(false);
-                sourceAnnotationIfAny.ifPresent(annotation -> {
-                    // When @Persistence is found replace
-                    leadAnnos.remove(annotation);
+                // Remove the @Persistent annotation when present
+                sourceAnnotationIfAny.ifPresent(leadAnnos::remove);
 
-                    // dependentElement
-                    if (isDependent) {
-                        template
-                                .append(added.get() ? ", " : "")
-                                .append("cascade = {CascadeType.REMOVE")
-                                .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
-                                .append("}");
-                        added.set(true);
-                    }
-
-                    // Search for defaultFetchGroup
+                // A dependent single reference maps to a REMOVE cascade
+                if (isDependent) {
                     template
                             .append(added.get() ? ", " : "")
-                            .append("fetch = FetchType.");
-                    RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP)
-                            .ifPresentOrElse(isDefault -> {
-                                if (Boolean.TRUE.equals(isDefault))
-                                    template.append("EAGER");
-                                else
-                                    template.append("LAZY");
-                            }, () -> template.append("LAZY")
-                            );
+                            .append("cascade = {CascadeType.REMOVE")
+                            .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                            .append("}");
                     added.set(true);
-                });
-                if (sourceAnnotationIfAny.isEmpty() || !isDependent) {
-                    // Add the default cascade only
-                    if (!StringUtils.isBlank(defaultCascade)) {
-                        template
-                                .append(added.get() ? ", " : "")
-                                .append(" cascade = {")
-                                .append(defaultCascade)
-                                .append("}");
-                    }
+                }
+
+                // Always set the fetch type explicitly. JDO single references are lazy by default,
+                // whereas JPA @ManyToOne/@OneToOne default to EAGER; making the JDO default explicit
+                // avoids a silent lazy-to-eager change, also for fields without an @Persistent annotation.
+                template
+                        .append(added.get() ? ", " : "")
+                        .append("fetch = FetchType.");
+                sourceAnnotationIfAny
+                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
+                        .ifPresentOrElse(isDefault -> template.append(Boolean.TRUE.equals(isDefault) ? "EAGER" : "LAZY"),
+                                () -> template.append("LAZY"));
+                added.set(true);
+
+                // Add the default cascade for non-dependent references
+                if (!isDependent && !StringUtils.isBlank(defaultCascade)) {
+                    template
+                            .append(added.get() ? ", " : "")
+                            .append("cascade = {")
+                            .append(defaultCascade)
+                            .append("}");
                 }
 
                 template.append(")");
@@ -357,11 +351,29 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
             }
             return multiVariable;
         }
+
+        /**
+         * Determines whether the field with the given name is the owning side of a bi-directional
+         * one-to-one relationship, i.e. the inverse side (in another entity) declares a
+         * {@code mappedBy} that points back to this field. The lookup uses the set of mappedBy names
+         * collected per target type so that multiple relationships to the same type are all matched.
+         */
+        private boolean isOwningSideOfBidirectionalOneToOne(String fieldName) {
+            return Optional.ofNullable(RewriteUtils.findParentClass(getCursor()))
+                    .map(J.ClassDeclaration::getType)
+                    .map(JavaType.FullyQualified::getFullyQualifiedName)
+                    .map(fqn -> acc.varPersistentWithMappedBy.get(fqn))
+                    .map(mappedByNames -> mappedByNames.contains(fieldName))
+                    .orElse(false);
+        }
     }
 
     @Data
     protected static class Accumulator {
         Set<String> entityClasses = new HashSet<>();
-        Map<String, String> varPersistentWithMappedBy = new java.util.HashMap<>();
+        // Maps a target entity type to the set of mappedBy field names that reference it from the
+        // inverse side. A set (not a single value) is required so that multiple bi-directional
+        // relationships to the same target type do not overwrite each other.
+        Map<String, Set<String>> varPersistentWithMappedBy = new java.util.HashMap<>();
     }
 }
