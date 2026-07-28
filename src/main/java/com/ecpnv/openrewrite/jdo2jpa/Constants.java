@@ -39,7 +39,6 @@ public final class Constants {
         public static final String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
         public static final String PERSISTENT_ANNOTATION_NAME = "Persistent";
         public static final String PERSISTENT_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENT_ANNOTATION_NAME;
-        public static final String PERSISTENT_ARGUMENT_DEPENDENT = "dependent";
         public static final String PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT = "dependentElement";
         public static final String PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP = "defaultFetchGroup";
         public static final String PERSISTENT_ARGUMENT_TABLE = "table";
