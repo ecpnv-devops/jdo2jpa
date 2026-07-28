@@ -176,6 +176,48 @@ class CopyAnnotationAttributeFromSubclassToParentClassTest {
                     )
             );
         }
+
+        /**
+         * When several subclasses declare <i>different</i> values for the attribute there is no single value
+         * that can be copied safely (JPA supports only one strategy per hierarchy). The recipe must not guess:
+         * it leaves the code unchanged apart from a {@link org.openrewrite.marker.SearchResult} marker that
+         * flags the base class for manual resolution.
+         */
+        @Test
+        void conflictingSubclassesAreFlaggedAndNotChanged() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import java.util.List;
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    @Inheritance(strategy = InheritanceStrategy.SUBCLASS_TABLE)
+                                    public class Employee extends Person {}
+                                    """,
+                            """
+                                    import java.util.List;
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    /*~~(Conflicting values for attribute 'strategy' on subclasses [InheritanceStrategy.SUBCLASS_TABLE, InheritanceStrategy.SUPERCLASS_TABLE]; JPA supports only one strategy per inheritance hierarchy - resolve manually.)~~>*/@Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    @Inheritance(strategy = InheritanceStrategy.SUBCLASS_TABLE)
+                                    public class Employee extends Person {}
+                                    """
+                    )
+            );
+        }
     }
 
     @Nested
@@ -320,6 +362,298 @@ class CopyAnnotationAttributeFromSubclassToParentClassTest {
                                     }
                                     @Inheritance(strategy = InheritanceStrategy.SUBCLASS_TABLE)
                                     public class Director extends Manager {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Other leading annotations on the parent (and their order) must be preserved when the attribute is
+         * copied. Regression test for the previous implementation, which moved the changed annotation to the
+         * end of the annotation list.
+         */
+        @Test
+        void preservesOtherLeadingAnnotationsAndTheirOrder() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+                                    import javax.jdo.annotations.PersistenceCapable;
+
+                                    @PersistenceCapable
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+                                    import javax.jdo.annotations.PersistenceCapable;
+
+                                    @PersistenceCapable
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * When the parent annotation already has other attributes, the copied attribute must be replaced in
+         * place, keeping the position and whitespace of the surrounding attributes.
+         */
+        @Test
+        void replacesAttributeInPlaceKeepingOtherAttributes() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE, customStrategy = "foo")
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE, customStrategy = "foo")
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * When the parent annotation has attributes but not the one being copied, it must be appended with
+         * correct separator whitespace (comma + single space).
+         */
+        @Test
+        void appendsAttributeWhenParentHasOtherAttribute() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(customStrategy = "foo")
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(customStrategy = "foo", strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * A parent annotation with an empty argument list {@code @Inheritance()} must receive the copied
+         * attribute as its sole argument, without a stray leading comma.
+         */
+        @Test
+        void populatesEmptyArgumentList() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance()
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * Parent and subclass in separate source files (the realistic case): the value must be copied without
+         * reusing the subclass' LST node (which would duplicate its id within a single tree).
+         */
+        @Test
+        void copiesAcrossSeparateSourceFiles() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    """
+                    ),
+                    //language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+    }
+
+    @Nested
+    class RegexFilter extends BaseRewriteTest {
+
+        @Override
+        public void defaults(RecipeSpec spec) {
+            spec.parser(PARSER);
+        }
+
+        /**
+         * When the regular expression matches the (printed) parent annotation, the attribute is copied.
+         */
+        @Test
+        void copiesWhenRegexMatchesParentAnnotation() {
+            rewriteRun(
+                    spec -> spec.recipe(new CopyAnnotationAttributeFromSubclassToParentClass(
+                            Constants.Jdo.INHERITANCE_ANNOTATION_FULL, Constants.Jdo.INHERITANCE_ARGUMENT_STRATEGY,
+                            "NEW_TABLE", false)),
+                    //language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """,
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+
+        /**
+         * When the regular expression does not match the parent annotation, nothing is copied.
+         */
+        @Test
+        void doesNotCopyWhenRegexDoesNotMatchParentAnnotation() {
+            rewriteRun(
+                    spec -> spec.recipe(new CopyAnnotationAttributeFromSubclassToParentClass(
+                            Constants.Jdo.INHERITANCE_ANNOTATION_FULL, Constants.Jdo.INHERITANCE_ARGUMENT_STRATEGY,
+                            "customStrategy", false)),
+                    //language=java
+                    java(
+                            """
+                                    import javax.jdo.annotations.Inheritance;
+                                    import javax.jdo.annotations.InheritanceStrategy;
+
+                                    @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
+                                    public class Person {
+                                            private int id;
+                                    }
+                                    @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
+                                    public class Manager extends Person {}
+                                    """
+                    )
+            );
+        }
+    }
+
+    @Nested
+    class Limitations extends BaseRewriteTest {
+
+        @Override
+        public void defaults(RecipeSpec spec) {
+            spec.parser(PARSER)
+                    .recipe(new CopyAnnotationAttributeFromSubclassToParentClass("Marker", "value", null, false));
+        }
+
+        /**
+         * The single-element {@code value} shorthand is not expressed as an assignment, so it is not copied.
+         * This documents (and pins) the known limitation as a safe no-op rather than a silent surprise.
+         */
+        @Test
+        void valueShorthandIsNotCopied() {
+            rewriteRun(//language=java
+                    java(
+                            """
+                                    import java.lang.annotation.Retention;
+                                    import java.lang.annotation.RetentionPolicy;
+
+                                    @Retention(RetentionPolicy.RUNTIME)
+                                    @interface Marker {
+                                            String value() default "";
+                                    }
+
+                                    @Marker
+                                    class Base {
+                                    }
+
+                                    @Marker("child")
+                                    class Child extends Base {
+                                    }
                                     """
                     )
             );
