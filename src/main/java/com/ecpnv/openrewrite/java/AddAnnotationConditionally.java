@@ -193,6 +193,11 @@ public class AddAnnotationConditionally extends Recipe {
                 if (!isKindAllowed(() -> classD.getKind().name())) {
                     return classD;
                 }
+                // Match on parent type (honour the option for class declarations as well, restricting to classes
+                // whose own type is assignable to the given parentType)
+                if (!hasParentType()) {
+                    return classD;
+                }
 
                 Pattern pattern = Pattern.compile(annotationType);
                 if (!classD.getLeadingAnnotations().isEmpty() && classD.getLeadingAnnotations().stream()

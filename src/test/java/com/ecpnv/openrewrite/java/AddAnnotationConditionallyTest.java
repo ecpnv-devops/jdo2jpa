@@ -405,6 +405,45 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
         );
     }
 
+    /**
+     * The {@code parentType} option must also be honoured for {@code declarationType = CLASS}: only classes whose
+     * own type is assignable to {@code parentType} are processed. Before the fix the option was silently ignored
+     * for class declarations, so every class received the annotation.
+     */
+    @DocumentExample
+    @Test
+    void addToClassOnlyWhenParentTypeMatches() {
+        rewriteRun(r -> r.recipe(new AddAnnotationConditionally(
+                        null, null, "javax.persistence.Entity", "@Entity",
+                        AddAnnotationConditionally.DeclarationType.CLASS,
+                        null, null, null, null, "SomeBase")),
+                //language=java
+                java(
+                        """
+                                public class SomeBase {
+                                }
+                                public class Sub extends SomeBase {
+                                }
+                                public class Unrelated {
+                                }
+                                """,
+                        """
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                public class SomeBase {
+                                }
+
+                                @Entity
+                                public class Sub extends SomeBase {
+                                }
+                                public class Unrelated {
+                                }
+                                """
+                )
+        );
+    }
+
     @Nested
     class testWithKind {
 
