@@ -972,8 +972,13 @@ recipeList:
       annotationTemplate: '@Enumerated(javax.persistence.EnumType.STRING)'
       declarationType: VAR
       kindOfClassToProcess: Enum
-#  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
-#      annotationType: javax.persistence.Enumerated
-#      attributeValue: 'javax.persistence.EnumType.STRING'
-#      operation: ADD
-#      appendArray: false
+  #  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+  #      annotationType: javax.persistence.Enumerated
+  #      attributeValue: 'javax.persistence.EnumType.STRING'
+  #      operation: ADD
+  #      appendArray: false
+  # Change the default of LAZY in JDO to EAGER in JPA for @ManyToOne annotations
+  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
+      matchByRegularExpression: '@ManyToOne\((.|\s|\n)*fetch\s*=\s*FetchType.LAZY(.|\s|\n)*\)'
+      annotationType: javax.persistence.ManyToOne
+      attributeName: fetch
