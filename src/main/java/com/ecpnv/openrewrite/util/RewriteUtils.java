@@ -297,11 +297,11 @@ public class RewriteUtils {
         List<J.Annotation> annotations = Stream.concat(
                 // Find all root annotations on class
                 leadingAnnotations.stream()
-                        .filter(annotation -> annotation.getType().isAssignableFrom(pattern)
+                        .filter(annotation -> (annotation.getType() != null && annotation.getType().isAssignableFrom(pattern))
                                 || at.equals(annotation.getAnnotationType().toString())),
                 // Should we search for sub-annotations?
                 subAnnotations ? leadingAnnotations.stream()
-                        .filter(a -> !a.getType().isAssignableFrom(pattern))
+                        .filter(a -> a.getType() == null || !a.getType().isAssignableFrom(pattern))
                         .filter(a -> a.getArguments() != null && !a.getArguments().isEmpty())
                         .flatMap(a -> a.getArguments().stream())
                         .filter(a -> a instanceof J.Annotation)

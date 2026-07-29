@@ -100,6 +100,16 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
         return new Accumulator();
     }
 
+    /**
+     * Returns the fully qualified name of the given annotation's type, or {@code null} when the type
+     * cannot be resolved. This guards against {@link NullPointerException}s when recipes run against
+     * third-party source where not every annotation type is present on the parse classpath.
+     */
+    private static String annotationFqn(J.Annotation annotation) {
+        JavaType.FullyQualified fq = TypeUtils.asFullyQualified(annotation.getType());
+        return fq == null ? null : fq.getFullyQualifiedName();
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<ExecutionContext>() {
@@ -115,7 +125,7 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                             if (annoFq != null && annotationTypes.stream().anyMatch(fqn -> fqn.equals(annoFq.getFullyQualifiedName()))
                                     && (acc.childAnnotationsByParentType.get(classFqn) == null ||
                                     acc.childAnnotationsByParentType.get(classFqn).stream()
-                                            .noneMatch(a -> TypeUtils.asFullyQualified(a.getType()).equals(annoFq)))) {
+                                            .noneMatch(a -> annoFq.getFullyQualifiedName().equals(annotationFqn(a))))) {
                                 acc.getChildAnnotationsByParentType().computeIfAbsent(classFqn, v -> new ArrayList<>()).add(annotation);
                             }
                         }
@@ -160,9 +170,12 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                     && childAnnotationsByParentType.containsKey(currentFq.getSupertype().getFullyQualifiedName())) {
                 final var clsdecl = cd;
                 cd = cd.withLeadingAnnotations(clsdecl.getLeadingAnnotations().stream()
-                        .filter(la -> childAnnotationsByParentType.get(currentFq.getSupertype().getFullyQualifiedName()).stream()
-                                .noneMatch(ca -> TypeUtils.asFullyQualified(la.getType()).getFullyQualifiedName()
-                                        .equals(TypeUtils.asFullyQualified(ca.getType()).getFullyQualifiedName())))
+                        .filter(la -> {
+                            String laFqn = annotationFqn(la);
+                            // Keep annotations whose type cannot be resolved; they are unrelated to the copied set.
+                            return laFqn == null || childAnnotationsByParentType.get(currentFq.getSupertype().getFullyQualifiedName()).stream()
+                                    .noneMatch(ca -> laFqn.equals(annotationFqn(ca)));
+                        })
                         .toList());
             }
 
@@ -176,9 +189,11 @@ public class CopyAnnotationToSuper extends ScanningRecipe<CopyAnnotationToSuper.
                 annotationsToAdd.addAll(
                         childAnnotationsByParentType.get(currentFq.getFullyQualifiedName()).stream()
                                 // Verify it is not already available on this class (the parent)
-                                .filter(annotation -> clsdecl.getLeadingAnnotations().stream()
-                                        .noneMatch(la -> TypeUtils.asFullyQualified(la.getType()).getFullyQualifiedName()
-                                                .equals(TypeUtils.asFullyQualified(annotation.getType()).getFullyQualifiedName())))
+                                .filter(annotation -> {
+                                    String annFqn = annotationFqn(annotation);
+                                    return annFqn == null || clsdecl.getLeadingAnnotations().stream()
+                                            .noneMatch(la -> annFqn.equals(annotationFqn(la)));
+                                })
                                 .toList());
             }
 

@@ -128,7 +128,8 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                                         // Also process annotations in annotations
                                         if (a.getArguments() != null && !a.getArguments().isEmpty()
                                                 && a.getArguments().get(0) instanceof J.NewArray newArray
-                                                && !newArray.getInitializer().isEmpty() && TypeUtils.isOfClassType(
+                                                && newArray.getInitializer() != null && !newArray.getInitializer().isEmpty()
+                                                && TypeUtils.isOfClassType(
                                                 newArray.getInitializer().get(0).getType(), annotationType)) {
                                             return a.withArguments(
                                                     newArray.getInitializer().stream()
@@ -222,22 +223,23 @@ public class UpdateAnnotationAttributeFromFieldAnnotationAttribute extends Recip
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
                         J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, executionContext);
-                        // Has field annotation with attribute?
+                        // Has field annotation with attribute? Map every declared variable, not just the first,
+                        // so that e.g. `@Column(name = "x") String a, b;` registers both a and b.
                         FindAnnotations.find(mv, fieldAnnotationType, false)
                                 .stream()
                                 .map(a -> RewriteUtils.findArgumentValue(a, fieldAttributeName).orElse(null))
                                 .filter(Objects::nonNull)
                                 .findFirst()
                                 // Then add the field name and column name to the map
-                                .ifPresent(columnNameOrRef -> fieldColumnNames.put(mv.getVariables().get(0).getSimpleName(), columnNameOrRef));
-                        // Is constant?
-                        mv.getVariables();
-                        if (!mv.getVariables().isEmpty() && mv.getVariables().get(0).getInitializer() != null) {
-                            J.ClassDeclaration cls = RewriteUtils.findParentClass(getCursor());
-                            if (cls != null) {
-                                var name = cls.getName() + "." + mv.getVariables().get(0).getSimpleName();
-                                constants.put(name, mv.getVariables().get(0).getInitializer().toString());
-                            }
+                                .ifPresent(columnNameOrRef -> mv.getVariables()
+                                        .forEach(v -> fieldColumnNames.put(v.getSimpleName(), columnNameOrRef)));
+                        // Is constant? Register every initialized variable as a resolvable constant.
+                        J.ClassDeclaration cls = RewriteUtils.findParentClass(getCursor());
+                        if (cls != null) {
+                            mv.getVariables().stream()
+                                    .filter(v -> v.getInitializer() != null)
+                                    .forEach(v -> constants.put(cls.getName() + "." + v.getSimpleName(),
+                                            v.getInitializer().toString()));
                         }
                         return mv;
                     }

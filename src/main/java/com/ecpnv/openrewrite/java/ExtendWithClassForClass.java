@@ -74,7 +74,7 @@ public class ExtendWithClassForClass extends Recipe {
                     ExecutionContext ctx) {
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getExtends() == null) {
-                    if (fullClassName.equals(cd.getType().getFullyQualifiedName())) {
+                    if (cd.getType() != null && fullClassName.equals(cd.getType().getFullyQualifiedName())) {
                         final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
 
                         maybeAddImport(extendsFullClassName, null, false);

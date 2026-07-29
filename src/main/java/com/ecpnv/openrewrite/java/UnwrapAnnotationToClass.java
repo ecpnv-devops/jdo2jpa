@@ -17,7 +17,9 @@ package com.ecpnv.openrewrite.java;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +39,10 @@ import org.openrewrite.marker.SearchResult;
 
 import lombok.EqualsAndHashCode;
 
+/**
+ * A recipe that moves a specified annotation from a parent annotation to the class declaration.
+ * Optionally, the parent annotation can be deleted after the unwrapping operation.
+ */
 @EqualsAndHashCode(callSuper = false)
 public class UnwrapAnnotationToClass extends Recipe {
 
@@ -88,7 +94,7 @@ public class UnwrapAnnotationToClass extends Recipe {
                             toUnwrap.remove(parentAnnotation);
                             if (!toUnwrap.isEmpty()) {
                                 unwrappedAnnotations.addAll(toUnwrap);
-                                if (removeParentAnnotation) {
+                                if (Boolean.TRUE.equals(removeParentAnnotation)) {
                                     maybeRemoveImport(TypeUtils.asFullyQualified(parentAnnotation.getType()));
                                     return true;
                                 }
@@ -97,23 +103,43 @@ public class UnwrapAnnotationToClass extends Recipe {
                         })
                         .toList();
                 if (!unwrappedAnnotations.isEmpty()) {
-                    // Remove parent annotations
-                    List<J.Annotation> otherAnnotations = cd.getLeadingAnnotations();
-                    otherAnnotations.removeAll(annotationsToRemove);
-                    // Add unwrapped annotations
-                    unwrappedAnnotations.sort(Comparator.comparing(J.Annotation::toString));
-                    unwrappedAnnotations.stream()
+                    // Remove parent annotations. Copy the list first: getLeadingAnnotations() may return the
+                    // backing list of the (immutable) LST node, and mutating it in place corrupts the original.
+                    List<J.Annotation> otherAnnotations = new ArrayList<>(cd.getLeadingAnnotations());
+                    boolean removedParent = otherAnnotations.removeAll(annotationsToRemove);
+                    // Track annotations already present on the class so that repeated runs (or a retained parent
+                    // wrapper when removeParentAnnotation is false) don't add duplicates.
+                    Set<String> existingSignatures = new HashSet<>();
+                    otherAnnotations.forEach(a -> existingSignatures.add(signature(a)));
+                    // Add unwrapped annotations that are not already present on the class
+                    List<J.Annotation> annotationsToAdd = unwrappedAnnotations.stream()
+                            .sorted(Comparator.comparing(J.Annotation::toString))
                             .map(annotation -> annotation.withMarkers(annotation.getMarkers().removeByType(SearchResult.class)))
                             .map(annotation -> annotation.withPrefix(annotation.getPrefix().withWhitespace(
                                     annotation.getPrefix().getWhitespace().stripIndent())))
-                            .forEach(otherAnnotations::add);
-                    // Replace annotations
-                    cd = cd.withLeadingAnnotations(List.of()); // Force the creation of a new classdeclaration, should NOT be needed :-(
-                    cd = cd.withLeadingAnnotations(otherAnnotations);
+                            .filter(annotation -> existingSignatures.add(signature(annotation)))
+                            .toList();
+                    // Only rebuild the class declaration when something actually changed, so that the recipe is
+                    // idempotent across cycles.
+                    if (removedParent || !annotationsToAdd.isEmpty()) {
+                        otherAnnotations.addAll(annotationsToAdd);
+                        cd = cd.withLeadingAnnotations(List.of()); // Force the creation of a new classdeclaration, should NOT be needed :-(
+                        cd = cd.withLeadingAnnotations(otherAnnotations);
+                    }
                 }
                 return cd;
             }
 
         });
+    }
+
+    /**
+     * A stable textual signature of an annotation, ignoring the transient {@link SearchResult} marker and any
+     * surrounding whitespace, used to detect annotations that are already present on the class.
+     */
+    private static String signature(J.Annotation annotation) {
+        return annotation.withMarkers(annotation.getMarkers().removeByType(SearchResult.class))
+                .toString()
+                .trim();
     }
 }

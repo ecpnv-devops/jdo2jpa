@@ -222,7 +222,14 @@ public class ShortenFullyQualifiedTypeReferencesConditionally extends Recipe {
             private boolean isExcluded(final String fullyQualifiedName) {
                 final String[] split = excludePackages.split(",");
                 final List<String> excludedPackages = Arrays.asList(ArrayUtils.add(split, "java.lang"));
-                return excludedPackages.stream().anyMatch(fullyQualifiedName::startsWith);
+                return excludedPackages.stream()
+                        .map(String::trim)
+                        // Skip blank tokens (e.g. from an empty option or a double/leading comma); otherwise the
+                        // empty string would prefix-match every type and turn the recipe into a silent no-op.
+                        .filter(p -> !p.isEmpty())
+                        // Match on package boundary so that excluding "com.acme.pay" does not also exclude
+                        // "com.acme.payments.X". An exact class name is matched via equals.
+                        .anyMatch(p -> fullyQualifiedName.equals(p) || fullyQualifiedName.startsWith(p + "."));
             }
         };
     }
