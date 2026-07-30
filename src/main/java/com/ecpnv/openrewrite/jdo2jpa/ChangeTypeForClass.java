@@ -104,9 +104,14 @@ public class ChangeTypeForClass extends Recipe {
                 J.ClassDeclaration newClassDecl = super.visitClassDeclaration(classDecl, executionContext);
                 for (Pair pair : typesList) {
                     maybeAddImport(pair.newType());
-                    newClassDecl = (J.ClassDeclaration) new ChangeType(pair.oldType(), pair.newType(), ignoreDefinition)
+                    // Apply each replacement to the result of the previous one; visiting the original classDecl
+                    // every iteration would discard all but the last pair's changes.
+                    J.ClassDeclaration changed = (J.ClassDeclaration) new ChangeType(pair.oldType(), pair.newType(), ignoreDefinition)
                             .getVisitor()
-                            .visit(classDecl, executionContext, getCursor().getParentOrThrow());
+                            .visit(newClassDecl, executionContext, getCursor().getParentOrThrow());
+                    if (changed != null) {
+                        newClassDecl = changed;
+                    }
                 }
                 doAfterVisit(new RemoveUnusedImports().getVisitor());
                 return newClassDecl;

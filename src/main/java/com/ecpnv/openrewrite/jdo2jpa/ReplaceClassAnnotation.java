@@ -13,7 +13,6 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.search.FindMissingTypes;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -75,19 +74,6 @@ public class ReplaceClassAnnotation extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
-
-            /**
-             * This adds a printout of which types are missing in the LST.
-             *
-             * Don't use in production
-             */
-            @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
-                if (false) {
-                    doAfterVisit(new FindMissingTypes().getVisitor());
-                }
-                return super.visitVariableDeclarations(multiVariable, executionContext);
-            }
 
             @Override
             public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {

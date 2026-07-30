@@ -57,12 +57,13 @@ public class AddAnnotationToChildrenConditionally extends Recipe {
 
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
-        return "Add Entity Scan Annotation Conditionally";
+        return "Add annotation to children of a class";
     }
 
     @Override
     public @NlsRewrite.Description String getDescription() {
-        return "Add Entity Scan Annotation when class is annotated with @ComponentScan.";
+        return "Add the given annotation to every class that extends or implements the given parent class, " +
+                "when it does not already have that annotation.";
     }
 
     @Override
@@ -95,15 +96,41 @@ public class AddAnnotationToChildrenConditionally extends Recipe {
                 return "@" + annotationPattern;
             }
 
+            /**
+             * Returns true when {@code type} is a (direct or transitive) subtype of {@code fullClassName} via
+             * its super class chain or implemented interfaces. The type itself is intentionally NOT matched:
+             * the recipe adds the annotation to <em>children</em>, so the parent class/interface must be left
+             * untouched.
+             */
             private boolean checkIsExtended(@Nullable JavaType.FullyQualified type, String fullClassName) {
+                if (type == null) {
+                    return false;
+                }
+                if (matchesTypeOrParents(type.getSupertype(), fullClassName)) {
+                    return true;
+                }
+                for (JavaType.FullyQualified anInterface : type.getInterfaces()) {
+                    if (matchesTypeOrParents(anInterface, fullClassName)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            private boolean matchesTypeOrParents(@Nullable JavaType.FullyQualified type, String fullClassName) {
                 if (type == null) {
                     return false;
                 }
                 if (fullClassName.equals(type.getFullyQualifiedName())) {
                     return true;
                 }
-                if (type.getSupertype() != null) {
-                    return checkIsExtended(type.getSupertype(), fullClassName);
+                if (matchesTypeOrParents(type.getSupertype(), fullClassName)) {
+                    return true;
+                }
+                for (JavaType.FullyQualified anInterface : type.getInterfaces()) {
+                    if (matchesTypeOrParents(anInterface, fullClassName)) {
+                        return true;
+                    }
                 }
                 return false;
             }
