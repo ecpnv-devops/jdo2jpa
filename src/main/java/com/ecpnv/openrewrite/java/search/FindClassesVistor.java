@@ -20,7 +20,7 @@ public class FindClassesVistor extends JavaIsoVisitor<ExecutionContext> {
 
     @Override
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
-        if (cd.getType().isAssignableFrom(fullyQualifiedType)) {
+        if (cd.getType() != null && cd.getType().isAssignableFrom(fullyQualifiedType)) {
             return SearchResult.found(cd);
         }
         return super.visitClassDeclaration(cd, ctx);

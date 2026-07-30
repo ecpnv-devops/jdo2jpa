@@ -68,8 +68,9 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, executionContext);
-                if (CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)) ||
-                        CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jpa.ENTITY_ANNOTATION_FULL))) {
+                if (cd.getType() != null &&
+                        (CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jdo.PERSISTENCE_CAPABLE_ANNOTATION_FULL)) ||
+                                CollectionUtils.isNotEmpty(FindAnnotations.find(cd, Constants.Jpa.ENTITY_ANNOTATION_FULL)))) {
                     packageNames.add(cd.getType().getPackageName());
                 }
                 return cd;
@@ -102,7 +103,9 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                                     .imports(ENTITY_SCAN_FULL_CLASS)
                                     .build()
                                     .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-                        } else if (entityScanAnnotation != null && entityScanAnnotation.getArguments().getFirst() instanceof J.NewArray newArray &&
+                        } else if (entityScanAnnotation != null
+                                && CollectionUtils.isNotEmpty(entityScanAnnotation.getArguments())
+                                && entityScanAnnotation.getArguments().getFirst() instanceof J.NewArray newArray &&
                                 newArray.getInitializer().stream()
                                         .filter(J.Literal.class::isInstance)
                                         .map(J.Literal.class::cast)

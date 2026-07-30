@@ -19,6 +19,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 
@@ -63,8 +64,7 @@ public class AddSortedMethodToStreamMethods extends Recipe {
                         method.getMethodType().getReturnType().isAssignableFrom(STREAM) &&
                         method.getBody().getStatements().getFirst() instanceof J.Return oldReturn &&
                         oldReturn.getExpression() instanceof J.MethodInvocation oldMethodInvocation &&
-                        !(oldMethodInvocation.getName().getSimpleName().equals("sorted") ||
-                                oldMethodInvocation.print(getCursor()).contains("sorted"))) {
+                        !isAlreadySorted(oldMethodInvocation)) {
                     /*
                         Uses a template to create a new J.MethodInvocation instance that can be placed into the LST hierarchy.
                      */
@@ -82,6 +82,22 @@ public class AddSortedMethodToStreamMethods extends Recipe {
                     return autoFormat(method.withBody(method.getBody().withStatements(List.of(newReturn))), ctx);
                 }
                 return super.visitMethodDeclaration(method, ctx);
+            }
+
+            /**
+             * Walks the invocation chain and returns true only when one of the actual invoked methods is
+             * {@code sorted()}. This avoids the false negative of a plain {@code print().contains("sorted")}
+             * check, which would also match a receiver whose name or type merely contains "sorted"
+             * (e.g. {@code return sortedBacking.stream();}) and then skip adding {@code .sorted()}.
+             */
+            private boolean isAlreadySorted(Expression expression) {
+                while (expression instanceof J.MethodInvocation invocation) {
+                    if ("sorted".equals(invocation.getName().getSimpleName())) {
+                        return true;
+                    }
+                    expression = invocation.getSelect();
+                }
+                return false;
             }
         });
     }

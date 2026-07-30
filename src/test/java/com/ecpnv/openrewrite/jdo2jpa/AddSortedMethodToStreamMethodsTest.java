@@ -134,4 +134,72 @@ class AddSortedMethodToStreamMethodsTest extends BaseRewriteTest {
                                 """)
         );
     }
+
+    /**
+     * Regression: a receiver whose name merely contains the substring "sorted" must not be mistaken for an
+     * already-sorted stream. The previous {@code print().contains("sorted")} guard skipped these, silently
+     * losing the ordering. The chain must be inspected for an actual {@code sorted()} invocation instead.
+     */
+    @Test
+    void receiverNameContainingSortedStillGetsSorted() {
+        rewriteRun(spec -> spec.parser(PARSER).recipes(new AddSortedMethodToStreamMethods("com.ecpnv.openrewrite.Programmatic")),
+                java("""
+                            package com.ecpnv.openrewrite;
+
+                            import java.lang.annotation.ElementType;
+                            import java.lang.annotation.Inherited;
+                            import java.lang.annotation.Retention;
+                            import java.lang.annotation.RetentionPolicy;
+                            import java.lang.annotation.Target;
+
+                            @Inherited
+                            @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
+                            @Retention(RetentionPolicy.RUNTIME)
+                            public @interface Programmatic {}
+                        """, SourceSpec::skip),
+                //language=java
+                java(
+                        """
+                                package a;
+
+                                import java.util.Set;
+                                import java.util.HashSet;
+                                import java.util.ArrayList;
+                                import java.util.stream.Stream;
+
+                                import com.ecpnv.openrewrite.Programmatic;
+
+                                public class SomeClass {
+
+                                    private final Set<String> sortedBacking = new HashSet<>();
+
+                                    @Programmatic
+                                    public Stream<String> streamSorted() {
+                                        return new ArrayList<>(sortedBacking).stream();
+                                    }
+                                }
+                                """,
+                        """
+                                package a;
+
+                                import java.util.Set;
+                                import java.util.HashSet;
+                                import java.util.ArrayList;
+                                import java.util.stream.Stream;
+
+                                import com.ecpnv.openrewrite.Programmatic;
+
+                                public class SomeClass {
+
+                                    private final Set<String> sortedBacking = new HashSet<>();
+
+                                    @Programmatic
+                                    public Stream<String> streamSorted() {
+                                        return new ArrayList<>(sortedBacking).stream().sorted();
+                                    }
+                                }
+                                """
+                )
+        );
+    }
 }

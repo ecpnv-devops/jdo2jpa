@@ -103,10 +103,14 @@ public class ReplacePersistenceCapableWithTableAnnotation extends Recipe {
             private static boolean addSchema(J.Assignment assignment, StringBuilder template) {
                 if (assignment.getAssignment() instanceof J.FieldAccess fieldAccess) {
                     template.append("(schema = " + fieldAccess);
+                    return true;
                 } else if (assignment.getAssignment() instanceof J.Literal literal) {
                     template.append("(schema = \"" + literal + "\"");
+                    return true;
                 }
-                return true;
+                // Not a constant expression we can render safely; report that nothing was appended so we don't
+                // emit an unbalanced "@Table)" / "@Table," template.
+                return false;
             }
 
             private static void addTable(J.Assignment assignment, boolean addedSchema, StringBuilder template) {
