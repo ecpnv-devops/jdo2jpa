@@ -210,7 +210,8 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                         .findFirst()
                         .map(J.VariableDeclarations.NamedVariable::getSimpleName)
                         .orElse(null);
-                if (isOwningSideOfBidirectionalOneToOne(fieldName)) {
+                final boolean owningSideOfBidirectionalOneToOne = isOwningSideOfBidirectionalOneToOne(fieldName);
+                if (owningSideOfBidirectionalOneToOne) {
                     // It is the owning side of a bi-directional @OneToOne relationship
                     template.append(Constants.Jpa.ONE_TO_ONE_ANNOTATION_NAME).append("(");
                 } else {
@@ -297,17 +298,21 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                     added.set(true);
                 }
 
-                // Always set the fetch type explicitly. JDO single references are lazy by default,
-                // whereas JPA @ManyToOne/@OneToOne default to EAGER; making the JDO default explicit
-                // avoids a silent lazy-to-eager change, also for fields without an @Persistent annotation.
-                template
-                        .append(added.get() ? ", " : "")
-                        .append("fetch = FetchType.");
-                sourceAnnotationIfAny
-                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
-                        .ifPresentOrElse(isDefault -> template.append(Boolean.TRUE.equals(isDefault) ? "EAGER" : "LAZY"),
-                                () -> template.append("LAZY"));
-                added.set(true);
+                // JDO single references are lazy by default, whereas JPA references default to EAGER.
+                // Preserve the JDO fetch strategy except for an inferred owning @OneToOne whose source
+                // field has no @Persistent metadata. EclipseLink's lazy handling of that inferred mapping
+                // can leave the owning foreign key uncleared when a referenced entity is removed.
+                final boolean addFetchType = !owningSideOfBidirectionalOneToOne || sourceAnnotationIfAny.isPresent();
+                if (addFetchType) {
+                    template
+                            .append(added.get() ? ", " : "")
+                            .append("fetch = FetchType.");
+                    sourceAnnotationIfAny
+                            .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
+                            .ifPresentOrElse(isDefault -> template.append(Boolean.TRUE.equals(isDefault) ? "EAGER" : "LAZY"),
+                                    () -> template.append("LAZY"));
+                    added.set(true);
+                }
 
                 // Add the default cascade for non-dependent references
                 if (!isDependent && !StringUtils.isBlank(defaultCascade)) {
@@ -323,7 +328,9 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                 maybeAddImport(TARGET_TYPE);
                 maybeAddImport(Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL);
                 maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
-                maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+                if (addFetchType) {
+                    maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
+                }
                 maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);

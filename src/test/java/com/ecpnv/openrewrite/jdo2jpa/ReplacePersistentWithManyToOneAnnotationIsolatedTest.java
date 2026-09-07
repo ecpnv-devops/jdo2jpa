@@ -137,6 +137,51 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
     }
 
     /**
+     * An inferred owning side of a bi-directional one-to-one has no explicit JDO fetch metadata.
+     * In that case, retain JPA's default fetch strategy because EclipseLink cannot safely remove
+     * entities referenced through the inferred lazy one-to-one mapping.
+     */
+    @Test
+    void inferredOwningOneToOneDoesNotGetExplicitLazyFetch() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+
+                                @Entity
+                                public class Person {
+                                    @Persistent(mappedBy = "person")
+                                    private Address address;
+                                }
+                                @Entity
+                                public class Address {
+                                    private Person person;
+                                }
+                                """,
+                        """
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.OneToOne;
+                                import javax.jdo.annotations.Persistent;
+
+                                @Entity
+                                public class Person {
+                                    @Persistent(mappedBy = "person")
+                                    private Address address;
+                                }
+                                @Entity
+                                public class Address {
+                                    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private Person person;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
      * The owning side of a bi-directional one-to-one (the field that another entity's
      * {@code mappedBy} points to) must become {@code @OneToOne} rather than {@code @ManyToOne}.
      * Crucially, when two inverse relationships in different entities point at the <em>same</em>
