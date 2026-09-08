@@ -26,6 +26,14 @@ import org.openrewrite.java.tree.Space;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+/**
+ * Explicit opt-in recipe that adds natural ordering to matching stream-returning methods.
+ *
+ * @deprecated This recipe cannot prove that migration discarded source ordering and is unsafe as a general
+ * migration default. Express business ordering in source or use a transformation that can reproduce the
+ * ordering semantics it changes.
+ */
+@Deprecated
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AddSortedMethodToStreamMethods extends Recipe {
@@ -45,12 +53,13 @@ public class AddSortedMethodToStreamMethods extends Recipe {
 
     @Override
     public @NlsRewrite.DisplayName @NotNull String getDisplayName() {
-        return "Add sorted method to stream methods with given annotation";
+        return "Add natural sorting to annotated stream methods (deprecated)";
     }
 
     @Override
     public @NlsRewrite.Description @NotNull String getDescription() {
-        return "Add sorted method to stream methods with given annotation.";
+        return "Deprecated explicit opt-in that adds natural-order sorting without proving source-order loss. " +
+                "This recipe is unsafe as a general migration default.";
     }
 
     @Override

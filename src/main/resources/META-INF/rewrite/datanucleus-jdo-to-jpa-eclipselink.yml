@@ -175,15 +175,12 @@ recipeList:
       annotationType: javax.persistence.OrderColumn
       oldAttributeName: column
       newAttributeName: name
-  #  # Replace variables of type SortedSet with Set type and correct instance
+  # Use a concrete TreeSet for JPA @OneToMany fields while leaving related method signatures unchanged
   - com.ecpnv.openrewrite.jdo2jpa.ChangeTypesForAnnotatedVariables:
       annotationType: javax.persistence.OneToMany
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
       newFullyQualifiedTypeNames: 'java.util.TreeSet'
       ignoreMethods: true
-  # Add sorted method to streams
-  - com.ecpnv.openrewrite.jdo2jpa.AddSortedMethodToStreamMethods:
-      annotationType: org.apache.isis.applib.annotation.Programmatic
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Column
