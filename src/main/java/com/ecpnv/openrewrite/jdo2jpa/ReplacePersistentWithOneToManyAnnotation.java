@@ -133,15 +133,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                                                 // Add fqn#varname,column-name-value to accumulator
                                                 acc.varColumnWithName.put(varKey, e.toString());
                                             });
-                                    RewriteUtils.findArgumentAsBoolean(ca, Constants.Jdo.COLUMN_ARGUMENT_ALLOWS_NULL)
-                                            .filter(allowsNull -> !allowsNull)
-                                            .ifPresent(ignored -> acc.varMandatoryInverseField.put(varKey, true));
                                 });
-                        FindAnnotations.find(mv, Constants.Jpa.MANY_TO_ONE_ANNOTATION_FULL).stream()
-                                .findFirst()
-                                .ifPresent(manyToOne -> RewriteUtils.findArgumentAsBoolean(manyToOne, "optional")
-                                        .filter(optional -> !optional)
-                                        .ifPresent(ignored -> acc.varMandatoryInverseField.put(varKey, true)));
                         return mv;
                     }
                 });
@@ -191,7 +183,8 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             // Find @Element annotation
             Optional<J.Annotation> elemAnno = FindAnnotations.find(multiVariable, Constants.Jdo.ELEMENT_ANNOTATION_FULL).stream().findFirst();
             // Find source annotation == @Persistent
-            J.Annotation persistentAnno = getPersistentAnnotation(multiVariable).orElse(elemAnno.orElse(null));
+            Optional<J.Annotation> persistentAnnotation = getPersistentAnnotation(multiVariable);
+            J.Annotation persistentAnno = persistentAnnotation.orElse(elemAnno.orElse(null));
             // Find @Column
             Optional<J.Annotation> colAnno = FindAnnotations.find(multiVariable, Constants.Jdo.COLUMN_ANNOTATION_FULL).stream().findFirst();
             if (persistentAnno == null && colAnno.isPresent()) {
@@ -227,34 +220,21 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                 }
                 mappedBy.ifPresent(template::append);
 
-                // Search for dependentElement
                 AtomicBoolean added = new AtomicBoolean(false);
-                RewriteUtils.findArgumentAsBoolean(persistentAnno, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)
-                        .filter(isDependent -> isDependent)
-                        .ifPresentOrElse(isDependent -> {
-                            mappedBy.ifPresent(ma -> template.append(", "));
-                            template
-                                    .append("cascade = {CascadeType.REMOVE")
-                                    .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
-                                    .append("}");
-                            added.set(true);
-                        }, () -> {
-                            if (!StringUtils.isBlank(defaultCascade)) {
-                                mappedBy.ifPresent(ma -> template.append(", "));
-                                template
-                                        .append("cascade = {")
-                                        .append(defaultCascade)
-                                        .append("}");
-                                added.set(true);
-                            }
-                        });
-
-                // mappedBy points to a mandatory inverse reference, so deleting children should remove orphans.
-                if (mustEnableOrphanRemoval(multiVariable, mappedBy)) {
-                    if (mappedBy.isPresent() || added.get()) {
-                        template.append(", ");
-                    }
-                    template.append("orphanRemoval = true");
+                boolean dependent = resolveDependency(multiVariable, persistentAnnotation, elemAnno);
+                if (dependent) {
+                    mappedBy.ifPresent(ma -> template.append(", "));
+                    template
+                            .append("cascade = {CascadeType.REMOVE")
+                            .append(StringUtils.isBlank(defaultCascade) ? "" : ", " + defaultCascade)
+                            .append("}, orphanRemoval = true");
+                    added.set(true);
+                } else if (!StringUtils.isBlank(defaultCascade)) {
+                    mappedBy.ifPresent(ma -> template.append(", "));
+                    template
+                            .append("cascade = {")
+                            .append(defaultCascade)
+                            .append("}");
                     added.set(true);
                 }
 
@@ -358,16 +338,23 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             return multiVariable;
         }
 
-        private boolean mustEnableOrphanRemoval(J.VariableDeclarations multiVariable, Optional<J.Assignment> mappedBy) {
-            return hasCollection(multiVariable)
-                    && mappedBy
-                    .map(J.Assignment::getAssignment)
-                    .map(Object::toString)
-                    .map(ReplacePersistentWithOneToManyAnnotation::normalizeStringLiteral)
-                    .flatMap(mappedByField -> RewriteUtils.getParameterType(multiVariable, 0, 0)
-                            .map(JavaType.FullyQualified::getFullyQualifiedName)
-                            .map(elementType -> elementType + "#" + mappedByField))
-                    .map(key -> Boolean.TRUE.equals(acc.varMandatoryInverseField.get(key)))
+        private boolean resolveDependency(
+                J.VariableDeclarations multiVariable,
+                Optional<J.Annotation> persistentAnnotation,
+                Optional<J.Annotation> elementAnnotation) {
+            if (hasCollection(multiVariable)) {
+                return elementAnnotation
+                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
+                                annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT))
+                        .or(() -> persistentAnnotation.flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
+                                annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)))
+                        .orElse(false);
+            }
+            return persistentAnnotation
+                    .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
+                            annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT))
+                    .or(() -> persistentAnnotation.flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
+                            annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEPENDENT_ELEMENT)))
                     .orElse(false);
         }
 
@@ -406,6 +393,5 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
     protected static class Accumulator {
         Map<String, String> varColumnWithName = new java.util.HashMap<>();
         Map<String, String> varPersistentWithMappedBy = new java.util.HashMap<>();
-        Map<String, Boolean> varMandatoryInverseField = new java.util.HashMap<>();
     }
 }

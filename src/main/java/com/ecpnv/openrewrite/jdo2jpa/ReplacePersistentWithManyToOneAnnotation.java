@@ -47,15 +47,19 @@ import lombok.Value;
  * <code>@ManyToOne</code> annotation in Java code.
  * <p>
  * The transformation ensures compatibility with JPA by locating entity fields optionally annotated with
- * <code>@javax.jdo.annotations.Persistent</code>, analyzing the attributes of the annotation (e.g., `dependentElement`),
- * and it replaces the annotation with the corresponding JPA compliant <code>@ManyToOne</code> annotation.
+ * <code>@javax.jdo.annotations.Persistent</code>, analyzing attributes such as {@code dependent} and
+ * {@code defaultFetchGroup}, and replacing the annotation with the corresponding JPA-compliant
+ * <code>@ManyToOne</code> annotation.
  * <p>
  * The migration adheres to the following rules:
  * <ul>
  * <li> Fields must <b>not</b> be assignable from {@link java.util.Collection}.
  * <li> If a field already has a <code>@ManyToOne</code> annotation, it will be skipped.
- * <li> If the <code>@javax.jdo.annotations.Persistent</code> annotation exists, dependentElement and defaultFetchGroup
- * are also transformed when applicable.
+ * <li> If the <code>@javax.jdo.annotations.Persistent</code> annotation exists, {@code dependent} and
+ * {@code defaultFetchGroup} are also transformed when applicable. {@code dependentElement} is accepted as a
+ * compatibility fallback.
+ * <li> A dependent reference receives {@code CascadeType.REMOVE}. JPA {@code ManyToOne} has no orphan-removal
+ * attribute, so the recipe deliberately does not synthesize disassociation-time deletion logic.
  * <li> Ensures that relevant imports (<code>javax.persistence.ManyToOne</code>) are updated or added when necessary.
  * </ul>
  * <p>

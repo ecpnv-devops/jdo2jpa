@@ -129,7 +129,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 }
                                 @Entity
                                 public class SomeEntity {
-                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -277,7 +277,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -366,7 +366,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.EAGER)
                                     private List<Person> persons;
                                 }
                                 """
