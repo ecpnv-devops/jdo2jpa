@@ -13,8 +13,8 @@ Estatio's structural finding-3 architecture baseline confirms 453 implicit to-on
 - Preserve explicit fetch metadata through the base, persistent, optional, and consumer-composed recipe paths.
 - Add isolated and composite recipe tests covering eager opt-in, lazy false/default/omitted cases, inferred owning one-to-one handling, annotation ordering, imports, and interaction with cascade and join-column generation.
 - A/B regenerate the same pinned Estatio `prod` input with pre-change and candidate jdo2jpa artifacts, requiring the recipe delta to contain only intended fetch changes.
-- Separately compare candidate output with the matched Estatio JPA rewrite baseline, explicitly accounting for previously approved stream-order and orphan-removal changes.
-- Record the `prod` input, JPA rewrite-baseline, and 453-violation frozen-baseline commits as one matched validation set and inventory all generated to-one mappings that remain implicit.
+- Separately compare candidate output with the recorded Estatio JPA branch tree as reconciliation evidence, explicitly accounting for previously approved stream-order, orphan-removal, and consumer-source changes.
+- Pin the current clean `prod` tree as the validation input, use its pre-change regeneration as the functional baseline, record the JPA reconciliation commit, and inventory all generated to-one mappings that remain implicit.
 - Publish release notes describing the generated-source and runtime-loading impact for consumers.
 
 ## Capabilities
@@ -33,5 +33,5 @@ None.
 - Every matching generated `@ManyToOne` processed by the broad optional removal stage currently becomes implicitly eager and will instead remain explicitly lazy unless JDO opted it into the default fetch group.
 - Inferred owning `@OneToOne` mappings that require eager loading remain eager, but their intent becomes explicit.
 - No runtime ORM branch or `OrmUtil.isJdo()` conditional is introduced.
-- Estatio owns EclipseLink query-count and graph-loading tests and the deliberate removal of its finding-3 architecture baseline after consuming the released recipe; those consumer changes are a handoff rather than release inputs for this repository.
+- Estatio owns the explicit fetch choice for its hand-written `BackgroundCommandsOrchestration.parentCommand` mapping, EclipseLink query-count and graph-loading tests, and deliberate removal of its finding-3 architecture baseline after consuming the released recipe; those consumer changes are a handoff rather than release inputs for this repository.
 - Named JDO fetch plans are outside this static mapping change and remain query-level consumer concerns.

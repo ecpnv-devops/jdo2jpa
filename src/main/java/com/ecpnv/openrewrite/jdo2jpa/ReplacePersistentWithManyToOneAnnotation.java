@@ -60,6 +60,12 @@ import lombok.Value;
  * compatibility fallback.
  * <li> A dependent reference receives {@code CascadeType.REMOVE}. JPA {@code ManyToOne} has no orphan-removal
  * attribute, so the recipe deliberately does not synthesize disassociation-time deletion logic.
+ * <li> {@code defaultFetchGroup = "true"} becomes {@code FetchType.EAGER}; explicit false, an omitted attribute,
+ * and an ordinary reference without {@code Persistent} become {@code FetchType.LAZY}.
+ * <li> An inferred owning {@code OneToOne} without {@code Persistent} becomes explicitly eager to preserve the
+ * existing EclipseLink deletion workaround. Explicit JDO fetch metadata takes precedence.
+ * <li> JPA lazy to-one loading remains a provider hint; this recipe guarantees the generated metadata, not runtime
+ * loading behavior.
  * <li> Ensures that relevant imports (<code>javax.persistence.ManyToOne</code>) are updated or added when necessary.
  * </ul>
  * <p>
@@ -303,20 +309,18 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                 }
 
                 // JDO single references are lazy by default, whereas JPA references default to EAGER.
-                // Preserve the JDO fetch strategy except for an inferred owning @OneToOne whose source
-                // field has no @Persistent metadata. EclipseLink's lazy handling of that inferred mapping
-                // can leave the owning foreign key uncleared when a referenced entity is removed.
-                final boolean addFetchType = !owningSideOfBidirectionalOneToOne || sourceAnnotationIfAny.isPresent();
-                if (addFetchType) {
-                    template
-                            .append(added.get() ? ", " : "")
-                            .append("fetch = FetchType.");
-                    sourceAnnotationIfAny
-                            .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
-                            .ifPresentOrElse(isDefault -> template.append(Boolean.TRUE.equals(isDefault) ? "EAGER" : "LAZY"),
-                                    () -> template.append("LAZY"));
-                    added.set(true);
-                }
+                // The sole fallback is an inferred owning @OneToOne without @Persistent metadata, which
+                // remains eager for the existing EclipseLink deletion workaround. Always express the
+                // resolved strategy explicitly so later stages cannot delegate it to the JPA default.
+                final boolean eagerFetch = sourceAnnotationIfAny
+                        .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
+                                annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
+                        .orElse(owningSideOfBidirectionalOneToOne && sourceAnnotationIfAny.isEmpty());
+                template
+                        .append(added.get() ? ", " : "")
+                        .append("fetch = FetchType.")
+                        .append(eagerFetch ? "EAGER" : "LAZY");
+                added.set(true);
 
                 // Add the default cascade for non-dependent references
                 if (!isDependent && !StringUtils.isBlank(defaultCascade)) {
@@ -332,9 +336,7 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                 maybeAddImport(TARGET_TYPE);
                 maybeAddImport(Constants.Jpa.ONE_TO_ONE_ANNOTATION_FULL);
                 maybeAddImport(Constants.Jpa.CASCADE_TYPE_FULL);
-                if (addFetchType) {
-                    maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
-                }
+                maybeAddImport(Constants.Jpa.FETCH_TYPE_FULL);
                 maybeAddImport(Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.PERSISTENT_ANNOTATION_FULL);
                 maybeRemoveImport(Constants.Jdo.COLUMN_ANNOTATION_FULL);

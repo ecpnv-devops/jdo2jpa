@@ -138,11 +138,11 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
 
     /**
      * An inferred owning side of a bi-directional one-to-one has no explicit JDO fetch metadata.
-     * In that case, retain JPA's default fetch strategy because EclipseLink cannot safely remove
+     * In that case, express JPA's eager fetch strategy explicitly because EclipseLink cannot safely remove
      * entities referenced through the inferred lazy one-to-one mapping.
      */
     @Test
-    void inferredOwningOneToOneDoesNotGetExplicitLazyFetch() {
+    void inferredOwningOneToOneGetsExplicitEagerFetch() {
         rewriteRun(
                 //language=java
                 java(
@@ -163,6 +163,7 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
                         """
                                 import javax.persistence.CascadeType;
                                 import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
                                 import javax.persistence.OneToOne;
                                 import javax.jdo.annotations.Persistent;
 
@@ -173,7 +174,7 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
                                 }
                                 @Entity
                                 public class Address {
-                                    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
@@ -244,6 +245,187 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
                                     private Person person;
                                     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Company company;
+                                }
+                                """
+                )
+        );
+    }
+
+    @Test
+    void ordinaryReferencesFollowDefaultFetchGroupTruthTable() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                class Owner {
+                                    @Persistent(defaultFetchGroup = "true")
+                                    private Related eager;
+                                    @Persistent(defaultFetchGroup = "false")
+                                    private Related explicitLazy;
+                                    @Persistent
+                                    private Related implicitLazy;
+                                }
+                                """,
+                        """
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.ManyToOne;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                class Owner {
+                                    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private Related eager;
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private Related explicitLazy;
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private Related implicitLazy;
+                                }
+                                """
+                )
+        );
+    }
+
+    @Test
+    void namedFetchGroupDoesNotMakeGlobalMappingEager() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.FetchGroup;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                @FetchGroup(name = "detail", members = @Persistent(name = "related"))
+                                class Owner {
+                                    private Related related;
+                                }
+                                """,
+                        """
+                                import javax.jdo.annotations.FetchGroup;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.ManyToOne;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                @FetchGroup(name = "detail", members = @Persistent(name = "related"))
+                                class Owner {
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private Related related;
+                                }
+                                """
+                )
+        );
+    }
+
+    @Test
+    void fetchComposesWithDependencyColumnAndLeadingAnnotation() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Column;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                class Owner {
+                                    @Deprecated
+                                    @Persistent(dependent = "true", defaultFetchGroup = "true")
+                                    @Column(name = "RELATED_ID", allowsNull = "false")
+                                    private Related related;
+                                }
+                                """,
+                        """
+                                import javax.persistence.*;
+
+                                @Entity
+                                class Related {}
+                                @Entity
+                                class Owner {
+                                    @Deprecated
+                                    @ManyToOne(optional = false, cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+                                    @JoinColumn(nullable = false, name = "RELATED_ID")
+                                    private Related related;
+                                }
+                                """
+                )
+        );
+    }
+
+    @Test
+    void inferredOwningOneToOneHonoursExplicitDefaultFetchGroup() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                class EagerInverse {
+                                    @Persistent(mappedBy = "inverse")
+                                    private EagerOwner owner;
+                                }
+                                @Entity
+                                class LazyInverse {
+                                    @Persistent(mappedBy = "inverse")
+                                    private LazyOwner owner;
+                                }
+                                @Entity
+                                class EagerOwner {
+                                    @Persistent(defaultFetchGroup = "true")
+                                    private EagerInverse inverse;
+                                }
+                                @Entity
+                                class LazyOwner {
+                                    @Persistent(defaultFetchGroup = "false")
+                                    private LazyInverse inverse;
+                                }
+                                """,
+                        """
+                                import javax.jdo.annotations.Persistent;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.OneToOne;
+
+                                @Entity
+                                class EagerInverse {
+                                    @Persistent(mappedBy = "inverse")
+                                    private EagerOwner owner;
+                                }
+                                @Entity
+                                class LazyInverse {
+                                    @Persistent(mappedBy = "inverse")
+                                    private LazyOwner owner;
+                                }
+                                @Entity
+                                class EagerOwner {
+                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private EagerInverse inverse;
+                                }
+                                @Entity
+                                class LazyOwner {
+                                    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    private LazyInverse inverse;
                                 }
                                 """
                 )

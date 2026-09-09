@@ -110,16 +110,18 @@ Consumers that activate named JDO plans must preserve those use cases through JP
 The implementation will build distinct pre-change and candidate jdo2jpa artifacts and run each against the same pinned Estatio `prod` input.
 The A/B generated-output delta isolates this change and must contain only intended fetch metadata and directly consequent import or formatting changes.
 
-A separate comparison will reconcile candidate output with the matched Estatio JPA rewrite baseline.
-That comparison will explicitly classify output from the already approved stream-order and orphan-removal changes instead of misidentifying those changes as finding-3 regressions.
-The `prod` input commit, JPA rewrite-baseline commit, and commit containing the 453-violation finding-3 frozen baseline will be recorded as one matched validation set.
+A separate, informational comparison will reconcile candidate output with the recorded Estatio JPA branch tree.
+That comparison will explicitly classify output from the already approved stream-order and orphan-removal changes and any consumer-source drift instead of misidentifying those changes as finding-3 regressions.
+The current clean `prod` commit is the validation input, its locally regenerated pre-change output is the functional baseline, and the JPA branch commit is recorded only as the reconciliation reference.
+The 453-violation finding-3 frozen baseline carried by the pinned `prod` tree supplies the structural gate for candidate validation.
 
 Generated-source inventory and the finding-3 architecture gate will identify to-one mappings that remain structurally implicit.
 They will not be presented as runtime lazy-loading, query-count, cycle, or graph-loading evidence.
-Frozen-baseline validation will use deliberate baseline-artifact removal with normal creation, update, and refreeze settings still disabled.
+Library validation keeps the frozen baseline in place and requires every jdo2jpa-generated production mapping to become explicit without introducing a new architecture violation.
+The hand-written `BackgroundCommandsOrchestration.parentCommand` JPA mapping remains outside recipe scope and prevents baseline removal until Estatio declares its fetch strategy.
 
 The jdo2jpa change will not edit or commit Estatio files.
-After release, Estatio must update its recipe version, regenerate the JPA branch, run provider-level tests, and deliberately remove the finding-3 frozen baseline.
+After release, Estatio must update its recipe version, regenerate the JPA branch, declare fetch for `BackgroundCommandsOrchestration.parentCommand`, run provider-level tests, and deliberately remove the finding-3 frozen baseline.
 
 ## Risks / Trade-offs
 
@@ -130,7 +132,7 @@ After release, Estatio must update its recipe version, regenerate the JPA branch
 - [Risk] Making inferred owning one-to-one mappings explicitly eager can increase graph loading.
   → Mitigation: confine eager fallback to the already documented no-`@Persistent` provider exception and test that explicit JDO choices still win.
 - [Risk] Removing the broad optional YAML stage can change a large generated diff.
-  → Mitigation: use same-input pre-change/candidate A/B regeneration to isolate finding-3 output, then reconcile the candidate separately with the matched Estatio baseline and previously approved recipe changes.
+  → Mitigation: use same-input pre-change/candidate A/B regeneration to isolate finding-3 output, then reconcile the candidate separately with the recorded JPA branch tree, previously approved recipe changes, and consumer-source drift.
 - [Risk] Annotation argument ordering or import cleanup can make golden tests brittle.
   → Mitigation: assert complete representative outputs while keeping semantic cases small and isolated.
 - [Risk] Finding-2 relationship lifecycle changes could regress during fetch refactoring.

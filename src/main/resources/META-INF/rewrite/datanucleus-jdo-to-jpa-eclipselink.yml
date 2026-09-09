@@ -974,8 +974,3 @@ recipeList:
   #      attributeValue: 'javax.persistence.EnumType.STRING'
   #      operation: ADD
   #      appendArray: false
-  # Change the default of LAZY in JDO to EAGER in JPA for @ManyToOne annotations
-  - com.ecpnv.openrewrite.java.RemoveAnnotationAttributeConditionally:
-      matchByRegularExpression: '@ManyToOne\((.|\s|\n)*fetch\s*=\s*FetchType.LAZY(.|\s|\n)*\)'
-      annotationType: javax.persistence.ManyToOne
-      attributeName: fetch
