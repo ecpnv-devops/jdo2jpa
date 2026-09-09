@@ -35,6 +35,18 @@ Not supported:
 * Hibernate should be supported but is not (yet) tested.
 * Hibernate specific patterns or annotations are not supported.
 
+## Fetch and LOB metadata
+
+The `v2x.Persistent` recipe converts relationships before translating scalar metadata and removes JDO persistence metadata only after both stages.
+For scalar fields and properties, explicit JDO `defaultFetchGroup = "false"` becomes `@Basic(fetch = FetchType.LAZY)`.
+Explicit true, omitted metadata, and declarations without `@Persistent` retain JPA's eager basic default.
+Relationships, collections, and maps remain governed by the association recipes and do not receive `@Basic`.
+JPA lazy basic fetching is a provider hint and can require provider features such as EclipseLink weaving.
+
+The `v2x.Column` recipe translates explicit JDO `jdbcType = "BLOB"` and `jdbcType = "CLOB"` metadata to `@Lob` before removing JDO-only column attributes.
+LOB classification does not by itself imply lazy fetching.
+Java types, column names, converters, and unrelated annotation attributes are preserved.
+
 ## Releasing
 
 Releases are published to GitHub Packages by the `Maven Package` GitHub Actions workflow.

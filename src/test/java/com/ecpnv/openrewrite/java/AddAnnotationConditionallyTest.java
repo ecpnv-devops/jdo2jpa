@@ -272,14 +272,12 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
     }
 
     /**
-     * Tests the functionality of the `AddAnnotationConditionally` recipe by verifying whether
-     * a `@Lob` annotation is correctly added to annotation declarations. This transformation
-     * operates under the condition that the original declaration includes a `@javax.jdo.annotations.Column`
-     * annotation with specific attributes that meet the criteria for modification.
+     * Verifies that the column composite does not add field-or-property-only `@Lob` metadata to an
+     * annotation declaration.
      */
     @DocumentExample
     @Test
-    void isLobAddedToAnnotationDeclaration() {
+    void isLobNotAddedToAnnotationDeclaration() {
         rewriteRun(r -> r.recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.Column"),
                 //language=java
                 java(
@@ -293,10 +291,8 @@ class AddAnnotationConditionallyTest extends BaseRewriteTest {
                                 """,
                         """
                                 import javax.persistence.Column;
-                                import javax.persistence.Lob;
                                 
                                 @Column(columnDefinition = "VARCHAR(MAX)", length = Notes.MAX_LEN)
-                                @Lob
                                 public @interface Notes {
                                     int MAX_LEN = 4000;
                                 }

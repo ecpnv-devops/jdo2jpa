@@ -155,17 +155,9 @@ tags:
   - persistence
   - Persistent
 recipeList:
-  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithManyToOneAnnotation:
-      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
-  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation:
-      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
-  - org.openrewrite.java.RemoveAnnotationAttribute:
-      annotationType: javax.jdo.annotations.Persistent
-      attributeName: defaultFetchGroup
-  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
-      annotationType: '@javax.jdo.annotations.Persistent'
-  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
-      annotationType: '@javax.jdo.annotations.Column'
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.relationships
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.scalarFetch
+  - com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.cleanup
   # Replace @Order with @OrderColumn
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Order
@@ -181,6 +173,33 @@ recipeList:
       oldFullyQualifiedTypeNames: 'java.util.SortedSet'
       newFullyQualifiedTypeNames: 'java.util.TreeSet'
       ignoreMethods: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.relationships
+displayName: Convert JDO relationships before scalar persistent metadata
+recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithManyToOneAnnotation:
+      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
+  - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation:
+      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.scalarFetch
+displayName: Preserve scalar JDO default-fetch-group exclusion
+recipeList:
+  - com.ecpnv.openrewrite.jdo2jpa.PreserveScalarDefaultFetchGroup
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.cleanup
+displayName: Remove migrated JDO persistent metadata
+recipeList:
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Persistent
+      attributeName: defaultFetchGroup
+  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
+      annotationType: '@javax.jdo.annotations.Persistent'
+  - com.ecpnv.openrewrite.java.RemoveAnnotationWithoutAttributes:
+      annotationType: '@javax.jdo.annotations.Column'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Column
@@ -232,22 +251,17 @@ recipeList:
       attributeValue: false
       operation: UPDATE
       appendArray: false
-  # replace 'jdbcType = "CLOB"' with @Lob
+  # preserve explicit JDO binary and character LOB classification
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"CLOB"(.|\s|\n)*\)'
+      matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"(BLOB|CLOB)"(.|\s|\n)*\)'
       annotationType: javax.persistence.Lob
       annotationTemplate: '@Lob'
       declarationType: VAR
   - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"CLOB"(.|\s|\n)*\)'
+      matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"(BLOB|CLOB)"(.|\s|\n)*\)'
       annotationType: javax.persistence.Lob
       annotationTemplate: '@Lob'
       declarationType: METHOD
-  - com.ecpnv.openrewrite.java.AddAnnotationConditionally:
-      matchByRegularExpression: '@Column\((.|\s|\n)*jdbcType(.|\s|\n)*=(.|\s|\n)*"CLOB"(.|\s|\n)*\)'
-      annotationType: javax.persistence.Lob
-      annotationTemplate: '@Lob'
-      declarationType: CLASS
   # add attribute columnDefinition = "VARCHAR(MAX)" to @Column with sqlType = "LONGVARCHAR"
   - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
       matchByRegularExpression: '@Column\((?=[^)]*sqlType(.|\s|\n)*=(.|\s|\n)*"LONGVARCHAR")(?=[^)]*nullable(.|\s|\n)*=(.|\s|\n)*false)[^)]*\)'
