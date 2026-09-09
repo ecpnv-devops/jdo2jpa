@@ -77,8 +77,13 @@ Association fetch and lifecycle metadata SHALL remain controlled by the dedicate
 - **THEN** the scalar recipe skips that declaration
 
 ### Requirement: LOB and lazy-basic metadata compose without collateral changes
+The persistent composite SHALL enforce relationship conversion, scalar lazy-basic translation, and JDO persistent-metadata cleanup as explicit ordered stages using a mechanism robust to parameterless and configured recipe scheduling.
 The persistent, column, top-level, and supported consumer compositions SHALL produce the same `@Lob` and lazy-basic outcome for the same source declaration.
 The transformation SHALL preserve column names, nullability, converters, domain annotations, unrelated annotation attributes, and valid annotation placement.
+
+#### Scenario: Actual persistent composite enforces stage order in one cycle
+- **WHEN** one compilation unit contains an excluded scalar, an excluded to-one relationship, and an excluded collection and the actual `v2x.Persistent` composite executes for one change cycle
+- **THEN** relationship conversion completes before scalar translation, only the scalar receives `@Basic(fetch = FetchType.LAZY)`, and cleanup removes all source `defaultFetchGroup` metadata afterward
 
 #### Scenario: Lazy converted attribute has Column metadata
 - **WHEN** an excluded scalar attribute also declares column name and nullability

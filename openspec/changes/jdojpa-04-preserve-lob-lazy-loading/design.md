@@ -1,8 +1,9 @@
 ## Context
 
 The supported `v2x` composite runs `v2x.Persistent` before `v2x.Column`.
-The persistent stage first converts relationship metadata, then removes `defaultFetchGroup` from every remaining `@Persistent` and removes empty JDO annotations.
-That ordering lets relationship recipes consume association fetch intent, but scalar `defaultFetchGroup = "false"` currently disappears without a JPA equivalent.
+The persistent stage is intended to convert relationship metadata before removing `defaultFetchGroup` from every remaining `@Persistent` and removing empty JDO annotations.
+Apparent YAML position is not a sufficient ordering guarantee in this repository because its descriptor documents that parameterless recipes can execute before parameterized recipes and already uses declarative wrappers where order matters.
+Both relationship recipes are parameterized, so adding a parameterless scalar recipe directly between them and cleanup could execute in the wrong stage even when listed in the desired position.
 
 JPA basic attributes default to eager loading.
 `@Basic(fetch = FetchType.LAZY)` is the standard metadata hint for excluding a basic attribute from initial loading, while EclipseLink requires weaving for deferred basic-attribute fetching.
@@ -63,6 +64,29 @@ For those scalar cases, JPA's eager basic default matches the source's lack of e
 An alternative is to express the transformation entirely with repeated generic YAML annotation rules.
 That approach makes it difficult to distinguish non-relationship attributes, update an existing `@Basic` safely, and import `FetchType` without adding unused imports, so a purpose-built recipe is preferred.
 
+### Enforce persistent conversion through staged declarative wrappers
+
+`v2x.Persistent` will expose three parameterless declarative stage wrappers in this exact order:
+
+. relationship conversion;
+. scalar lazy-basic translation;
+. JDO persistent-metadata cleanup.
+
+The relationship wrapper will contain the configured `ReplacePersistentWithManyToOneAnnotation` and `ReplacePersistentWithOneToManyAnnotation` recipes.
+The scalar wrapper will contain the focused lazy-basic recipe.
+The cleanup wrapper will contain removal of `Persistent.defaultFetchGroup` and now-empty JDO persistence annotations.
+This follows the wrapper mechanism already used by `v2x.PersistenceCapable` to preserve dependencies involving configured recipes.
+
+The implementation SHALL NOT rely on placing a parameterless scalar recipe between parameterized recipes in one flat `recipeList`.
+The wrappers are stage boundaries, while defensive relationship exclusion in the scalar recipe remains a second line of protection rather than the ordering mechanism.
+
+A descriptor-level test will assert the staged wrapper order.
+A one-cycle `v2x.Persistent` transformation test will contain a scalar exclusion, a to-one exclusion, and a collection exclusion in the same compilation unit.
+It will prove that the scalar gains `@Basic(fetch = FetchType.LAZY)`, relationships gain only their association fetch annotations, and no source `defaultFetchGroup` survives cleanup after that cycle.
+
+An alternative is to add artificial configuration to make the scalar recipe parameterized.
+That depends on scheduler classification rather than expressing the semantic phases and is rejected in favor of explicit wrappers.
+
 ### Preserve both binary and character LOB classification before column cleanup
 
 The column composite will recognize exact JDO `jdbcType = "BLOB"` and `jdbcType = "CLOB"` values before removing `jdbcType`.
@@ -84,11 +108,12 @@ It also prevents a broad performance policy from being inferred from a storage-t
 
 ### Preserve recipe composition and idempotency
 
-The scalar-fetch recipe must run after relationship conversion and before JDO persistent-attribute cleanup.
+The staged persistent wrappers enforce relationship conversion before scalar lazy-basic translation and enforce both transformations before JDO persistent-attribute cleanup.
 The LOB rule must run before JDO column-attribute cleanup.
 The top-level `v2x`, the individual persistent and column composites, and the supported consumer sequence must agree on the final annotations.
 
 Focused tests will exercise each recipe independently and in consumer order.
+The actual declarative `v2x.Persistent` recipe will be tested for the mixed-input one-cycle ordering contract rather than inferring order from isolated recipe results.
 A second recipe cycle will prove that `@Basic`, `@Lob`, and their imports are neither removed nor duplicated.
 Tests will cover adjacent `@Column`, `@Convert`, domain annotations, existing `@Basic(optional = false)`, nullable and named columns, and both field and getter declarations.
 
@@ -125,8 +150,10 @@ These tests are consumer adoption criteria, not claims established by recipe uni
   → Mitigation: include detached-access scenarios in the consumer handoff and fix transaction boundaries or explicit fetching in Estatio rather than adding an ORM branch.
 - [Risk] `@Lob` can alter EclipseLink binding or diagnostic DDL for existing SQL Server `image`, binary, text, or `varchar(max)` columns.
   → Mitigation: keep Flyway unchanged and require SQL Server round-trip and schema-compatibility evidence downstream.
+- [Risk] OpenRewrite can schedule parameterless cleanup or scalar recipes before configured relationship recipes despite apparent flat YAML order.
+  → Mitigation: use explicit parameterless stage wrappers, assert their descriptor order, and prove mixed scalar/relationship output through the actual composite in one cycle.
 - [Risk] A broad lazy rule could annotate relationships or all LOBs.
-  → Mitigation: drive lazy selection only from explicit scalar `defaultFetchGroup = "false"`, run after association conversion, and add negative relationship and eager-LOB fixtures.
+  → Mitigation: drive lazy selection only from explicit scalar `defaultFetchGroup = "false"`, enforce staged relationship conversion first, and add defensive negative relationship and eager-LOB fixtures.
 - [Risk] Field and property access can produce duplicate or misplaced annotations.
   → Mitigation: test both declaration forms, existing annotations, import cleanup, annotation ordering, and reruns.
 - [Risk] Same-coordinate snapshot replacement can contaminate pre-change/candidate comparison.
@@ -137,7 +164,7 @@ These tests are consumer adoption criteria, not claims established by recipe uni
 ## Migration Plan
 
 First add characterization fixtures for current CLOB preservation, BLOB metadata loss, and scalar default-fetch-group removal.
-Then implement focused lazy-basic translation, extend LOB classification to BLOB, and update composite and rerun coverage.
+Then introduce the ordered persistent-stage wrappers, implement focused lazy-basic translation, extend LOB classification to BLOB, and update one-cycle composite and rerun coverage.
 Run the focused and complete jdo2jpa verification suites under the repository's required JDK.
 Build independently selectable pre-change and candidate artifacts and perform the same-input Estatio A/B regeneration.
 Prepare release notes describing the generated-source breaking change and the provider-runtime handoff.

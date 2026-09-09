@@ -2,7 +2,7 @@
 
 - [ ] 1.1 Add focused characterization fixtures proving that the column composite preserves CLOB as `@Lob` but currently removes BLOB metadata without adding `@Lob`.
 - [ ] 1.2 Add a focused characterization fixture proving that scalar `@Persistent(defaultFetchGroup = "false")` is currently removed without producing `@Basic(fetch = FetchType.LAZY)`.
-- [ ] 1.3 Confirm recipe ordering: association conversion precedes persistent-attribute cleanup, and LOB detection precedes JDO column-attribute removal.
+- [ ] 1.3 Characterize the repository's parameterless-versus-configured recipe scheduling and the existing declarative-wrapper convention; do not infer persistent-stage execution order from flat YAML position.
 - [ ] 1.4 Pin a clean Estatio `prod` commit and record its inventory of four BLOB declarations and two scalar default-fetch-group exclusions.
 - [ ] 1.5 Record the corresponding Estatio JPA reconciliation commit and the Flyway column definitions for document and Fastnet binary and character payloads.
 
@@ -13,7 +13,9 @@
 - [ ] 2.3 Update an existing `@Basic` to lazy while preserving unrelated attributes such as `optional` and avoiding duplicate fetch attributes.
 - [ ] 2.4 Defensively skip single relationships, collections, maps, and declarations carrying JPA relationship annotations.
 - [ ] 2.5 Leave scalar declarations with default-fetch-group true, an omitted attribute, or no `@Persistent` unchanged by lazy-basic translation.
-- [ ] 2.6 Wire the recipe after association conversion and before generic `Persistent.defaultFetchGroup` removal in `v2x.Persistent`.
+- [ ] 2.6 Define separate parameterless declarative wrappers for relationship conversion, scalar lazy-basic translation, and JDO persistent-metadata cleanup.
+- [ ] 2.7 Place the configured many-to-one and one-to-many recipes in the relationship wrapper, the focused scalar recipe in the scalar wrapper, and `defaultFetchGroup` plus empty-annotation removal in the cleanup wrapper.
+- [ ] 2.8 Wire the three wrappers into `v2x.Persistent` in relationship, scalar, cleanup order without relying on mixed parameterless/configured flat-list ordering.
 
 ## 3. Preserve BLOB and CLOB Classification
 
@@ -32,14 +34,16 @@
 - [ ] 4.5 Add existing-`@Basic` fixtures covering `optional = false`, existing lazy fetch, and conflicting eager fetch.
 - [ ] 4.6 Add relationship and collection fixtures proving that scalar translation does not add `@Basic` and does not disturb finding-2 or finding-3 metadata.
 - [ ] 4.7 Add interaction fixtures combining lazy-basic and LOB selection with `@Column`, `@Convert`, unrelated domain annotations, and nullable or named columns.
-- [ ] 4.8 Add persistent-composite, column-composite, top-level, and consumer-order fixtures proving that cleanup stages retain the generated annotations.
-- [ ] 4.9 Add rerun coverage proving that annotations, attributes, and imports are not duplicated, removed, or changed on a second cycle.
+- [ ] 4.8 Add a descriptor-level test asserting the actual relationship, scalar, cleanup wrapper order in `v2x.Persistent`.
+- [ ] 4.9 Add a one-cycle actual-composite fixture containing scalar, to-one, and collection `defaultFetchGroup = "false"` declarations; prove that only the scalar gains `@Basic(fetch = FetchType.LAZY)`, relationships retain association metadata, and cleanup removes all source fetch-group attributes afterward.
+- [ ] 4.10 Add column-composite, top-level, and consumer-order fixtures proving that cleanup stages retain the generated annotations.
+- [ ] 4.11 Add rerun coverage proving that annotations, attributes, and imports are not duplicated, removed, or changed on a second cycle.
 
 ## 5. Verify the Recipe Repository
 
 - [ ] 5.1 Run the focused scalar-fetch, column, relationship, and composition test classes under the repository's required JDK.
 - [ ] 5.2 Run the complete jdo2jpa test suite and resolve any unrelated output changes introduced by the metadata correction.
-- [ ] 5.3 Build and install the candidate snapshot locally and inspect generated recipe metadata for the new persistent and column composition order.
+- [ ] 5.3 Build and install the candidate snapshot locally and inspect generated recipe metadata for the explicit persistent wrapper stages and column composition order.
 - [ ] 5.4 Run strict OpenSpec validation and record the recipe test count, skipped tests, JDK, and candidate artifact version.
 
 ## 6. Validate Detached Estatio Regenerations
