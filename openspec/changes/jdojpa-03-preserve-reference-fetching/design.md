@@ -4,16 +4,16 @@ The reference conversion is split across recipe stages that currently disagree.
 `ReplacePersistentWithManyToOneAnnotation` emits `FetchType.EAGER` when `@Persistent(defaultFetchGroup = "true")` is present and otherwise emits `FetchType.LAZY` for ordinary references.
 It currently omits `fetch` only for an inferred owning `@OneToOne` with no `@Persistent` metadata, allowing JPA's eager default as an EclipseLink deletion workaround.
 
-The later `com.ecpnv.openrewrite.jdo2jpa.v2x.optional` recipe contains `RemoveAnnotationAttributeConditionally`, which removes `fetch = FetchType.LAZY` from selected `@ManyToOne` mappings on datastore-identity entities extending `EntityAbstract`.
-That stage was intended to change JDO's lazy default to JPA's eager default, so it deliberately undoes the earlier semantic translation.
+The later `com.ecpnv.openrewrite.jdo2jpa.v2x.optional` recipe contains `RemoveAnnotationAttributeConditionally`, which has no datastore-identity or `EntityAbstract` constraint and removes `fetch = FetchType.LAZY` from every matching `@ManyToOne` within the entity compilation units accepted by the recipe.
+That broad stage was intended to change JDO's lazy default to JPA's eager default, so it deliberately undoes the earlier semantic translation.
 Consumers that compose the base and optional recipes therefore receive different output from tests that exercise `v2x.Persistent` alone.
 
 Recent work for finding 2 strengthened `ReplacePersistentWithManyToOneAnnotation` and added isolated coverage for bare references and bidirectional one-to-one detection.
 Finding 3 must preserve that lifecycle work while completing the fetch contract across the composed pipeline.
 
-Estatio now has the finding-8 architecture gate `every_to_one_association_must_declare_fetch`.
+Estatio now has the finding-3 frozen baseline for the reusable `every_to_one_association_must_declare_fetch` gate introduced by finding 8.
 Its reviewed baseline contains 453 generated `@ManyToOne` or `@OneToOne` members without explicit fetch metadata.
-That downstream gate is evidence for generated output, but its baseline and EclipseLink integration tests belong to Estatio rather than this repository.
+That downstream gate supplies structural metadata evidence only; runtime lazy loading, graph traversal, query counts, and EclipseLink integration evidence belong to Estatio rather than this repository.
 
 ## Goals / Non-Goals
 
@@ -82,8 +82,8 @@ That would obscure the JDO metadata used to make the choice and recreate the sta
 
 ### Remove the optional lazy-stripping stage
 
-The `RemoveAnnotationAttributeConditionally` entry that removes lazy fetch from `@ManyToOne` will be deleted from `v2x.optional`.
-It will not be narrowed to another inheritance or identity subset because neither JPA datastore identity nor `EntityAbstract` inheritance changes JDO's default-fetch-group semantics.
+The broad `RemoveAnnotationAttributeConditionally` entry that removes lazy fetch from every matching `@ManyToOne` in accepted entity compilation units will be deleted from `v2x.optional`.
+It will not be replaced by an inheritance or identity predicate because neither JPA datastore identity nor `EntityAbstract` inheritance changes JDO's default-fetch-group semantics.
 Other optional recipe entries remain unchanged.
 
 This changes generated behaviour for consumers that relied on the optional stage's implicit eager result.
@@ -105,11 +105,18 @@ Membership in a named JDO fetch group does not make a relationship part of the d
 The static mapping will therefore use only `defaultFetchGroup` when choosing global JPA fetch metadata.
 Consumers that activate named JDO plans must preserve those use cases through JPA entity graphs, fetch joins, or repository behaviour in their own codebase.
 
-### Use detached-consumer validation without cross-repository commits
+### Separate recipe A/B validation from consumer-baseline reconciliation
 
-The implementation will install the candidate recipe locally and run the supported rewrite against a detached Estatio worktree at a recorded `prod` commit.
-Generated-source inspection and Estatio's finding-8 architecture rule will identify any to-one mapping that remains implicit.
-The generated diff will be classified by relationship shape and expected fetch transition, with unrelated mapping changes treated as regressions.
+The implementation will build distinct pre-change and candidate jdo2jpa artifacts and run each against the same pinned Estatio `prod` input.
+The A/B generated-output delta isolates this change and must contain only intended fetch metadata and directly consequent import or formatting changes.
+
+A separate comparison will reconcile candidate output with the matched Estatio JPA rewrite baseline.
+That comparison will explicitly classify output from the already approved stream-order and orphan-removal changes instead of misidentifying those changes as finding-3 regressions.
+The `prod` input commit, JPA rewrite-baseline commit, and commit containing the 453-violation finding-3 frozen baseline will be recorded as one matched validation set.
+
+Generated-source inventory and the finding-3 architecture gate will identify to-one mappings that remain structurally implicit.
+They will not be presented as runtime lazy-loading, query-count, cycle, or graph-loading evidence.
+Frozen-baseline validation will use deliberate baseline-artifact removal with normal creation, update, and refreeze settings still disabled.
 
 The jdo2jpa change will not edit or commit Estatio files.
 After release, Estatio must update its recipe version, regenerate the JPA branch, run provider-level tests, and deliberately remove the finding-3 frozen baseline.
@@ -122,8 +129,8 @@ After release, Estatio must update its recipe version, regenerate the JPA branch
   → Mitigation: define this repository's contract as emitted metadata and require provider-level evidence downstream.
 - [Risk] Making inferred owning one-to-one mappings explicitly eager can increase graph loading.
   → Mitigation: confine eager fallback to the already documented no-`@Persistent` provider exception and test that explicit JDO choices still win.
-- [Risk] Removing one optional YAML stage can change a large generated diff.
-  → Mitigation: classify every changed to-one mapping in a detached Estatio regeneration and reject unrelated output.
+- [Risk] Removing the broad optional YAML stage can change a large generated diff.
+  → Mitigation: use same-input pre-change/candidate A/B regeneration to isolate finding-3 output, then reconcile the candidate separately with the matched Estatio baseline and previously approved recipe changes.
 - [Risk] Annotation argument ordering or import cleanup can make golden tests brittle.
   → Mitigation: assert complete representative outputs while keeping semantic cases small and isolated.
 - [Risk] Finding-2 relationship lifecycle changes could regress during fetch refactoring.

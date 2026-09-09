@@ -1,7 +1,8 @@
 ## Why
 
-`ReplacePersistentWithManyToOneAnnotation` derives explicit JPA fetch metadata from JDO reference intent, but the optional composite later removes `FetchType.LAZY` from generated `@ManyToOne` mappings.
-The composed migration therefore falls back to JPA's eager default, while inferred owning `@OneToOne` mappings can also omit fetch metadata; Estatio's new architecture gate records 453 implicit to-one mappings, exposing changed graph loading, query volume, cycle risk, and refresh behaviour.
+`ReplacePersistentWithManyToOneAnnotation` derives explicit JPA fetch metadata from JDO reference intent, but the optional composite later removes `FetchType.LAZY` from every matching generated `@ManyToOne` within the entity compilation units it processes.
+The composed migration therefore falls back to JPA's eager default, while inferred owning `@OneToOne` mappings can also omit fetch metadata.
+Estatio's structural finding-3 architecture baseline confirms 453 implicit to-one mappings; changed graph loading, query volume, cycle exposure, and refresh behaviour are runtime risks that require separate provider-level evidence.
 
 ## What Changes
 
@@ -11,7 +12,9 @@ The composed migration therefore falls back to JPA's eager default, while inferr
 - Generate explicit `FetchType.EAGER` for an inferred owning `@OneToOne` that deliberately cannot use the ordinary lazy default under EclipseLink, rather than expressing the exception by omitting `fetch`.
 - Preserve explicit fetch metadata through the base, persistent, optional, and consumer-composed recipe paths.
 - Add isolated and composite recipe tests covering eager opt-in, lazy false/default/omitted cases, inferred owning one-to-one handling, annotation ordering, imports, and interaction with cascade and join-column generation.
-- Validate a locally installed recipe against a detached Estatio worktree and inventory all generated to-one mappings that remain implicit.
+- A/B regenerate the same pinned Estatio `prod` input with pre-change and candidate jdo2jpa artifacts, requiring the recipe delta to contain only intended fetch changes.
+- Separately compare candidate output with the matched Estatio JPA rewrite baseline, explicitly accounting for previously approved stream-order and orphan-removal changes.
+- Record the `prod` input, JPA rewrite-baseline, and 453-violation frozen-baseline commits as one matched validation set and inventory all generated to-one mappings that remain implicit.
 - Publish release notes describing the generated-source and runtime-loading impact for consumers.
 
 ## Capabilities
@@ -27,7 +30,7 @@ None.
 ## Impact
 
 - Primary implementation areas are `ReplacePersistentWithManyToOneAnnotation`, `datanucleus-jdo-to-jpa-eclipselink.yml`, and their isolated and composite tests.
-- Generated `@ManyToOne` mappings that currently become implicitly eager will become explicitly lazy unless JDO opted them into the default fetch group.
+- Every matching generated `@ManyToOne` processed by the broad optional removal stage currently becomes implicitly eager and will instead remain explicitly lazy unless JDO opted it into the default fetch group.
 - Inferred owning `@OneToOne` mappings that require eager loading remain eager, but their intent becomes explicit.
 - No runtime ORM branch or `OrmUtil.isJdo()` conditional is introduced.
 - Estatio owns EclipseLink query-count and graph-loading tests and the deliberate removal of its finding-3 architecture baseline after consuming the released recipe; those consumer changes are a handoff rather than release inputs for this repository.
