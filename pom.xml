@@ -6,7 +6,7 @@
 
     <groupId>com.ecpnv.openrewrite</groupId>
     <artifactId>jdo2jpa</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
 
     <name>jdo2jpa</name>
     <url>https://ecpnv.devops.gitlab.io/Libs/ecpnv/openrewrite/jdo2jpa</url>
