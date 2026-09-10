@@ -49,70 +49,57 @@ Java types, column names, converters, and unrelated annotation attributes are pr
 
 ## Releasing
 
-Releases are published to GitHub Packages by the `Maven Package` GitHub Actions workflow.
+Releases are published to GitHub Packages by the `Maven Package` workflow.
 The workflow publishes every push, including snapshot versions, while pushing a tag by itself does not publish a package.
 
-To release a new version, first merge the required changes into `main` and check out a clean, up-to-date `main` branch.
-Set the release version in the root `pom.xml`, replacing `1.2.2` below with the version being released:
+Use the release helper script to keep the steps parameterized and easy to rerun:
 
 ```bash
-mvn versions:set \
-  -DnewVersion=1.2.2 \
-  -DgenerateBackupPoms=false
+./scripts/release.sh --help
 ```
 
-Run the build and tests, then verify that the only intended change is the version update:
+1. Prepare the release version on `main`:
 
-```bash
-mvn clean verify
-git status --short
-git diff
-```
+   ```bash
+   ./scripts/release.sh prepare 1.2.3
+   ```
 
-Commit and push the release version:
+2. Build and verify the release candidate:
 
-```bash
-git commit -am "Release 1.2.2"
-git push origin main
-```
+   ```bash
+   ./scripts/release.sh verify 1.2.3
+   ```
 
-Wait for the `Maven Package` workflow to succeed and confirm that `com.ecpnv.openrewrite:jdo2jpa:1.2.2` is available in GitHub Packages.
-Tag the release commit and push the tag:
+3. Commit and push the release version:
 
-```bash
-git tag v1.2.2
-git push origin v1.2.2
-```
+   ```bash
+   ./scripts/release.sh publish 1.2.3
+   ```
 
-Creating the optional GitHub Release is the only manual GitHub UI step.
-In the GitHub UI:
+   Wait for the `Maven Package` workflow to succeed and confirm that `com.ecpnv.openrewrite:jdo2jpa:1.2.3` is available in GitHub Packages.
 
-1. Open **Releases**.
-2. Select **Draft a new release**.
-3. Select the existing `v1.2.2` tag.
-4. Add a title and release notes.
-5. Publish the release.
+4. Tag and push the release tag:
 
-Alternatively, create it with the GitHub CLI:
+   ```bash
+   ./scripts/release.sh tag 1.2.3
+   ```
 
-```bash
-gh release create v1.2.2 \
-  --title "v1.2.2" \
-  --generate-notes
-```
+5. Create the GitHub Release (manual UI or via the GitHub CLI when it is installed):
+
+   ```bash
+   ./scripts/release.sh github-release 1.2.3
+   ```
+
+   If `gh` is not installed, the script prints the equivalent manual steps for the GitHub UI: open **Releases**, select **Draft a new release**, pick the existing `v1.2.3` tag, add a title and notes, then publish.
+
+6. Advance `main` to the next snapshot version:
+
+   ```bash
+   ./scripts/release.sh snapshot 1.2.4
+   ```
 
 The GitHub Release is separate from the Maven package and does not publish, convert, or promote package versions.
 A snapshot package is not converted into a release package; pushing the non-snapshot version to `main` builds and deploys a separate package version.
 
-Advance `main` to the next snapshot version:
-
-```bash
-mvn versions:set \
-  -DnewVersion=1.2.3-SNAPSHOT \
-  -DgenerateBackupPoms=false
-git commit -am "Prepare dev"
-git push origin main
-```
-
-The final push publishes the new snapshot version because the workflow also deploys snapshot versions from `main`.
+The final snapshot push publishes the new snapshot version because the workflow also deploys snapshot versions from `main`.
 Pushes to other branches are published under a unique version containing the branch name, workflow run number, and commit SHA.
