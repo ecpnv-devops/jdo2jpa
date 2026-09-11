@@ -72,7 +72,7 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
             description = "When the " + TARGET_ANNOTATION_TYPE +
                     " is applied, then these optional cascade type default is applied.",
             required = false,
-            example = "CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH")
+            example = "CascadeType.PERSIST, CascadeType.MERGE")
     @Nullable
     String defaultCascade;
 

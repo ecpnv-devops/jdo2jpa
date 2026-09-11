@@ -47,6 +47,14 @@ The `v2x.Column` recipe translates explicit JDO `jdbcType = "BLOB"` and `jdbcTyp
 LOB classification does not by itself imply lazy fetching.
 Java types, column names, converters, and unrelated annotation attributes are preserved.
 
+## Relationship cascade defaults
+
+The standard `v2x.Persistent.relationships` composition supplies `CascadeType.PERSIST` and `CascadeType.MERGE` to generated relationships.
+It does not universally add `CascadeType.REFRESH` or `CascadeType.DETACH` because JDO does not imply equivalent graph-wide propagation.
+Dependency metadata still adds `CascadeType.REMOVE` and `orphanRemoval = true` where required.
+Lower-level relationship recipes retain the configurable `defaultCascade` option, so callers can deliberately opt into `REFRESH`, `DETACH`, or another supported sequence.
+Recipe tests and generated annotations establish metadata structure only; consumers must test application workflows that intentionally refresh or detach graph roots.
+
 ## Releasing
 
 Releases are published to GitHub Packages by the `Maven Package` workflow.

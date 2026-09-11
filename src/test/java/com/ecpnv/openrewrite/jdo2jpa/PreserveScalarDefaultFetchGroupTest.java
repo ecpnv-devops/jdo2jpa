@@ -186,10 +186,10 @@ class PreserveScalarDefaultFetchGroupTest extends BaseRewriteTest {
                                         @Basic(fetch = FetchType.LAZY)
                                         private String text;
 
-                                        @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                        @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                         private Person owner;
 
-                                        @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                        @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                         private List<Person> people;
                                     }
                                     """));

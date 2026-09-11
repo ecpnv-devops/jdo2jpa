@@ -12,12 +12,7 @@ class PersistentRecipeDescriptorTest {
 
     @Test
     void persistentStagesAreExplicitlyOrdered() throws IOException {
-        String descriptor;
-        try (InputStream input = getClass().getResourceAsStream(
-                "/META-INF/rewrite/datanucleus-jdo-to-jpa-eclipselink.yml")) {
-            assertThat(input).isNotNull();
-            descriptor = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        String descriptor = descriptor();
 
         int persistent = descriptor.indexOf("name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent\n");
         int relationships = descriptor.indexOf(
@@ -32,5 +27,28 @@ class PersistentRecipeDescriptorTest {
         assertThat(relationships).isBetween(persistent, nextRecipe);
         assertThat(scalar).isBetween(relationships, nextRecipe);
         assertThat(cleanup).isBetween(scalar, nextRecipe);
+    }
+
+    @Test
+    void relationshipDefaultsContainOnlyPersistAndMerge() throws IOException {
+        String descriptor = descriptor();
+        int start = descriptor.indexOf("name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.relationships\n");
+        int end = descriptor.indexOf("\n---", start);
+        String relationships = descriptor.substring(start, end);
+
+        assertThat(relationships.lines()
+                .filter(line -> line.trim().equals("defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE'"))
+                .count()).isEqualTo(2);
+        assertThat(relationships)
+                .doesNotContain("CascadeType.REFRESH")
+                .doesNotContain("CascadeType.DETACH");
+    }
+
+    private String descriptor() throws IOException {
+        try (InputStream input = getClass().getResourceAsStream(
+                "/META-INF/rewrite/datanucleus-jdo-to-jpa-eclipselink.yml")) {
+            assertThat(input).isNotNull();
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }

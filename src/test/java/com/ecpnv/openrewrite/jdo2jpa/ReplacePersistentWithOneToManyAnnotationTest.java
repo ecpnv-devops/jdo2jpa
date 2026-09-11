@@ -82,7 +82,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     @OrderColumn(name = "birth_date")
                                     private List<Person> persons;
                                 }
@@ -225,14 +225,14 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 
                                 @Entity
                                 public class Person {
-                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                 }
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     @Deprecated
                                     private List<Person> persons;
                                 }
@@ -277,7 +277,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -321,7 +321,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     private List<Person> persons;
                                 }
                                 """
@@ -407,7 +407,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
-                                    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     @JoinTable(name = "some_entity_person",
                                             joinColumns = {@javax.persistence.JoinColumn(name = "some_entity_id")},
                                             inverseJoinColumns = {@javax.persistence.JoinColumn(name = "person_id")})
@@ -468,7 +468,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id, someEntity_name, someEntity_type"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person extends EntityAbstract {
-                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
@@ -514,7 +514,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Table
                                 public class SomeEntity extends EntityAbstract {
                                     private int id;
-                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     @Deprecated
                                     private List<Person> persons;
                                 }
@@ -563,7 +563,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person extends EntityAbstract {
-                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")
@@ -598,7 +598,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Table
                                 public class SomeEntity extends EntityAbstract {
                                     private int id;
-                                    @OneToOne(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OneToOne(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     private Person person;
                                 }
                                 """

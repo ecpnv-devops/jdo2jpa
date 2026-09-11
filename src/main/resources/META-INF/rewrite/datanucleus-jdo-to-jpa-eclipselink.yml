@@ -177,21 +177,24 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.relationships
 displayName: Convert JDO relationships before scalar persistent metadata
+description: Convert JDO relationship metadata before translating scalar fetch metadata and cleaning up source annotations.
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithManyToOneAnnotation:
-      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
+      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE'
   - com.ecpnv.openrewrite.jdo2jpa.ReplacePersistentWithOneToManyAnnotation:
-      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH'
+      defaultCascade: 'CascadeType.PERSIST, CascadeType.MERGE'
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.scalarFetch
 displayName: Preserve scalar JDO default-fetch-group exclusion
+description: Preserve explicit scalar JDO default-fetch-group exclusion as JPA lazy-basic metadata.
 recipeList:
   - com.ecpnv.openrewrite.jdo2jpa.PreserveScalarDefaultFetchGroup
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: com.ecpnv.openrewrite.jdo2jpa.v2x.Persistent.cleanup
 displayName: Remove migrated JDO persistent metadata
+description: Remove JDO persistent metadata after relationship and scalar transformations complete.
 recipeList:
   - org.openrewrite.java.RemoveAnnotationAttribute:
       annotationType: javax.jdo.annotations.Persistent
