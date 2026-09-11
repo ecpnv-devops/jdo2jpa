@@ -4,7 +4,7 @@ This project provides JDO to JPA migration recipes using Open Rewrite.
 > This project is sponsored by [Eurocommercial Properties](https://www.eurocommercialproperties.com/)
 
 The most common JDO Patterns are supported, but there might be some less common or edge-cases that are not (yet) supported.
-
+[README.md](README.md)
 It supports:
 * root entity that is used to extend all entities, if you don't want this then fork and change the recipe or write an recipe to run after this migration is finished
 * [migration of](src/main/resources/META-INF/rewrite/datanucleus-jdo-to-jpa-eclipselink.yml)
@@ -69,41 +69,43 @@ Use the release helper script to keep the steps parameterized and easy to rerun:
 1. Prepare the release version on `main`:
 
    ```bash
-   ./scripts/release.sh prepare 1.2.3
+   CURR=1.2.4
+   NEXT=1.2.5
+   ./scripts/release.sh prepare $CURR
    ```
 
 2. Build and verify the release candidate:
 
    ```bash
-   ./scripts/release.sh verify 1.2.3
+   ./scripts/release.sh verify $CURR
    ```
 
 3. Commit and push the release version:
 
    ```bash
-   ./scripts/release.sh publish 1.2.3
+   ./scripts/release.sh publish $CURR
    ```
 
-   Wait for the `Maven Package` workflow to succeed and confirm that `com.ecpnv.openrewrite:jdo2jpa:1.2.3` is available in GitHub Packages.
+   Wait for the `Maven Package` workflow to succeed and confirm that `com.ecpnv.openrewrite:jdo2jpa:$CURR` is available in GitHub Packages.
 
 4. Tag and push the release tag:
 
    ```bash
-   ./scripts/release.sh tag 1.2.3
+   ./scripts/release.sh tag $CURR
    ```
 
 5. Create the GitHub Release (manual UI or via the GitHub CLI when it is installed):
 
    ```bash
-   ./scripts/release.sh github-release 1.2.3
+   ./scripts/release.sh github-release $CURR
    ```
 
-   If `gh` is not installed, the script prints the equivalent manual steps for the GitHub UI: open **Releases**, select **Draft a new release**, pick the existing `v1.2.3` tag, add a title and notes, then publish.
+   If `gh` is not installed, the script prints the equivalent manual steps for the GitHub UI: open **Releases**, select **Draft a new release**, pick the existing `v$CURR` tag, add a title and notes, then publish.
 
 6. Advance `main` to the next snapshot version:
 
    ```bash
-   ./scripts/release.sh snapshot 1.2.4
+   ./scripts/release.sh snapshot $NEXT
    ```
 
 The GitHub Release is separate from the Maven package and does not publish, convert, or promote package versions.
