@@ -1,10 +1,10 @@
 ## 1. Gate implementation on attribution and runner feasibility
 
 - [x] 1.1 Spike superclass insertion using a source-defined application parent and assert consistent extends-tree/class-level supertype metadata, actual modifiers and listener annotations visible to the next visitor, and normal type validation against the repository's OpenRewrite version.
-- [ ] 1.2 Repeat the attribution spike with a dependency-defined superclass on the application classpath but absent from template-global resource jars.
-- [ ] 1.3 Prove a module-boundary fixture that migrates/compiles a parent and processes the child in a separate invocation using only the resulting dependency, covering inherited and absent configured listeners.
-- [ ] 1.4 Prove the typed execution-context error contract with returning and throwing handlers, unchanged affected input to the failing recipe, permitted earlier edits, and a runner that exits nonzero and rejects partial output.
-- [ ] 1.5 Record exact APIs, commands, and spike outcomes in design.md and pass all spike criteria before sections 2–6; if any criterion fails, stop for a reviewed design revision rather than weakening validation.
+- [x] 1.2 Repeat the attribution spike with a dependency-defined superclass on the application classpath but absent from template-global resource jars.
+- [x] 1.3 Prove a module-boundary fixture that migrates/compiles a parent and processes the child in a separate invocation using only the resulting dependency, covering inherited and absent configured listeners.
+- [x] 1.4 Prove the typed execution-context error contract with returning and throwing handlers, unchanged affected input to the failing recipe, permitted earlier edits, and a runner that exits nonzero and rejects partial output.
+- [x] 1.5 Record exact APIs, commands, and spike outcomes in design.md and pass all spike criteria before sections 2–6; if any criterion fails, stop for a reviewed design revision rather than weakening validation.
 
 ## 2. Capture the combined failure
 

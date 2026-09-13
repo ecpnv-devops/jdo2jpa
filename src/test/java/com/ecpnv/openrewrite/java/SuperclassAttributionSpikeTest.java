@@ -3,6 +3,7 @@ package com.ecpnv.openrewrite.java;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +15,13 @@ import javax.tools.ToolProvider;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
@@ -33,6 +35,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class SuperclassAttributionSpikeTest extends BaseRewriteTest {
+
+    @TempDir
+    Path temporaryDirectory;
 
     @Test
     void resolvesSourceDefinedSuperclassForTheNextVisitor() {
@@ -59,7 +64,6 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
                         source -> source.afterRecipe(SuperclassAttributionSpikeTest::assertResolvedParent)));
     }
 
-    @Disabled("OpenRewrite 8.47.3 JavaSourceSet dependency types omit modifier and annotation metadata")
     @Test
     void resolvesDependencyDefinedSuperclassOutsideTheTemplateClasspath() throws IOException {
         Path dependency = compileDependency(
@@ -73,7 +77,7 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
         JavaSourceSet sourceSet = JavaSourceSet.build("dependency-spike", List.of(dependency));
 
         rewriteRun(spec -> spec.parser(PARSER)
-                        .recipe(new InsertResolvedSuperclass("example.DependencyParent")),
+                        .recipe(new InsertResolvedSuperclass("example.DependencyParent", List.of(dependency.toString()))),
                 java(
                         """
                                 package example;
@@ -89,17 +93,179 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
                                 .afterRecipe(SuperclassAttributionSpikeTest::assertResolvedParent)));
     }
 
+    @Test
+    void preservesDependencyListenerClassArrayValues() throws IOException {
+        Path persistenceApi = Path.of("src/main/resources/META-INF/rewrite/classpath/jakarta.persistence-api-2.2.3.jar")
+                .toAbsolutePath();
+        Path dependency = compileDependency(
+                "example.DependencyParent",
+                """
+                        package example;
+
+                        @Deprecated
+                        @javax.persistence.EntityListeners(DependencyParent.Callback.class)
+                        public abstract class DependencyParent {
+                            public static class Callback {}
+                        }
+                        """,
+                List.of(persistenceApi));
+        JavaSourceSet sourceSet = JavaSourceSet.build("listener-dependency-spike", List.of(dependency, persistenceApi));
+
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipe(new InsertResolvedSuperclass("example.DependencyParent",
+                                List.of(dependency.toString(), persistenceApi.toString()))),
+                java(
+                        """
+                                package example;
+
+                                public class Child {}
+                                """,
+                        """
+                                package example;
+
+                                public class Child extends DependencyParent {}
+                                """,
+                        source -> source.markers(sourceSet).afterRecipe(cu -> {
+                            assertResolvedParent(cu);
+                            JavaType.FullyQualified parent = TypeUtils.asFullyQualified(cu.getClasses().get(0)
+                                    .getExtends().getType());
+                            JavaType.Annotation listeners = (JavaType.Annotation) parent.getAnnotations().stream()
+                                    .filter(a -> "javax.persistence.EntityListeners".equals(a.getFullyQualifiedName()))
+                                    .findFirst().orElseThrow();
+                            assertThat(listeners.getValues()).hasSize(1);
+                            JavaType.Annotation.ArrayElementValue value =
+                                    (JavaType.Annotation.ArrayElementValue) listeners.getValues().get(0);
+                            assertThat(value.getReferenceValues()).hasSize(1);
+                            assertThat(TypeUtils.asFullyQualified(value.getReferenceValues()[0]).getFullyQualifiedName())
+                                    .isEqualTo("example.DependencyParent$Callback");
+                        })));
+    }
+
+    @Test
+    void separateChildInvocationReadsListenerFromMigratedParentArtifact() throws IOException {
+        Path persistenceApi = persistenceApi();
+        Path listenerDependency = compileDependency(
+                "org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener",
+                """
+                        package org.apache.isis.persistence.jpa.applib.integration;
+
+                        public class IsisEntityListener {}
+                        """);
+        String migratedParent = """
+                package example;
+
+                import javax.persistence.Entity;
+                import javax.persistence.EntityListeners;
+
+                @Entity
+                @EntityListeners(org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener.class)
+                public class DependencyParent {}
+                """;
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.causeway"),
+                java(
+                        """
+                                package example;
+
+                                import javax.persistence.Entity;
+
+                                @Entity
+                                public class DependencyParent {}
+                                """,
+                        migratedParent));
+
+        List<Path> applicationClasspath = List.of(persistenceApi, listenerDependency);
+        Path dependency = compileDependency("example.DependencyParent", migratedParent, applicationClasspath);
+        JavaSourceSet sourceSet = JavaSourceSet.build(
+                "migrated-parent-module", List.of(dependency, persistenceApi, listenerDependency));
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipe(new InsertResolvedSuperclass("example.DependencyParent",
+                                List.of(dependency.toString(), persistenceApi.toString(),
+                                        listenerDependency.toString()))),
+                java(
+                        """
+                                package example;
+
+                                public class Child {}
+                                """,
+                        """
+                                package example;
+
+                                public class Child extends DependencyParent {}
+                                """,
+                        source -> source.markers(sourceSet).afterRecipe(cu -> {
+                            assertConsistentParent(cu.getClasses().get(0));
+                            assertListenerIdentity(cu,
+                                    "org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener", true);
+                        })));
+    }
+
+    @Test
+    void separateChildInvocationDistinguishesParentWithoutConfiguredListener() throws IOException {
+        Path persistenceApi = persistenceApi();
+        String migratedParent = """
+                package example;
+
+                import javax.persistence.Entity;
+                import javax.persistence.EntityListeners;
+
+                @Entity
+                @EntityListeners(DependencyParent.OtherListener.class)
+                public class DependencyParent {
+                    public static class OtherListener {}
+                }
+                """;
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipeFromResources("com.ecpnv.openrewrite.jdo2jpa.v2x.causeway"),
+                java(migratedParent));
+
+        Path dependency = compileDependency("example.DependencyParent", migratedParent, List.of(persistenceApi));
+        JavaSourceSet sourceSet = JavaSourceSet.build(
+                "custom-parent-module", List.of(dependency, persistenceApi));
+        rewriteRun(spec -> spec.parser(PARSER)
+                        .recipe(new InsertResolvedSuperclass("example.DependencyParent",
+                                List.of(dependency.toString(), persistenceApi.toString()))),
+                java(
+                        """
+                                package example;
+
+                                public class Child {}
+                                """,
+                        """
+                                package example;
+
+                                public class Child extends DependencyParent {}
+                                """,
+                        source -> source.markers(sourceSet).afterRecipe(cu -> {
+                            assertConsistentParent(cu.getClasses().get(0));
+                            assertListenerIdentity(cu, "example.DependencyParent$Callback", false);
+                            assertListenerIdentity(cu, "example.DependencyParent$OtherListener", true);
+                        })));
+    }
+
+    @Test
+    void sourceSetIndexIsShallowRatherThanEvidenceOfAnUnannotatedConcreteClass() throws IOException {
+        Path dependency = compileDependency("example.DependencyParent", """
+                package example;
+                @Deprecated
+                public abstract class DependencyParent {}
+                """);
+        JavaType.FullyQualified indexed = JavaSourceSet.build("shallow-control", List.of(dependency))
+                .getClasspath().stream()
+                .filter(t -> "example.DependencyParent".equals(t.getFullyQualifiedName()))
+                .findFirst().orElseThrow();
+        assertThat(indexed).isInstanceOf(JavaType.ShallowClass.class);
+        assertThat(indexed.getFlags()).doesNotContain(org.openrewrite.java.tree.Flag.Abstract);
+        assertThat(indexed.getAnnotations()).isEmpty();
+    }
+
     private static void assertResolvedParent(J.CompilationUnit compilationUnit) {
         assertResolvedParent(compilationUnit.getClasses().get(0));
     }
 
     private static void assertResolvedParent(J.ClassDeclaration child) {
-        JavaType.Class childType = TypeUtils.asClass(child.getType());
-        JavaType.Class parentType = TypeUtils.asClass(child.getExtends().getType());
+        JavaType.Class parentType = assertConsistentParent(child);
 
-        assertThat(childType).isNotNull();
-        assertThat(parentType).isNotNull();
-        assertThat(childType.getSupertype()).isEqualTo(parentType);
         assertThat(parentType.getFullyQualifiedName()).isIn(
                 "example.ApplicationParent", "example.DependencyParent");
         assertThat(parentType.getFlags())
@@ -110,16 +276,58 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
                 .contains("java.lang.Deprecated");
     }
 
-    private static Path compileDependency(String fullyQualifiedName, String source) throws IOException {
-        Path root = Files.createTempDirectory("superclass-attribution-spike");
+    private static JavaType.Class assertConsistentParent(J.ClassDeclaration child) {
+        JavaType.Class childType = TypeUtils.asClass(child.getType());
+        JavaType.Class parentType = TypeUtils.asClass(child.getExtends().getType());
+
+        assertThat(childType).isNotNull();
+        assertThat(parentType).isNotNull();
+        assertThat(childType.getSupertype()).isEqualTo(parentType);
+        return parentType;
+    }
+
+    private static void assertListenerIdentity(
+            J.CompilationUnit compilationUnit, String listenerName, boolean expected) {
+        JavaType.FullyQualified parent = TypeUtils.asFullyQualified(compilationUnit.getClasses().get(0)
+                .getExtends().getType());
+        boolean found = parent.getAnnotations().stream()
+                .filter(JavaType.Annotation.class::isInstance)
+                .map(JavaType.Annotation.class::cast)
+                .filter(annotation -> "javax.persistence.EntityListeners".equals(annotation.getFullyQualifiedName()))
+                .flatMap(annotation -> annotation.getValues().stream())
+                .filter(JavaType.Annotation.ArrayElementValue.class::isInstance)
+                .map(JavaType.Annotation.ArrayElementValue.class::cast)
+                .flatMap(value -> java.util.Arrays.stream(value.getReferenceValues()))
+                .map(TypeUtils::asFullyQualified)
+                .anyMatch(listener -> listener != null && listenerName.equals(listener.getFullyQualifiedName()));
+        assertThat(found).isEqualTo(expected);
+    }
+
+    private static Path persistenceApi() {
+        return Path.of("src/main/resources/META-INF/rewrite/classpath/jakarta.persistence-api-2.2.3.jar")
+                .toAbsolutePath();
+    }
+
+    private Path compileDependency(String fullyQualifiedName, String source) throws IOException {
+        return compileDependency(fullyQualifiedName, source, List.of());
+    }
+
+    private Path compileDependency(String fullyQualifiedName, String source, List<Path> classpath) throws IOException {
+        Path root = Files.createTempDirectory(temporaryDirectory, "dependency");
         Path sourceFile = root.resolve("src/" + fullyQualifiedName.replace('.', '/') + ".java");
         Path classes = root.resolve("classes");
         Files.createDirectories(sourceFile.getParent());
         Files.createDirectories(classes);
         Files.writeString(sourceFile, source);
 
+        List<String> arguments = new ArrayList<>(List.of("-d", classes.toString()));
+        if (!classpath.isEmpty()) {
+            arguments.addAll(List.of("-classpath", classpath.stream().map(Path::toString)
+                    .collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator))));
+        }
+        arguments.add(sourceFile.toString());
         int result = ToolProvider.getSystemJavaCompiler().run(
-                null, null, null, "-d", classes.toString(), sourceFile.toString());
+                null, null, null, arguments.toArray(String[]::new));
         assertThat(result).isZero();
 
         Path jar = root.resolve("dependency.jar");
@@ -138,14 +346,25 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
             extends ScanningRecipe<Map<String, JavaType.FullyQualified>> {
 
         private final String superclassName;
+        private final List<String> applicationClasspath;
+
+        public InsertResolvedSuperclass(String superclassName) {
+            this(superclassName, List.of());
+        }
 
         @JsonCreator
-        public InsertResolvedSuperclass(@JsonProperty("superclassName") String superclassName) {
+        public InsertResolvedSuperclass(@JsonProperty("superclassName") String superclassName,
+                                        @JsonProperty("applicationClasspath") List<String> applicationClasspath) {
             this.superclassName = superclassName;
+            this.applicationClasspath = applicationClasspath;
         }
 
         public String getSuperclassName() {
             return superclassName;
+        }
+
+        public List<String> getApplicationClasspath() {
+            return applicationClasspath;
         }
 
         @Override
@@ -160,7 +379,22 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
 
         @Override
         public Map<String, JavaType.FullyQualified> getInitialValue(ExecutionContext ctx) {
-            return new HashMap<>();
+            Map<String, JavaType.FullyQualified> types = new HashMap<>();
+            if (!applicationClasspath.isEmpty()) {
+                // A private parser reads actual application bytecode; this source is never emitted.
+                // JavaSourceSet is a name index, not a source of flags or annotation metadata.
+                J.CompilationUnit probe = (J.CompilationUnit) JavaParser.fromJavaVersion()
+                        .classpath(applicationClasspath.stream().map(Path::of).toList())
+                        .build()
+                        .parse(ctx, "class __SuperclassMetadataProbe { " + superclassName + " parent; }")
+                        .findFirst().orElseThrow();
+                J.VariableDeclarations field = (J.VariableDeclarations) probe.getClasses().get(0)
+                        .getBody().getStatements().get(0);
+                JavaType.FullyQualified parent = TypeUtils.asFullyQualified(field.getTypeExpression().getType());
+                assertThat(parent).isNotNull().isNotInstanceOf(JavaType.ShallowClass.class);
+                types.put(parent.getFullyQualifiedName(), parent);
+            }
+            return types;
         }
 
         @Override
@@ -169,7 +403,7 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
                 @Override
                 public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                     cu.getMarkers().findFirst(JavaSourceSet.class).ifPresent(sourceSet ->
-                            sourceSet.getClasspath().forEach(type -> types.put(type.getFullyQualifiedName(), type)));
+                            sourceSet.getClasspath().forEach(type -> types.putIfAbsent(type.getFullyQualifiedName(), type)));
                     return super.visitCompilationUnit(cu, ctx);
                 }
 
@@ -217,7 +451,7 @@ class SuperclassAttributionSpikeTest extends BaseRewriteTest {
                                 J.ClassDeclaration classDeclaration, ExecutionContext executionContext) {
                             J.ClassDeclaration visited = super.visitClassDeclaration(classDeclaration, executionContext);
                             if ("Child".equals(visited.getSimpleName())) {
-                                assertResolvedParent(visited);
+                                assertConsistentParent(visited);
                             }
                             return visited;
                         }

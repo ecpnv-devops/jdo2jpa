@@ -70,6 +70,12 @@ When adding the extends clause, resolve the configured superclass from available
 Reuse that resolved type in the inserted hierarchy and keep the class's attributed supertype consistent with its extends tree.
 Use the same resolution strategy where the class-specific superclass helper shares the insertion mechanism.
 Do not manufacture an Abstract flag merely because the configured name contains `Abstract`.
+Treat `JavaSourceSet.getClasspath()` as a shallow name index, not authoritative modifier, superclass, or annotation metadata.
+For dependency fallback, use a fresh `JavaParser.fromJavaVersion().classpath(Collection<Path>)` against the current module's application dependency artifacts and parse an internal field-only source such as `class __SuperclassMetadataProbe { example.DependencyParent parent; }`.
+Read the attributed field type and use it for the inserted identifier and class-level supertype; never emit the probe as application source or add it to the migration's source set.
+The field-only probe does not invent a superclass declaration, modifiers, annotations, constructors, or methods: the parser obtains them from the dependency bytecode.
+Use full source/bytecode-derived types ahead of shallow index entries, and do not let scanning a later JavaSourceSet marker overwrite already-resolved metadata.
+A metadata parser must have a module-specific classpath and type cache so baseline/candidate or module versions cannot contaminate each other.
 
 The Causeway recipe shall be able to recover a superclass reference from source declarations/imports and available attributed types if an earlier transformation left the extends expression incompletely attributed.
 For the combined regression fixture, the application superclass is available as source or as an application dependency, not added artificially to the JavaTemplate factory's global classpath.
@@ -186,11 +192,49 @@ For a source-defined application parent, a scanning recipe obtained the source `
 The resulting extends expression and class-level supertype agreed, and the next test callback observed the parent's real abstract flag and `Deprecated` annotation with normal type validation enabled.
 Task 1.1 therefore passed.
 
-The dependency-defined spike built an application dependency JAR outside the template-global resource classpath and exposed it through `JavaSourceSet.build`.
-OpenRewrite resolved the dependency FQN, but `JavaSourceSet.getClasspath()` supplied a type with no abstract flag and no annotation metadata.
-The exact task 1.2 assertion failed with `flags and annotations for example.DependencyParent: []`.
-The failing dependency scenario remains as a disabled regression in `SuperclassAttributionSpikeTest` so a revised mechanism can enable and satisfy it.
+### Initial dependency-index failure
 
-Because dependency-defined modifier and listener metadata is required by tasks 1.2 and 1.3, the gated spike has failed and sections 2 through 6 remain blocked.
-Implementation must not proceed by fabricating abstractness, accepting shallow dependency types, or adding the dependency to the template-global resource classpath.
-A reviewed design revision must identify a supported source of full dependency class metadata or narrow the cross-module contract before feature implementation resumes.
+The original dependency-defined spike built an application dependency JAR outside the template-global resource classpath and exposed it through `JavaSourceSet.build`.
+OpenRewrite resolved the dependency FQN, but `JavaSourceSet.getClasspath()` supplied a shallow type with no abstract flag and no annotation metadata.
+The exact task 1.2 assertion failed with `flags and annotations for example.DependencyParent: []`.
+This is a limitation of that marker's name index, not of the Java parser's bytecode attribution.
+The control regression now explicitly checks `JavaType.ShallowClass`, the missing Abstract flag, and the empty annotation list; shallow entries can still carry a default Public flag.
+
+### Proven dependency-bytecode resolution
+
+Task 1.2 now passes using a separate parser configured with explicit application dependency paths.
+The previously disabled test is enabled, and all four tests in `SuperclassAttributionSpikeTest` pass with normal type validation.
+`InsertResolvedSuperclass.getInitialValue` parses the internal field-only probe, extracts its fully attributed field type, and retains it ahead of JavaSourceSet index entries using `putIfAbsent` for those entries.
+The existing template parser remains unchanged and does not receive the application superclass JAR; both the inserted `J.Identifier.withType(...)` and `JavaType.Class.withSupertype(...)` use the bytecode-derived parent type.
+The following visitor observes the real parent FQN, Abstract modifier, and Deprecated annotation.
+An additional regression compiles a real `javax.persistence.EntityListeners` annotation onto the dependency parent and verifies its `JavaType.Annotation` element value is an `ArrayElementValue` whose reference array contains `example.DependencyParent$Callback`.
+That regression uses the existing Jakarta Persistence 2.2.3 API JAR, whose package is javax.persistence, and introduces no new dependency.
+The generated parent JAR and sources are temporary JUnit fixtures cleaned up through `@TempDir`.
+
+Evidence: `JAVA_HOME=/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem` with its bin directory prepended to PATH; `mvn clean verify` exited 0 with 225 tests, 0 failures, 0 errors, and 2 existing skipped tests.
+The superclass spike accounts for 4 tests with 0 skips.
+The local build log is `/tmp/f04-unblock-clean-verify.log`; durable reruns use the checked-in test source rather than relying on that temporary log.
+This verifies the spike checkout, not the eventual release candidate or Estatio acceptance run.
+
+### Completed module-boundary and error-contract spikes
+
+The dependency-metadata blocker is removed without narrowing the cross-module guarantee or adding superclass stubs/global template resources.
+The test recipe's `applicationClasspath` constructor property is test-only and is not a new production recipe option or a change to the agreed public API.
+The spike explicitly supplies artifact paths; it does not prove automatic classpath discovery from an Estatio Maven invocation.
+For production, retain existing fully attributed source/reference types where available and supply the metadata parser with the current module's actual resolved dependency paths, including annotation APIs and transitive superclass/listener dependencies.
+Do not try to reconstruct those paths from `JavaSourceSet.getClasspath()` FQNs or use the plugin JVM's runtime classpath as a substitute.
+Maven-aware artifact resolution or an explicit runner-to-resolver classpath handoff must preserve module/version provenance during feature implementation; missing paths retain the specified unresolved-hierarchy error policy.
+
+Task 1.3 passes with two separate-invocation module-boundary regressions.
+The first runs the configured Causeway migration on a parent, compiles that migrated source into a dependency JAR, parses the child separately with no parent source, and observes the configured listener identity from bytecode.
+The second compiles a migrated parent with only an explicit unrelated listener and proves the child invocation distinguishes that absence while retaining the unrelated listener identity.
+Both tests use isolated temporary JARs and explicit application dependency paths.
+
+Task 1.4 passes with `InMemoryExecutionContext.getOnError()`, `Recipe.run(...)`, and `InMemoryLargeSourceSet`.
+A returning handler records the typed entity, parent, recipe, and remediation fields while the failing recipe produces no changes.
+A throwing handler propagates normally through the runner.
+A composed spike proves that an earlier recipe edit remains in the internal changeset while an acceptance wrapper returns exit code 1 and publishes no partial sources after the hierarchy error.
+
+Evidence: `JAVA_HOME=/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem` with its bin directory prepended to PATH; `mvn -Dtest=SuperclassAttributionSpikeTest,UnresolvedHierarchyErrorContractSpikeTest test` exited 0 with 9 tests, 0 failures, 0 errors, and 0 skips.
+Tasks 1.1 through 1.4 now satisfy the gated source, dependency, module-boundary, and error-propagation criteria.
+The exact APIs, commands, and outcomes are recorded in this section and the preceding spike sections, so task 1.5 passes and feature implementation may proceed.
