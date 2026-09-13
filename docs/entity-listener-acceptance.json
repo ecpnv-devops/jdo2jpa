@@ -1,14 +1,14 @@
 {
-  "status": "candidate5 verified; round3 rejected and full candidate5 acceptance pending",
+  "status": "round5 blocked after 56 completed modules on both sides; candidate-specific EntityScan output requires investigation",
   "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
   "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
   "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
-  "workspace": "/tmp/f04-acceptance-401d6c4/round3",
+  "workspace": "/tmp/f04-acceptance-401d6c4/round5",
   "baseline": {
     "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-baseline",
     "sourceCommit": "b2faf2ce08a25036af17396e6b3bf1be508a0cc2",
     "jarSha256": "6175abf861b847d022385bf6245cabc91998fb30af5ba13bc759f8b8cc061dd4",
-    "localRepository": "/tmp/f04-acceptance-401d6c4/round3/repositories/baseline",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round5/repositories/baseline",
     "verifyExit": 0,
     "tests": 221,
     "failures": 0,
@@ -20,14 +20,14 @@
     "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-candidate5",
     "sourceCommit": "08264e27bc001dbc9d11a5d6244cbf749aa3f115",
     "jarSha256": "e37974aa34937d259934c9af8dd527e7eaa442234d7356b03df72320f82b119a",
-    "localRepository": "/tmp/f04-acceptance-401d6c4/round3/repositories/candidate",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round5/repositories/candidate",
     "verifyExit": 0,
     "tests": 255,
     "failures": 0,
     "errors": 0,
     "existingSkips": 2,
-    "verifyLog": "candidate5-recipe-verify.log",
-    "buildRecord": "candidate5-build-results.json"
+    "verifyLog": "../round3/candidate5-recipe-verify.log",
+    "buildRecord": "../round3/candidate5-build-results.json"
   },
   "artifactBuildAdjustment": "Replace only the project version 1.2.4-SNAPSHOT with the unique comparison version before building; implementation sources remain pinned to sourceCommit.",
   "verifyCommands": {
@@ -51,32 +51,49 @@
     "Select the immutable side-specific recipe using -Djdo2jpa.version; application version coordinates remain unchanged.",
     "Use clean install for each JPA module to remove stale JDO-generated QueryDSL sources.",
     "Use the JPA reactor for installation and the original JDO reactor scope for rewriting; do not compile inactive JDO-only modules as JPA or rewrite inactive JPA-only modules through the JDO profiles.",
-    "No JPA markers exist in either starting input."
+    "No JPA markers exist in either starting input.",
+    "Both root POMs set jdo2jpa.entityListenerClass=org.estatio.base.prod.integration.OrmEntityListener before round5; candidate Maven logs confirm the effective option.",
+    "Both bankmandate POMs explicitly declare the PDF.js API in their JPA profile before that module is processed; the baseline-proven consumer correction is recorded in pdfjs-input-adjustment.json."
+
   ],
   "requiredOrdering": "Regenerate, clean-build and install migrated parents before parsing children. Stop on any command failure, reported Maven error or hierarchy error and reject partial output.",
-  "orchestration": "run-comparison.py still describes rejected candidate3; do not use its outputs as candidate5 acceptance",
-  "repositorySeedProvenance": "repository-seed-sha256.jsonl (56,289 JAR/POM checksums)",
+  "orchestration": "run-comparison.py uses baseline and candidate5 with identical orchestration; state files are written atomically",
+  "repositorySeedProvenance": "../round3/repository-seed-sha256.jsonl (56,289 JAR/POM checksums of the unchanged common seed)",
+  "round5Outcome": {
+    "completedModulesPerSide": 56,
+    "status": "blocked; partial output rejected",
+    "consumerBlocker": "Both sides retain org.datanucleus.api.jdo.annotations.ReadOnly on IncomingInvoiceItemSynopsis and fail capex JPA compilation. Do not add DataNucleus to the JPA compilation classpath to mask an unconverted annotation.",
+    "candidateSpecificDifference": "FinancialAccountTransactionAdvisor gains EntityScan on nested NOOP and AutoConfigurer classes. This is beyond the intended listener/superclass change and remains an acceptance blocker pending investigation.",
+    "otherCompletedModuleDifferences": "Two unused-import removals and two import-group blank lines; no superclass/listener differences in the 56-module completed prefix.",
+    "repeatChecks": {
+      "baseline": "baseline-repeat-results.json",
+      "candidate": "candidate-repeat-results.json",
+      "result": "Both remove DiscriminatorColumn from the same two test subclasses on repeat. Baseline also removes the unused Paperclip import. No listener changes occurred in these checks; full-tree idempotence is not established."
+    },
+    "resolvedPriorBlockers": "Task hierarchy and bankmandate compilation passed on both sides; bankmandate requires the recorded symmetric PDF.js consumer dependency adjustment.",
+    "consumerPrerequisites": "docs/entity-listener-consumer-prerequisites.md"
+  },
   "round3Outcome": {
     "baselineCompletedModules": 53,
     "baselineFailure": "estatio-shared-kernel/bankmandate JPA compilation: missing org.apache.isis.extensions.pdfjs.applib annotations/config APIs",
-    "baselineLog": "baseline-migration-logs/estatio-shared-kernel_bankmandate-jpa-install.log",
+    "baselineLog": "../round3/baseline-migration-logs/estatio-shared-kernel_bankmandate-jpa-install.log",
     "candidateCompletedModules": 36,
     "candidateFailure": "task local rewrite logged a hierarchy error despite Maven exit zero; guard rejected output",
     "candidateRegression": "DocumentTemplateForTesting received a redundant listener across the main/test boundary",
     "acceptance": false
   },
   "candidate5Diagnostic": {
-    "record": "candidate5-task-diagnostic.json",
+    "record": "../round3/candidate5-task-diagnostic.json",
     "exit": 0,
     "hierarchyError": false,
     "result": "StateTransitionAbstract now extends EntityAbstract with its generic bounds preserved",
     "limitation": "Retry of the failing phase over copied rejected task sources and prior parent artifacts; not full regeneration or compilation acceptance"
   },
   "nextComparisonRequirements": [
-    "Create fresh pinned inputs and compare candidate5 against the immutable baseline, not candidate3 output.",
-    "Set the Maven project property jdo2jpa.entityListenerClass=org.estatio.base.prod.integration.OrmEntityListener identically before recipe loading on both sides; the baseline ignores the new option.",
-    "Retain the JDO input API and clean parent-first JPA builds.",
-    "Resolve or explicitly hand off the baseline PDF.js dependency blocker; never substitute the task diagnostic for whole-application acceptance."
+    "Investigate candidate-specific nested EntityScan additions before accepting or extending the candidate comparison.",
+    "Diagnose the shared capex ReadOnly migration failure without hiding it behind DataNucleus compile dependencies.",
+    "Any resumed failed module must first be restored to its recorded input; do not reuse partial output as fresh regeneration.",
+    "Retain the recorded final-listener setting, JDO input API, PDF.js dependency adjustment and clean parent-first JPA builds."
   ],
   "liveState": ["baseline-migration-state.json", "candidate-migration-state.json"],
   "preflight": {
@@ -86,7 +103,7 @@
     "goal": "compile",
     "baselineExit": 0,
     "candidateExit": 0,
-    "note": "These preflights used the baseline and candidate3, not candidate5. They are not post-migration JPA acceptance."
+    "note": "Fresh round5 baseline and candidate5 JDO-input preflights passed, with both recipe JAR checksums verified. These are not post-migration JPA acceptance."
   },
   "priorTrials": [
     "../model-parsing-trial: cancelled both sides after obsolete repository retries with skipMavenParsing=false; exit 143 and partial output rejected.",
