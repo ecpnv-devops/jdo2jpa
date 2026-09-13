@@ -145,11 +145,18 @@ public final class AddCausewayEntityListener extends ScanningRecipe<EntityTypeRe
                     if (!(a instanceof JavaType.Annotation values)) {
                         throw unresolved(entity, name);
                     }
+                    // EntityListeners.value is required; even an explicit empty array has an element value.
+                    if (values.getValues().isEmpty()) {
+                        throw unresolved(entity, name);
+                    }
                     for (JavaType.Annotation.ElementValue value : values.getValues()) {
                         if (value instanceof JavaType.Annotation.ArrayElementValue array) {
                             JavaType[] references = array.getReferenceValues();
                             if (references != null) {
                                 for (JavaType reference : references) {
+                                    if (reference == null || reference instanceof JavaType.Unknown) {
+                                        throw unresolved(entity, name);
+                                    }
                                     if (TypeUtils.isOfClassType(reference, listenerClass)) {
                                         return true;
                                     }

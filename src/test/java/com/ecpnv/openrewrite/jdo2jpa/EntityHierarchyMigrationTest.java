@@ -170,6 +170,26 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     @Test
+    void incompleteDependencyListenerValuesAreNotInterpretedAsNoListener() throws Exception {
+        Path repository = temporary.resolve("repository");
+        installParent(repository, "1", "public abstract class Parent {}");
+        J.CompilationUnit child = (J.CompilationUnit) JavaParser.fromJavaVersion().classpath(List.of(
+                repository.resolve("example/parent/1/parent-1.jar"),
+                repository.resolve("example/annotations/1/annotations-1.jar"))).build()
+                .parse("package example; @javax.persistence.Entity public class Child extends Parent {}")
+                .findFirst().orElseThrow();
+        J.ClassDeclaration cd = child.getClasses().get(0);
+        JavaType.Class parent = TypeUtils.asClass(cd.getExtends().getType()).withAnnotations(List.of(
+                new JavaType.Annotation(JavaType.ShallowClass.build("javax.persistence.EntityListeners"), List.of())));
+        child = child.withClasses(List.of(cd.withExtends(cd.getExtends().withType(parent))
+                .withType(TypeUtils.asClass(cd.getType()).withSupertype(parent))));
+        List<Throwable> errors = new ArrayList<>();
+        var run = LISTENERS.run(new InMemoryLargeSourceSet(List.of(child)), new InMemoryExecutionContext(errors::add));
+        assertThat(run.getChangeset().size()).isZero();
+        assertThat(errors).singleElement().isInstanceOf(UnresolvedEntityHierarchyException.class);
+    }
+
+    @Test
     void ambiguousIndexedArtifactsAreRejectedRatherThanGuessed() throws Exception {
         Path repository = temporary.resolve("repository");
         installParent(repository, "1", "@Deprecated public abstract class Parent {}");
