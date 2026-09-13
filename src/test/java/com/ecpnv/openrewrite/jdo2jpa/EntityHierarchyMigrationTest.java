@@ -86,6 +86,21 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     @Test
+    void superclassInsertionPreservesGenericDeclarationType() {
+        Recipe recipe = new ExtendWithClassForClass("example.Child", "example.Parent");
+        List<SourceFile> output = run(recipe, parse(
+                "package example; public abstract class Parent {}",
+                "package example; public class Child<T extends Number> { T value; }"));
+        J.ClassDeclaration child = ((J.CompilationUnit) output.stream()
+                .filter(s -> s.getSourcePath().toString().endsWith("Child.java")).findFirst().orElseThrow()).getClasses().get(0);
+        assertThat(text(output, "Child.java")).contains("Child<T extends Number> extends Parent");
+        assertThat(child.getType()).isInstanceOf(JavaType.Parameterized.class);
+        assertThat(((JavaType.Parameterized) child.getType()).getTypeParameters()).hasSize(1);
+        assertThat(child.getType().getSupertype()).isEqualTo(child.getExtends().getType());
+        assertStable(recipe, output);
+    }
+
+    @Test
     void plansAncestorAdditionsIndependentOfFileOrder() {
         List<SourceFile> sources = parse(
                 "package example; @javax.persistence.Entity public class Parent {}",

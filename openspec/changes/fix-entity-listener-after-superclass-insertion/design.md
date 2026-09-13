@@ -314,3 +314,12 @@ Different bytecode and classpath-changing manifests remain typed failures with u
 The complete verification after these changes passes 254 tests, with zero failures/errors and two existing skips.
 Round3 remains rejected as acceptance: baseline compilation stopped at bankmandate on missing PDF.js APIs, and the older candidate stopped at task and had a test-entity listener regression.
 A subsequent candidate must be pinned independently; the prior trial is diagnostic evidence, not acceptance of the new code.
+
+## Parameterized declaration correction
+
+The candidate4 task retry still failed after packaging-equivalence hardening, so QueryDSL packaging was not the direct cause of that failure.
+A minimal generic-declaration regression reproduced the same misleading unresolved-parent error: TypeUtils.asClass returned null for the parameterized child declaration even though the parent was available.
+SuperclassInsertion now updates the underlying JavaType.Class and preserves the JavaType.Parameterized wrapper and its type arguments.
+The shared helper fixes both superclass recipes without changing source generic bounds.
+The complete verification passes 255 tests with zero failures/errors and two existing skips.
+Candidate4's failed diagnostic remains rejected evidence and must not be represented as successful task regeneration.

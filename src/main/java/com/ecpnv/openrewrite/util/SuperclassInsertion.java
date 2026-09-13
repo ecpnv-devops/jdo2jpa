@@ -23,13 +23,15 @@ public final class SuperclassInsertion {
         if (parent == null && EntityTypeResolver.full(extended.getExtends().getType())) {
             parent = TypeUtils.asFullyQualified(extended.getExtends().getType());
         }
-        JavaType.Class child = TypeUtils.asClass(cd.getType());
+        JavaType.Parameterized parameterized = cd.getType() instanceof JavaType.Parameterized p ? p : null;
+        JavaType.Class child = TypeUtils.asClass(parameterized == null ? cd.getType() : parameterized.getType());
         if (parent == null || !name.equals(parent.getFullyQualifiedName()) || child == null) {
             ctx.getOnError().accept(new UnresolvedEntityHierarchyException(
                     cd.getType() == null ? cd.getSimpleName() : cd.getType().getFullyQualifiedName(), name, recipe));
             return cd;
         }
+        JavaType.Class updated = child.withSupertype(parent);
         return extended.withExtends(extended.getExtends().withType(parent))
-                .withType(child.withSupertype(parent));
+                .withType(parameterized == null ? updated : parameterized.withType(updated));
     }
 }
