@@ -22,6 +22,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -95,15 +96,48 @@ public final class EntityTypeResolver {
         });
     }
 
+    private boolean sameProject(J.CompilationUnit left, J.CompilationUnit right) {
+        Path leftRoot = pomRoot(left);
+        Path rightRoot = pomRoot(right);
+        if (leftRoot != null || rightRoot != null) {
+            return leftRoot != null && leftRoot.equals(rightRoot);
+        }
+        JavaProject project = left.getMarkers().findFirst(JavaProject.class).orElse(null);
+        return project != null && project.getPublication() != null
+                && project.equals(right.getMarkers().findFirst(JavaProject.class).orElse(null));
+    }
+
+    private @Nullable Module declarationModule(J.CompilationUnit cu, String name) {
+        Module own = module(cu);
+        if (own.declarations.containsKey(name)) {
+            return own;
+        }
+        if (!cu.getMarkers().findFirst(JavaSourceSet.class).map(s -> "test".equals(s.getName())).orElse(false)) {
+            return null;
+        }
+        // Tests depend on main sources in the same project, never the reverse. Do not pool artifact caches.
+        List<Module> main = sources.stream().filter(source -> sameProject(cu, source))
+                .filter(source -> source.getMarkers().findFirst(JavaSourceSet.class)
+                        .map(s -> "main".equals(s.getName())).orElse(false))
+                .map(this::module).distinct().filter(m -> m.declarations.containsKey(name)).toList();
+        return main.size() == 1 ? main.get(0) : null;
+    }
+
     public J.@Nullable ClassDeclaration declaration(J.CompilationUnit cu, String name) {
-        return module(cu).declarations.get(name);
+        Module source = declarationModule(cu, name);
+        return source == null ? null : source.declarations.get(name);
     }
 
     public J.CompilationUnit owner(J.CompilationUnit cu, String name) {
-        return module(cu).owners.getOrDefault(name, cu);
+        Module source = declarationModule(cu, name);
+        return source == null ? cu : source.owners.getOrDefault(name, cu);
     }
 
     public JavaType.@Nullable FullyQualified resolve(J.CompilationUnit cu, String name, ExecutionContext ctx) {
+        J.ClassDeclaration declaration = declaration(cu, name);
+        if (declaration != null && full(declaration.getType())) {
+            return declaration.getType();
+        }
         Module module = module(cu);
         JavaType.FullyQualified existing = module.types.get(name);
         if (existing != null) {
@@ -233,9 +267,9 @@ public final class EntityTypeResolver {
                 if (matches.isEmpty()) {
                     return List.of();
                 }
-                // GAV alone loses classifier/timestamp identity. Never choose between different matching binaries.
+                // GAV loses classifier identity. Packaging-only variants may supply identical metadata.
                 for (int i = 1; i < matches.size(); i++) {
-                    if (Files.mismatch(matches.get(0), matches.get(i)) != -1) {
+                    if (!sameClasspathMetadata(matches.get(0), matches.get(i))) {
                         return List.of();
                     }
                 }
@@ -245,6 +279,43 @@ public final class EntityTypeResolver {
             return List.of();
         }
         return List.copyOf(classpath);
+    }
+
+    private static boolean sameClasspathMetadata(Path first, Path second) throws IOException {
+        if (Files.mismatch(first, second) == -1) {
+            return true;
+        }
+        try (ZipFile left = new ZipFile(first.toFile()); ZipFile right = new ZipFile(second.toFile())) {
+            Set<String> names = left.stream().map(e -> e.getName()).filter(n -> n.endsWith(".class"))
+                    .collect(Collectors.toSet());
+            if (!names.equals(right.stream().map(e -> e.getName()).filter(n -> n.endsWith(".class"))
+                    .collect(Collectors.toSet()))) {
+                return false;
+            }
+            for (String name : names) {
+                try (var a = left.getInputStream(left.getEntry(name)); var b = right.getInputStream(right.getEntry(name))) {
+                    if (!java.util.Arrays.equals(a.readAllBytes(), b.readAllBytes())) {
+                        return false;
+                    }
+                }
+            }
+            java.util.jar.Attributes a = manifestAttributes(left);
+            java.util.jar.Attributes b = manifestAttributes(right);
+            // These affect javac classpath lookup. Module-path naming and processor service descriptors do not:
+            // the internal field probe is parsed on the classpath without service-discovered annotation processing.
+            return java.util.Objects.equals(a.getValue("Class-Path"), b.getValue("Class-Path"))
+                    && java.util.Objects.equals(a.getValue("Multi-Release"), b.getValue("Multi-Release"));
+        }
+    }
+
+    private static java.util.jar.Attributes manifestAttributes(ZipFile zip) throws IOException {
+        var entry = zip.getEntry("META-INF/MANIFEST.MF");
+        if (entry == null) {
+            return new java.util.jar.Attributes();
+        }
+        try (var stream = zip.getInputStream(entry)) {
+            return new java.util.jar.Manifest(stream).getMainAttributes();
+        }
     }
 
     private static final class Module {

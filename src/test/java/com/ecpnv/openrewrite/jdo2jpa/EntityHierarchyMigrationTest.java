@@ -66,6 +66,26 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     @Test
+    void configuredFinalListenerIsStableAcrossMainAndTestSourceSets() {
+        java.util.Properties properties = new java.util.Properties();
+        properties.setProperty("jdo2jpa.entityListenerClass", "java.lang.Thread");
+        Recipe recipe = Environment.builder(properties).scanRuntimeClasspath().build().activateRecipes(
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable", "com.ecpnv.openrewrite.jdo2jpa.v2x.causeway");
+        List<SourceFile> parsed = parse(
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Parent {}",
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Child extends Parent {}");
+        List<SourceFile> output = run(recipe, List.of(inSourceSet(parsed.get(1), "test", "1"),
+                inSourceSet(parsed.get(0), "main", "1")));
+        assertThat(text(output, "Parent.java")).contains("@EntityListeners(java.lang.Thread.class)").doesNotContain(LISTENER);
+        assertThat(text(output, "Child.java")).doesNotContain("@EntityListeners");
+        assertStable(recipe, output);
+        // Reparse the generated text as a real repeat invocation does, preserving only project/source-set markers.
+        List<SourceFile> reparsed = parse(text(output, "Parent.java"), text(output, "Child.java"));
+        List<SourceFile> repeat = List.of(inSourceSet(reparsed.get(0), "main", "1"), inSourceSet(reparsed.get(1), "test", "1"));
+        assertStable(recipe, repeat);
+    }
+
+    @Test
     void plansAncestorAdditionsIndependentOfFileOrder() {
         List<SourceFile> sources = parse(
                 "package example; @javax.persistence.Entity public class Parent {}",
@@ -107,6 +127,44 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
             assertThat(text(output, "Child.java")).doesNotContain("@EntityListeners");
             assertStable(recipe, output);
         }
+    }
+
+    @Test
+    void testEntitiesInheritPlannedMainSourceListeners() {
+        Recipe recipe = Environment.builder().scanRuntimeClasspath().build().activateRecipes(
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable", "com.ecpnv.openrewrite.jdo2jpa.v2x.causeway");
+        List<SourceFile> parsed = parse(
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Parent {}",
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Child extends Parent {}");
+        SourceFile parent = inSourceSet(parsed.get(0), "main", "1");
+        SourceFile child = inSourceSet(parsed.get(1), "test", "1");
+        for (List<SourceFile> input : List.of(List.of(parent, child), List.of(child, parent))) {
+            List<SourceFile> output = run(recipe, input);
+            assertThat(text(output, "Parent.java")).contains("@EntityListeners");
+            assertThat(text(output, "Child.java")).doesNotContain("@EntityListeners");
+            assertStable(recipe, output);
+        }
+    }
+
+    @Test
+    void mainSourcePlansDoNotSeeTestsOrOtherProjectVersions() {
+        List<SourceFile> parsed = parse(
+                "package example; @javax.persistence.Entity public class Parent {}",
+                "package example; @javax.persistence.Entity public class Child extends Parent {}");
+        for (List<SourceFile> input : List.of(
+                List.of(inSourceSet(parsed.get(0), "main", "2"), inSourceSet(parsed.get(1), "test", "1")),
+                List.of(inSourceSet(parsed.get(0), "test", "1"), inSourceSet(parsed.get(1), "main", "1")))) {
+            List<SourceFile> output = run(LISTENERS, input);
+            assertThat(text(output, "Parent.java")).contains("@EntityListeners");
+            assertThat(text(output, "Child.java")).contains("@EntityListeners");
+        }
+    }
+
+    private static SourceFile inSourceSet(SourceFile source, String sourceSet, String version) {
+        var project = new org.openrewrite.java.marker.JavaProject(java.util.UUID.randomUUID(), "sample",
+                new org.openrewrite.java.marker.JavaProject.Publication("example", "sample", version));
+        return source.withMarkers(source.getMarkers().add(project)
+                .add(org.openrewrite.java.marker.JavaSourceSet.build(sourceSet, List.of())));
     }
 
     @Test
@@ -182,6 +240,13 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
                 repository.resolve("example/parent/1/parent-1.jar"),
                 repository.resolve("example/annotations/1/annotations-1.jar")));
         assertThat(index.getGavToTypes()).containsKeys("example:parent:1", "example:annotations:1");
+        Path packagingVariant = repository.resolve("example/parent/1/parent-1-tests.jar");
+        Files.copy(repository.resolve("example/parent/1/parent-1.jar"), packagingVariant);
+        try (var zip = java.nio.file.FileSystems.newFileSystem(packagingVariant)) {
+            Files.createDirectories(zip.getPath("/META-INF/services"));
+            Files.writeString(zip.getPath("/META-INF/services/javax.annotation.processing.Processor"), "missing.MustNotRun");
+            Files.writeString(zip.getPath("/META-INF/MANIFEST.MF"), "Manifest-Version: 1.0\nCreated-By: packaging variant\n\n");
+        }
         SourceFile child = parse("package example; @javax.persistence.Entity public class Child {}").get(0);
         child = child.withMarkers(child.getMarkers().add(index));
         List<Throwable> errors = new ArrayList<>();
@@ -198,6 +263,28 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
         assertThat(parent.getAnnotations()).extracting(JavaType.FullyQualified::getFullyQualifiedName)
                 .contains("java.lang.Deprecated", "javax.persistence.EntityListeners");
         assertStable(recipe, List.of(output));
+    }
+
+    @Test
+    void classpathChangingManifestVariantsAreRejected() throws Exception {
+        Path repository = temporary.resolve("repository");
+        installParent(repository, "1", "public abstract class Parent {}");
+        Path original = repository.resolve("example/parent/1/parent-1.jar");
+        var index = org.openrewrite.java.marker.JavaSourceSet.build("main", List.of(original));
+        Path variant = original.resolveSibling("parent-1-tests.jar");
+        Files.copy(original, variant);
+        try (var zip = java.nio.file.FileSystems.newFileSystem(variant)) {
+            Files.createDirectories(zip.getPath("/META-INF"));
+            Files.writeString(zip.getPath("/META-INF/MANIFEST.MF"), "Manifest-Version: 1.0\nClass-Path: different.jar\n\n");
+        }
+        SourceFile child = parse("package example; public class Child {}").get(0);
+        child = child.withMarkers(child.getMarkers().add(index));
+        List<Throwable> errors = new ArrayList<>();
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(errors::add);
+        MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
+        var run = new ExtendWithClassForClass("example.Child", "example.Parent").run(new InMemoryLargeSourceSet(List.of(child)), ctx);
+        assertThat(run.getChangeset().size()).isZero();
+        assertThat(errors).singleElement().isInstanceOf(UnresolvedEntityHierarchyException.class);
     }
 
     @Test

@@ -175,3 +175,21 @@ The maintained BackgroundCommandsOrchestration repair SHALL remain separately ow
 - **WHEN** an environment or unrelated blocker prevents the callback scenario
 - **THEN** the handoff and rollout acceptance remain explicitly blocked rather than recorded as successful
 - **AND** the recipe change can complete with the unavailable runtime evidence recorded as a non-blocking consumer handoff
+
+### Requirement: Identified test sources inherit main-source plans
+
+Within an identified project, test-source listener analysis MUST account for relevant main-source declarations and their planned listener additions.
+Main-source analysis MUST NOT borrow test declarations, and project/version boundaries MUST remain isolated.
+
+#### Scenario: Test entity extends a newly migrated main entity
+- **WHEN** a test entity extends a main-source entity in the same identified project and the parent is scheduled to receive the configured listener
+- **THEN** the test entity does not receive a redundant listener, regardless of file order
+
+### Requirement: Standard listener configuration retains its default
+
+The standard recipe MUST default to org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener and MUST allow an explicit jdo2jpa.entityListenerClass recipe-environment property to select the consumer's final integration listener.
+The override MUST NOT weaken explicit entity-level listener preservation or treat unrelated custom listeners as equivalent.
+
+#### Scenario: Consumer configures its final integration listener
+- **WHEN** the consumer selects its final listener FQN and reruns the recipes over reparsed generated main/test sources
+- **THEN** inherited registrations are recognised and no redundant listener is introduced

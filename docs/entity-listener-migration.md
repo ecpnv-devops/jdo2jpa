@@ -12,7 +12,11 @@ Concrete JPA entities receive the configured Isis-era listener only if they have
 Explicit custom-only and empty declarations are preserved as overrides.
 Abstract entities are not automatically annotated.
 Superclass-listener exclusions and ancestors scheduled to receive a listener in the same source set are accounted for.
-The generated annotation retains the existing fully qualified Isis listener spelling so downstream listener-replacement recipes continue to work.
+Test sources also see planned main-source ancestors in the same identified project; main sources never borrow test declarations, and different project versions remain isolated.
+By default, the generated annotation retains the existing fully qualified Isis listener spelling so downstream listener-replacement recipes continue to work.
+Consumers can set the recipe-environment property `jdo2jpa.entityListenerClass` to their final integration listener FQN.
+For Estatio, set the Maven project property to `org.estatio.base.prod.integration.OrmEntityListener` before loading the recipes.
+Using the final listener consistently avoids treating an already-replaced inherited listener as unrelated during repeat runs; arbitrary custom listeners are not automatically assumed equivalent.
 
 Listener decisions use a refreshed scan after the first editing cycle because OpenRewrite scans all files before applying preceding recipes.
 This prevents duplicate listeners when a later-visited parent becomes an entity or acquires a listener-bearing superclass during that cycle.
@@ -31,7 +35,10 @@ Existing full source/reference types take precedence over dependency fallback, a
 
 When Maven parsing is disabled, the resolver can instead use `JavaSourceSet.getGavToTypes()` to identify the already-selected artifact coordinates.
 It locates those coordinates in the configured local repository and checks each candidate JAR against the indexed class names before reading bytecode.
-Missing artifacts and different matching classifier/snapshot binaries are rejected rather than guessed; byte-identical duplicate JARs are harmless.
+Missing artifacts and different matching classifier/snapshot bytecode are rejected rather than guessed.
+Packaging-only variants are accepted only when every class entry and its bytecode match and the `Class-Path` and `Multi-Release` manifest settings agree.
+The metadata probe uses the classpath without service-discovered annotation processing, so processor-registration resources and module-path naming do not select different metadata.
+This covers QueryDSL's normal and JDO APT packaging without weakening checks on superclass bytecode.
 This uses the index for artifact identity, never for modifiers or annotations.
 
 The pinned Estatio profiles can retain `<skipMavenParsing>true</skipMavenParsing>` when the source-set artifact index is available, avoiding expensive independent Maven-model re-resolution.

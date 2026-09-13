@@ -258,7 +258,7 @@ The pinned Estatio profiles explicitly disable Maven parsing.
 An initial symmetric trial enabled it, but both runs spent substantial time retrying obsolete dependency repositories during OpenRewrite's independent model resolution despite Maven's offline flag; that trial was cancelled and its partial output rejected.
 When POM metadata is absent, the resolver now uses `JavaSourceSet.getGavToTypes()` as a selected-artifact coordinate index, locates those artifacts in the local repository, and verifies indexed class-name membership in the candidate JARs.
 It reads modifiers, annotations, and listener arrays only from the private bytecode-backed JavaParser, never from shallow entries.
-Multiple different classifier/timestamp binaries matching the same coordinate and class index are rejected rather than guessed; byte-identical duplicates are safe.
+Matching classifier/timestamp archives must be metadata-equivalent under the class-byte and class-loading-manifest checks documented below; different metadata is rejected rather than guessed.
 Caches without POMs are scoped by source-set identity, not just the display name `main`.
 This permits the normal skipMavenParsing=true harness to continue without a new public option or remote model resolution.
 For custom local-repository paths, OpenRewrite 8.47.3's index builder requires a root named repository or a repository.xml marker; both comparison caches receive the same marker.
@@ -293,3 +293,24 @@ A subsequent codaproxy failure came from stale JDO-generated QEntityAbstract sou
 A clean JPA installation passed on the baseline, proving that cleanup is required between the original JDO preflight and JPA compilation.
 The JDO and JPA reactor orders share their common-module order but differ in active modules; JPA-only test modules are compiled without feeding them to JDO-only rewrite invocations.
 These findings are harness evidence, not completed whole-application acceptance.
+
+## Main/test inheritance, final listener configuration, and packaging equivalence
+
+Round3 exposed a redundant listener on DocumentTemplateForTesting because its main-source parent was outside the test source-set index.
+Test-side source lookup now includes unique main-source declarations from the same Maven POM scope or JavaProject publication identity, while preserving separate artifact caches and prohibiting reverse test-to-main lookup and cross-version borrowing.
+Both file orders and the isolation boundaries have regression coverage.
+
+The standard YAML now resolves jdo2jpa.entityListenerClass with the existing fully qualified Isis listener as its default.
+Estatio should explicitly configure its final OrmEntityListener so repeated configured passes recognise inherited integration after the existing replacement pass has run.
+This does not equate arbitrary custom listeners or change explicit entity-level override semantics.
+Configured-listener tests reparse generated main/test sources and verify repeat-run stability.
+
+The task-module guard correctly rejected a zero-exit Maven run that could not resolve EntityAbstract for StateTransitionAbstract.
+Its selected dependency classpath contains querydsl-apt-5.0.0.jar, while the same repository directory also contains the JDO classifier with identical class entries and bytecode but different manifests and processor-registration resources.
+The resolver now permits metadata-equivalent packaging variants only when every class byte matches and the Class-Path and Multi-Release manifest attributes agree.
+Module-path names are irrelevant to the classpath-only probe, and a fixture with an invalid processor service proves that service-discovered annotation processing is not executed.
+Different bytecode and classpath-changing manifests remain typed failures with unchanged affected input.
+
+The complete verification after these changes passes 254 tests, with zero failures/errors and two existing skips.
+Round3 remains rejected as acceptance: baseline compilation stopped at bankmandate on missing PDF.js APIs, and the older candidate stopped at task and had a test-entity listener regression.
+A subsequent candidate must be pinned independently; the prior trial is diagnostic evidence, not acceptance of the new code.

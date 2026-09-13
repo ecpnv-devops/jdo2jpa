@@ -762,8 +762,8 @@ tags:
 recipeList:
   # Causeway uses the CausewayEntityListener to support JPA lifecycles
   - com.ecpnv.openrewrite.jdo2jpa.AddCausewayEntityListener:
-      # Preserve the configured Isis-era listener used by downstream replacement recipes.
-      listenerClass: org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener
+      # Preserve the Isis default; consumers may select their final integration listener explicitly.
+      listenerClass: ${jdo2jpa.entityListenerClass:org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener}
   # Remove the properties with id one of [datanucleusVersionLong, datanucleusVersionTimestamp, datanucleusId]
   - com.ecpnv.openrewrite.xml.RemoveXmlTag:
       matchByRegularExpression: '.*property(.|\s|\n)*id(.|\s|\n)*datanucleusVersionLong(.|\s|\n)*'
