@@ -79,6 +79,37 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     @Test
+    void plansAncestorAdditionsAfterEntityConversionIndependentOfFileOrder() {
+        Recipe recipe = Environment.builder().scanRuntimeClasspath().build().activateRecipes(
+                "com.ecpnv.openrewrite.jdo2jpa.v2x.PersistenceCapable", "com.ecpnv.openrewrite.jdo2jpa.v2x.causeway");
+        List<SourceFile> sources = parse(
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Parent {}",
+                "package example; @javax.jdo.annotations.PersistenceCapable public class Child extends Parent {}");
+        for (List<SourceFile> input : List.of(sources, List.of(sources.get(1), sources.get(0)))) {
+            List<SourceFile> output = run(recipe, input);
+            assertThat(text(output, "Parent.java")).contains("@EntityListeners");
+            assertThat(text(output, "Child.java")).doesNotContain("@EntityListeners");
+            assertStable(recipe, output);
+        }
+    }
+
+    @Test
+    void seesSuperclassInsertedIntoLaterVisitedAbstractAncestor() {
+        Recipe recipe = sequence(new ExtendWithClassForClass("example.Parent", "example.Listened"),
+                new AddCausewayEntityListener("java.lang.Thread"));
+        List<SourceFile> sources = parse(
+                "package example; @javax.persistence.Entity public class Child extends Parent {}",
+                "package example; public abstract class Parent {}",
+                "package example; @javax.persistence.EntityListeners(Thread.class) public abstract class Listened {}");
+        for (List<SourceFile> input : List.of(sources, List.of(sources.get(2), sources.get(1), sources.get(0)))) {
+            List<SourceFile> output = run(recipe, input);
+            assertThat(text(output, "Parent.java")).contains("extends Listened");
+            assertThat(text(output, "Child.java")).doesNotContain("@EntityListeners");
+            assertStable(recipe, output);
+        }
+    }
+
+    @Test
     void respectsCustomEmptyAbstractAndExcludedListeners() {
         List<SourceFile> output = run(LISTENERS, parse("""
                 package example;

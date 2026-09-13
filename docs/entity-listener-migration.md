@@ -14,6 +14,10 @@ Abstract entities are not automatically annotated.
 Superclass-listener exclusions and ancestors scheduled to receive a listener in the same source set are accounted for.
 The generated annotation retains the existing fully qualified Isis listener spelling so downstream listener-replacement recipes continue to work.
 
+Listener decisions use a refreshed scan after the first editing cycle because OpenRewrite scans all files before applying preceding recipes.
+This prevents duplicate listeners when a later-visited parent becomes an entity or acquires a listener-bearing superclass during that cycle.
+Keep the normal three-cycle execution budget; do not force a single-cycle run.
+
 Superclass insertion now preserves the attributed supertype as well as the extends expression.
 The annotation-attribute propagation helper uses qualified-name keys and the highest annotated ancestor, preventing newly visible framework superclasses from changing the existing entity inheritance strategy.
 
@@ -39,6 +43,12 @@ Cross-module guarantees require already-migrated parent artifacts.
 Regenerate, compile, and install parents before parsing children, using separate baseline and candidate local repositories.
 A resolvable stale binary cannot be identified reliably from its type name, so record artifact provenance and do not claim whole-project duplicate avoidance without that ordering.
 No additional public classpath recipe option or global recipe-specific system property is required.
+
+Keep the original JDO annotation API explicitly available in each rewrite profile while parents are progressively installed as JPA artifacts.
+In the pinned Estatio harness this is `javax.jdo:jdo-api:3.2.1` in `rewrite`, `rewrite_post`, and `rewrite_local`, not in the JPA compilation profile.
+Otherwise dependency-reduced parent POMs can remove JDO attribution from subsequent inputs and leave annotations unconverted.
+Use a clean JPA build after rewriting each module so stale JDO-generated QueryDSL classes cannot shadow the migrated parent's metamodel.
+Use the JPA reactor for JPA installation and the original JDO reactor scope for rewriting; their active module lists differ.
 
 ## Errors and partial output
 

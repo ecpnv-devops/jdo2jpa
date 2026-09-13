@@ -49,6 +49,11 @@ public final class AddCausewayEntityListener extends ScanningRecipe<EntityTypeRe
     }
 
     @Override
+    public boolean causesAnotherCycle() {
+        return true;
+    }
+
+    @Override
     public EntityTypeResolver getInitialValue(ExecutionContext ctx) {
         return new EntityTypeResolver();
     }
@@ -64,6 +69,13 @@ public final class AddCausewayEntityListener extends ScanningRecipe<EntityTypeRe
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
                 if (!eligible(cd) || annotation(cd, LISTENERS) != null) {
+                    return super.visitClassDeclaration(cd, ctx);
+                }
+                if (ctx.getCycle() == 1) {
+                    // All scanners run before edits. Refresh the source index after preceding recipes
+                    // have converted entities and inserted superclasses, including later-visited files.
+                    // Request rescanning through the current cycle, without context messages or AST markers.
+                    ctx.getCycleDetails().getMadeChangesInThisCycle().add(AddCausewayEntityListener.this);
                     return super.visitClassDeclaration(cd, ctx);
                 }
                 J.CompilationUnit cu = getCursor().firstEnclosingOrThrow(J.CompilationUnit.class);

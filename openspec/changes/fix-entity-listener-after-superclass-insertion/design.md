@@ -276,3 +276,20 @@ The existing inheritance strategy regression retains its original SINGLE_TABLE e
 Legacy fixtures with unimported IdentityType references were qualified so structural matching tests valid Java rather than relying on a printed-text match of an unresolved enum.
 
 Evidence: `mvn -Dtest=ExtendWithClassForAnnotationConditionallyTest test` passes 9 tests with no failures or skips, and `mvn test` passes 235 tests with no failures, no errors, and 2 existing skips under JDK 21.
+
+## Composition rescan and consumer harness evidence
+
+A composed regression exposed that every ScanningRecipe scanner runs before editing, so the listener index can still describe JDO parents before preceding recipes turn them into entities.
+The listener recipe now requests a second cycle through the current RecipeRunCycle change set and makes listener decisions only after that refreshed scan.
+This is deliberately tied to the pinned OpenRewrite 8.47.3 scheduler API and is covered by composed parent/child tests in both file orders, including superclass insertion into a later-visited abstract ancestor.
+It adds no context messages, temporary AST markers, imports, or source changes merely to request rescanning, and retains all normal validation checks.
+Consumers must retain the standard three-cycle budget rather than forcing a single cycle.
+The complete library verification now passes 250 tests, with zero failures/errors and two existing skips.
+
+The first parent-first Estatio trial also exposed two symmetric harness prerequisites.
+Installing JPA parents changes their dependency-reduced POMs, so the three rewrite profiles must explicitly retain javax.jdo:jdo-api:3.2.1 for JDO input attribution.
+Adding that input-only dependency resolved the settings-module failure on both sides without changing the JPA compilation classpath.
+A subsequent codaproxy failure came from stale JDO-generated QEntityAbstract sources in that module shadowing the correctly installed JPA metamodel.
+A clean JPA installation passed on the baseline, proving that cleanup is required between the original JDO preflight and JPA compilation.
+The JDO and JPA reactor orders share their common-module order but differ in active modules; JPA-only test modules are compiled without feeding them to JDO-only rewrite invocations.
+These findings are harness evidence, not completed whole-application acceptance.
