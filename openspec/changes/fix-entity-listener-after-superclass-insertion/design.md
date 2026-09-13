@@ -255,9 +255,15 @@ Both superclass helpers reuse this mechanism and update the extends type and cla
 The existing template's genuinely attributed type can still be retained for bundled supporting types; no Unknown or shallow type is accepted as superclass metadata.
 
 The pinned Estatio profiles explicitly disable Maven parsing.
-The baseline and candidate acceptance harnesses must both set `skipMavenParsing` to false to enable dependency fallback; this is a documented consumer configuration prerequisite rather than a new recipe option.
-`EntityHierarchyMigrationTest` proves automatic lookup using real MavenParser-generated resolution markers, no artifact-path constructor option, a private local repository, two modules with different versions of the same parent FQN, and a transitive JPA annotation dependency.
-It also verifies that the full declarative recipe's preconditions do not prevent metadata scanning.
+An initial symmetric trial enabled it, but both runs spent substantial time retrying obsolete dependency repositories during OpenRewrite's independent model resolution despite Maven's offline flag; that trial was cancelled and its partial output rejected.
+When POM metadata is absent, the resolver now uses `JavaSourceSet.getGavToTypes()` as a selected-artifact coordinate index, locates those artifacts in the local repository, and verifies indexed class-name membership in the candidate JARs.
+It reads modifiers, annotations, and listener arrays only from the private bytecode-backed JavaParser, never from shallow entries.
+Multiple different classifier/timestamp binaries matching the same coordinate and class index are rejected rather than guessed; byte-identical duplicates are safe.
+Caches without POMs are scoped by source-set identity, not just the display name `main`.
+This permits the normal skipMavenParsing=true harness to continue without a new public option or remote model resolution.
+For custom local-repository paths, OpenRewrite 8.47.3's index builder requires a root named repository or a repository.xml marker; both comparison caches receive the same marker.
+`EntityHierarchyMigrationTest` proves this no-POM path and explicit rejection of ambiguous binary candidates, as well as automatic lookup using real MavenParser-generated resolution markers, two modules with different parent versions, and transitive annotation dependencies.
+The full declarative recipe's preconditions do not prevent metadata scanning when Maven parsing is enabled.
 
 `AddCausewayEntityListener` computes source ancestor additions from the scan snapshot, uses source annotations instead of potentially stale annotation type metadata, and reads dependency annotation class-array values from bytecode.
 It preserves explicit overrides and superclass-listener exclusions and resolves recoverable unknown extends references using source/import information.

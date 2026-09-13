@@ -1,5 +1,6 @@
 package com.ecpnv.openrewrite.util;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -63,7 +66,9 @@ public final class EntityTypeResolver {
     private String key(J.CompilationUnit cu) {
         Path root = pomRoot(cu);
         String sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).map(JavaSourceSet::getName).orElse("main");
-        return (root == null ? "<sources>" : root.toString()) + ":" + sourceSet;
+        String scope = root == null ? cu.getMarkers().findFirst(JavaSourceSet.class)
+                .map(s -> "source-set:" + s.getId()).orElse("<sources>") : root.toString();
+        return scope + ":" + sourceSet;
     }
 
     private Module module(J.CompilationUnit cu) {
@@ -108,10 +113,10 @@ public final class EntityTypeResolver {
             return null;
         }
         Path root = pomRoot(cu);
-        if (root == null) {
-            return null;
+        if (module.classpath == null) {
+            module.classpath = root == null ? indexedClasspath(cu, ctx) : classpath(poms.get(root), cu, ctx);
         }
-        List<Path> classpath = classpath(poms.get(root), cu, ctx);
+        List<Path> classpath = module.classpath;
         if (classpath.isEmpty()) {
             return null;
         }
@@ -182,7 +187,68 @@ public final class EntityTypeResolver {
         return List.copyOf(result);
     }
 
+    /** The source-set index retains selected artifact coordinates even when Maven POM parsing is disabled. */
+    private static List<Path> indexedClasspath(J.CompilationUnit cu, ExecutionContext ctx) {
+        JavaSourceSet index = cu.getMarkers().findFirst(JavaSourceSet.class).orElse(null);
+        if (index == null || index.getGavToTypes().isEmpty()) {
+            return List.of();
+        }
+        var maven = MavenExecutionContextView.view(ctx);
+        String override = maven.getSettings() != null && maven.getSettings().getLocalRepository() != null
+                ? null : System.getProperty("maven.repo.local");
+        String uri = maven.getLocalRepository().getUri();
+        Path repository = override != null ? Path.of(override)
+                : uri.startsWith("file:") ? Path.of(URI.create(uri)) : Path.of(uri);
+        List<Path> classpath = new ArrayList<>();
+        try {
+            for (var entry : index.getGavToTypes().entrySet()) {
+                if (entry.getValue().isEmpty()) {
+                    continue;
+                }
+                String[] gav = entry.getKey().split(":", -1);
+                if (gav.length != 3) {
+                    return List.of();
+                }
+                Path directory = repository.resolve(gav[0].replace('.', '/')).resolve(gav[1]).resolve(gav[2]);
+                if (!Files.isDirectory(directory)) {
+                    return List.of();
+                }
+                Set<String> indexedNames = entry.getValue().stream()
+                        .map(t -> t.getFullyQualifiedName().replace('$', '.')).collect(Collectors.toSet());
+                List<Path> matches = new ArrayList<>();
+                try (var files = Files.list(directory)) {
+                    for (Path jar : files.filter(f -> f.getFileName().toString().endsWith(".jar"))
+                            .filter(f -> !f.getFileName().toString().endsWith("-sources.jar"))
+                            .filter(f -> !f.getFileName().toString().endsWith("-javadoc.jar")).sorted().toList()) {
+                        try (ZipFile zip = new ZipFile(jar.toFile())) {
+                            Set<String> names = zip.stream().map(e -> e.getName()).filter(n -> n.endsWith(".class"))
+                                    .map(n -> n.substring(0, n.length() - 6).replace('/', '.').replace('$', '.'))
+                                    .collect(Collectors.toSet());
+                            if (names.containsAll(indexedNames)) {
+                                matches.add(jar);
+                            }
+                        }
+                    }
+                }
+                if (matches.isEmpty()) {
+                    return List.of();
+                }
+                // GAV alone loses classifier/timestamp identity. Never choose between different matching binaries.
+                for (int i = 1; i < matches.size(); i++) {
+                    if (Files.mismatch(matches.get(0), matches.get(i)) != -1) {
+                        return List.of();
+                    }
+                }
+                classpath.add(matches.get(0));
+            }
+        } catch (IOException | RuntimeException ignored) {
+            return List.of();
+        }
+        return List.copyOf(classpath);
+    }
+
     private static final class Module {
+        private @Nullable List<Path> classpath;
         private final Map<String, J.ClassDeclaration> declarations = new HashMap<>();
         private final Map<String, J.CompilationUnit> owners = new HashMap<>();
         private final Map<String, JavaType.FullyQualified> types = new HashMap<>();

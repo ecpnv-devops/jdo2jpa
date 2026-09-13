@@ -144,6 +144,49 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     @Test
+    void sourceSetArtifactIndexResolvesBytecodeWithoutMavenPomParsing() throws Exception {
+        Path repository = temporary.resolve("repository");
+        installParent(repository, "1", "@Deprecated @javax.persistence.EntityListeners(Thread.class) public abstract class Parent {}");
+        var index = org.openrewrite.java.marker.JavaSourceSet.build("main", List.of(
+                repository.resolve("example/parent/1/parent-1.jar"),
+                repository.resolve("example/annotations/1/annotations-1.jar")));
+        assertThat(index.getGavToTypes()).containsKeys("example:parent:1", "example:annotations:1");
+        SourceFile child = parse("package example; @javax.persistence.Entity public class Child {}").get(0);
+        child = child.withMarkers(child.getMarkers().add(index));
+        List<Throwable> errors = new ArrayList<>();
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(errors::add);
+        MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
+        Recipe recipe = sequence(new ExtendWithClassForClass("example.Child", "example.Parent"),
+                new AddCausewayEntityListener("java.lang.Thread"));
+        var run = recipe.run(new InMemoryLargeSourceSet(List.of(child)), ctx);
+        assertThat(errors).isEmpty();
+        J.CompilationUnit output = (J.CompilationUnit) run.getChangeset().getAllResults().get(0).getAfter();
+        assertThat(output.printAll()).contains("extends Parent").doesNotContain("@EntityListeners");
+        JavaType.FullyQualified parent = output.getClasses().get(0).getType().getSupertype();
+        assertThat(parent.getFlags()).contains(Flag.Abstract);
+        assertThat(parent.getAnnotations()).extracting(JavaType.FullyQualified::getFullyQualifiedName)
+                .contains("java.lang.Deprecated", "javax.persistence.EntityListeners");
+        assertStable(recipe, List.of(output));
+    }
+
+    @Test
+    void ambiguousIndexedArtifactsAreRejectedRatherThanGuessed() throws Exception {
+        Path repository = temporary.resolve("repository");
+        installParent(repository, "1", "@Deprecated public abstract class Parent {}");
+        installParent(repository, "2", "public class Parent {}");
+        var index = org.openrewrite.java.marker.JavaSourceSet.build("main", List.of(repository.resolve("example/parent/1/parent-1.jar")));
+        Files.copy(repository.resolve("example/parent/2/parent-2.jar"), repository.resolve("example/parent/1/parent-1-tests.jar"));
+        SourceFile child = parse("package example; public class Child {}").get(0);
+        child = child.withMarkers(child.getMarkers().add(index));
+        List<Throwable> errors = new ArrayList<>();
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(errors::add);
+        MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
+        var run = new ExtendWithClassForClass("example.Child", "example.Parent").run(new InMemoryLargeSourceSet(List.of(child)), ctx);
+        assertThat(run.getChangeset().size()).isZero();
+        assertThat(errors).singleElement().isInstanceOf(UnresolvedEntityHierarchyException.class);
+    }
+
+    @Test
     void mainRecipePreconditionsStillAllowMavenMetadataScanning() throws Exception {
         Path repository = temporary.resolve("repository");
         installParent(repository, "1", "@Deprecated public abstract class EntityAbstract {}",

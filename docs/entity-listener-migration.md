@@ -25,10 +25,15 @@ It does not download dependencies or use the plugin JVM's runtime classpath as t
 Missing required artifacts cause metadata resolution to fail rather than being interpreted as an unannotated parent.
 Existing full source/reference types take precedence over dependency fallback, and shallow JavaSourceSet entries are never authoritative inheritance metadata.
 
-**Enable Maven parsing for dependency fallback.**
-The pinned Estatio profiles set `<skipMavenParsing>true</skipMavenParsing>`; change this to `false` in the migration harness for both baseline and candidate runs.
-Changing only the candidate harness would invalidate a same-input comparison.
-When Maven metadata is deliberately excluded, only already-attributed source/reference types and genuinely resolved existing template types are available; absent metadata produces the unresolved-hierarchy error.
+When Maven parsing is disabled, the resolver can instead use `JavaSourceSet.getGavToTypes()` to identify the already-selected artifact coordinates.
+It locates those coordinates in the configured local repository and checks each candidate JAR against the indexed class names before reading bytecode.
+Missing artifacts and different matching classifier/snapshot binaries are rejected rather than guessed; byte-identical duplicate JARs are harmless.
+This uses the index for artifact identity, never for modifiers or annotations.
+
+The pinned Estatio profiles can retain `<skipMavenParsing>true</skipMavenParsing>` when the source-set artifact index is available, avoiding expensive independent Maven-model re-resolution.
+If coordinates are unavailable or ambiguous, enable Maven parsing or provide complete attributed source/reference types; apply the same harness setting to both comparison sides.
+OpenRewrite 8.47.3 recognises custom local-repository roots for its GAV index when the root is named `repository` or contains `repository.xml`; the isolated comparison repositories use that marker.
+Unresolvable metadata still produces the typed hierarchy error.
 
 Cross-module guarantees require already-migrated parent artifacts.
 Regenerate, compile, and install parents before parsing children, using separate baseline and candidate local repositories.
