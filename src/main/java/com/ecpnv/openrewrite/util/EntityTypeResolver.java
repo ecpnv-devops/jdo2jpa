@@ -70,7 +70,9 @@ public final class EntityTypeResolver {
         return modules.computeIfAbsent(key(cu), k -> {
             Module module = new Module();
             for (J.CompilationUnit source : sources) {
-                if (!k.equals(key(source))) { continue; }
+                if (!k.equals(key(source))) {
+                    continue;
+                }
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, Integer unused) {
@@ -99,12 +101,20 @@ public final class EntityTypeResolver {
     public JavaType.@Nullable FullyQualified resolve(J.CompilationUnit cu, String name, ExecutionContext ctx) {
         Module module = module(cu);
         JavaType.FullyQualified existing = module.types.get(name);
-        if (existing != null) { return existing; }
-        if (!module.attempted.add(name)) { return null; }
+        if (existing != null) {
+            return existing;
+        }
+        if (!module.attempted.add(name)) {
+            return null;
+        }
         Path root = pomRoot(cu);
-        if (root == null) { return null; }
+        if (root == null) {
+            return null;
+        }
         List<Path> classpath = classpath(poms.get(root), cu, ctx);
-        if (classpath.isEmpty()) { return null; }
+        if (classpath.isEmpty()) {
+            return null;
+        }
         // A fresh parser/type cache prevents different modules or artifact versions sharing metadata.
         List<Throwable> errors = new ArrayList<>();
         ExecutionContext parsing = new InMemoryExecutionContext(errors::add);
@@ -130,7 +140,10 @@ public final class EntityTypeResolver {
 
     /** Uses resolved Maven coordinates, not FQN-to-path guesses or the plugin JVM classpath. */
     private static List<Path> classpath(MavenResolutionResult maven, J.CompilationUnit cu, ExecutionContext ctx) {
-        String override = System.getProperty("maven.repo.local");
+        // Resolution markers carry the effective module settings (including a runner's local-repository override).
+        // Do not replace an explicitly captured repository with the recipe host's unrelated JVM property.
+        String override = maven.getMavenSettings() != null && maven.getMavenSettings().getLocalRepository() != null
+                ? null : System.getProperty("maven.repo.local");
         String uri = maven.getMavenSettings() == null
                 ? MavenExecutionContextView.view(ctx).getLocalRepository().getUri()
                 : maven.getMavenSettings().getMavenLocal().getUri();
@@ -143,9 +156,13 @@ public final class EntityTypeResolver {
         for (Scope scope : scopes) {
             for (ResolvedDependency dependency : maven.getDependencies().getOrDefault(scope, List.of())) {
                 String type = dependency.getType();
-                if (type != null && !"jar".equals(type) && !"test-jar".equals(type)) { continue; }
+                if (type != null && !"jar".equals(type) && !"test-jar".equals(type)) {
+                    continue;
+                }
                 String classifier = dependency.getClassifier();
-                if (classifier == null && "test-jar".equals(type)) { classifier = "tests"; }
+                if (classifier == null && "test-jar".equals(type)) {
+                    classifier = "tests";
+                }
                 String suffix = classifier == null ? "" : "-" + classifier;
                 Path directory = repository.resolve(dependency.getGroupId().replace('.', '/'))
                         .resolve(dependency.getArtifactId()).resolve(dependency.getVersion());
@@ -156,7 +173,9 @@ public final class EntityTypeResolver {
                     artifact = directory.resolve(dependency.getArtifactId() + "-" + dependency.getVersion() + suffix + ".jar");
                 }
                 // Missing transitive annotation bytecode must not masquerade as an unannotated parent.
-                if (!Files.isRegularFile(artifact)) { return List.of(); }
+                if (!Files.isRegularFile(artifact)) {
+                    return List.of();
+                }
                 result.add(artifact);
             }
         }
@@ -171,7 +190,9 @@ public final class EntityTypeResolver {
 
         private void add(@Nullable JavaType type) {
             JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
-            if (!full(fq) || types.putIfAbsent(fq.getFullyQualifiedName(), fq) != null) { return; }
+            if (!full(fq) || types.putIfAbsent(fq.getFullyQualifiedName(), fq) != null) {
+                return;
+            }
             add(fq.getSupertype());
             fq.getInterfaces().forEach(this::add);
         }
