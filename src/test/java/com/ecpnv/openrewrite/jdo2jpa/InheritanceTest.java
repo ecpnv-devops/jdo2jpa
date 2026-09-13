@@ -360,7 +360,7 @@ class InheritanceTest {
                                     import javax.jdo.annotations.Persistent;
                                     import javax.jdo.annotations.PersistenceCapable;
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Discriminator("Person", strategy = "special", column = "col", columns = {"cols"}, indexed = "true")
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public class Person {
@@ -368,7 +368,7 @@ class InheritanceTest {
                                             private String name;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance
                                     public class Manager extends Person {
                                             @Persistent( mappedBy = "person")
@@ -435,7 +435,7 @@ class InheritanceTest {
                                     import javax.jdo.annotations.Persistent;
                                     import javax.jdo.annotations.PersistenceCapable;
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Discriminator("Person", strategy = "special", column = "col", columns = {"cols"}, indexed = "true")
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public class Person {
@@ -443,7 +443,7 @@ class InheritanceTest {
                                             private String name;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance(strategy = InheritanceStrategy.SUPERCLASS_TABLE)
                                     @Discriminator(Manager.DISCRIMINATOR_VALUE)
                                     public class Manager extends Person {
@@ -503,14 +503,14 @@ class InheritanceTest {
                                         int version;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public abstract class Person extends EntityAbstract {
                                             private int id;
                                             private String name;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public class Manager extends Person {
                                             @Persistent( mappedBy = "person")
@@ -567,14 +567,14 @@ class InheritanceTest {
                                         int version;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "person", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public abstract class Person extends ParentClass {
                                             private int id;
                                             private String name;
                                     }
                                     
-                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = IdentityType.DATASTORE)
+                                    @PersistenceCapable(schema = "schemaname", table = "manager", identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                     @Inheritance(strategy = InheritanceStrategy.NEW_TABLE)
                                     public class Manager extends Person {
                                             @Persistent( mappedBy = "person")

@@ -458,8 +458,6 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                
-                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 import javax.persistence.Transient;
                                 
@@ -467,7 +465,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Table(indexes = {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id, someEntity_name, someEntity_type"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
-                                public class Person extends EntityAbstract {
+                                public class Person {
                                     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
@@ -504,15 +502,13 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                
-                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
                                 import java.lang.Deprecated;
                                 
                                 @Entity
                                 @Table
-                                public class SomeEntity extends EntityAbstract {
+                                public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     @Deprecated
@@ -552,17 +548,13 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                
-                                import javax.persistence.CascadeType;
-                                
-                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
                                 @Entity
                                 @Table(indexes = {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
-                                public class Person extends EntityAbstract {
+                                public class Person {
                                     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
@@ -590,13 +582,11 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                
-                                import org.estatio.base.prod.dom.EntityAbstract;
                                 import javax.persistence.*;
                                 
                                 @Entity
                                 @Table
-                                public class SomeEntity extends EntityAbstract {
+                                public class SomeEntity {
                                     private int id;
                                     @OneToOne(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
                                     private Person person;

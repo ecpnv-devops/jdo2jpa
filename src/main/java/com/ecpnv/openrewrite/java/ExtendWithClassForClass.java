@@ -6,14 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
-import com.ecpnv.openrewrite.util.JavaParserFactory;
+import com.ecpnv.openrewrite.util.EntityTypeResolver;
+import com.ecpnv.openrewrite.util.SuperclassInsertion;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -32,7 +31,7 @@ import lombok.Value;
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ExtendWithClassForClass extends Recipe {
+public class ExtendWithClassForClass extends ScanningRecipe<EntityTypeResolver> {
 
     @Option(displayName = "Full class extended name",
             description = "The fully qualified name of the to be extending class.",
@@ -65,7 +64,17 @@ public class ExtendWithClassForClass extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public EntityTypeResolver getInitialValue(ExecutionContext ctx) {
+        return new EntityTypeResolver();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(EntityTypeResolver resolver) {
+        return resolver.scanner();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(EntityTypeResolver resolver) {
 
         return new JavaIsoVisitor<>() {
             @Override
@@ -75,17 +84,12 @@ public class ExtendWithClassForClass extends Recipe {
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (cd.getExtends() == null) {
                     if (cd.getType() != null && fullClassName.equals(cd.getType().getFullyQualifiedName())) {
-                        final JavaType.ShallowClass aClass = JavaType.ShallowClass.build(extendsFullClassName);
-
-                        maybeAddImport(extendsFullClassName, null, false);
-                        J.ClassDeclaration newCd = JavaTemplate.builder(aClass.getClassName())
-                                .contextSensitive()
-                                .javaParser(JavaParserFactory.create(ctx))
-                                .imports(extendsFullClassName)
-                                .build()
-                                .apply(getCursor(), cd.getCoordinates().replaceExtendsClause());
-
-                        return newCd;
+                        J.ClassDeclaration extended = SuperclassInsertion.insert(cd, getCursor(), extendsFullClassName,
+                                ExtendWithClassForClass.class.getName(), resolver, ctx);
+                        if (extended != cd) {
+                            maybeAddImport(extendsFullClassName, null, false);
+                        }
+                        return extended;
                     }
                 }
 

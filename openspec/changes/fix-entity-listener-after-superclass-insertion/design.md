@@ -239,15 +239,34 @@ Evidence: `JAVA_HOME=/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem` with
 Tasks 1.1 through 1.4 now satisfy the gated source, dependency, module-boundary, and error-propagation criteria.
 The exact APIs, commands, and outcomes are recorded in this section and the preceding spike sections, so task 1.5 passes and feature implementation may proceed.
 
-## Implementation Pause: Production Module Classpath Handoff
+## Resolved Production Module Classpath Handoff
 
 Tasks 3.1 through 3.3 are complete: the generic recipe retains its three-argument constructor, adds the optional five-argument JSON form, validates condition modes, and structurally matches all required enum reference forms.
 Legacy and structured YAML loading, descriptor exposure, invalid configurations, and direct Java construction are covered.
-The standard YAML remains on its legacy regex condition, so task 3.4 is intentionally incomplete and no broader datastore classes become eligible before superclass attribution is repaired.
+The standard YAML now uses the structured condition after superclass attribution was repaired.
+Bare PersistenceCapable no longer gains a superclass through the legacy regex path's empty-argument shortcut, consistent with the explicit-only condition specification; this generated-source change is called out in the release notes and must be inventoried during consumer validation.
 
-The spikes prove full dependency metadata when explicit application artifact paths are supplied, but the standard production recipe currently receives neither those paths nor a Maven project marker from which it can obtain them directly.
-`JavaSourceSet` retains FQNs rather than artifact paths, and the plugin JVM classpath is not an acceptable application-classpath substitute.
-Implementation therefore pauses before task 4.1 rather than introducing an undocumented production option, relying on a global system property, or activating structural matching with unresolved superclass attribution.
-A reviewed design decision must choose and test either a Maven-aware resolver that obtains current-module artifact paths or an explicit supported runner-to-recipe classpath handoff.
+`EntityTypeResolver` now scans POM `MavenResolutionResult` markers as well as Java compilation units and associates each unit with its nearest POM and source set.
+It resolves selected compile/provided or test artifacts from the module's Maven settings/local repository, respecting the standard Maven local-repository override, resolved coordinates, classifiers, timestamped snapshots, and transitive annotation dependencies.
+Resolution is local-only and does not download artifacts or use the plugin JVM classpath as the application classpath.
+Missing classpath artifacts cannot be interpreted as an unannotated dependency.
+Existing full source/reference types take precedence, and caches are scoped to one scan, module, and source set.
+Both superclass helpers reuse this mechanism and update the extends type and class-level supertype together.
+The existing template's genuinely attributed type can still be retained for bundled supporting types; no Unknown or shallow type is accepted as superclass metadata.
+
+The pinned Estatio profiles explicitly disable Maven parsing.
+The baseline and candidate acceptance harnesses must both set `skipMavenParsing` to false to enable dependency fallback; this is a documented consumer configuration prerequisite rather than a new recipe option.
+`EntityHierarchyMigrationTest` proves automatic lookup using real MavenParser-generated resolution markers, no artifact-path constructor option, a private local repository, two modules with different versions of the same parent FQN, and a transitive JPA annotation dependency.
+It also verifies that the full declarative recipe's preconditions do not prevent metadata scanning.
+
+`AddCausewayEntityListener` computes source ancestor additions from the scan snapshot, uses source annotations instead of potentially stale annotation type metadata, and reads dependency annotation class-array values from bytecode.
+It preserves explicit overrides and superclass-listener exclusions and resolves recoverable unknown extends references using source/import information.
+The production error tests cover returning and throwing handlers and earlier edits retained in the internal changeset.
+`scripts/check-rewrite-run.py` supplies a command-line guard that rejects logged typed errors even if Maven exits zero; disposable-worktree output must not be published after rejection.
+
+Preserving superclass metadata exposed a composition defect in annotation-attribute propagation.
+`CopyAnnotationAttributeFromSubclassToParentClass` now keys its scan by FQN rather than replaceable type-object identity and recognises the highest annotated ancestor rather than mistaking an unannotated framework superclass for the entity inheritance root.
+The existing inheritance strategy regression retains its original SINGLE_TABLE expectation; no strategy change was accepted to make the tests pass.
+Legacy fixtures with unimported IdentityType references were qualified so structural matching tests valid Java rather than relying on a printed-text match of an unresolved enum.
 
 Evidence: `mvn -Dtest=ExtendWithClassForAnnotationConditionallyTest test` passes 9 tests with no failures or skips, and `mvn test` passes 235 tests with no failures, no errors, and 2 existing skips under JDK 21.

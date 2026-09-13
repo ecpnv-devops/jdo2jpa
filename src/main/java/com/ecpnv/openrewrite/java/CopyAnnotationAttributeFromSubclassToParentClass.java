@@ -137,7 +137,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                     for (J.Annotation annotation : cd.getLeadingAnnotations()) {
                         JavaType.FullyQualified annoFq = TypeUtils.asFullyQualified(annotation.getType());
                         if (annoFq != null && annotationType.equals(annoFq.getFullyQualifiedName())) {
-                            acc.annotationsByType.computeIfAbsent(classFqn, v -> new HashSet<>()).add(annotation);
+                            acc.annotationsByType.computeIfAbsent(classFqn.getFullyQualifiedName(), v -> new HashSet<>()).add(annotation);
                         }
                     }
 
@@ -146,10 +146,10 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                     while (currentFq != null) {
                         JavaType.FullyQualified supertype = currentFq.getSupertype();
                         for (JavaType.FullyQualified i : currentFq.getInterfaces()) {
-                            acc.childrenByParent.computeIfAbsent(i, v -> new HashSet<>()).add(currentFq);
+                            acc.childrenByParent.computeIfAbsent(i.getFullyQualifiedName(), v -> new HashSet<>()).add(currentFq);
                         }
                         if (supertype != null && !"java.lang.Object".equals(supertype.getFullyQualifiedName())) {
-                            acc.childrenByParent.computeIfAbsent(supertype, v -> new HashSet<>()).add(currentFq);
+                            acc.childrenByParent.computeIfAbsent(supertype.getFullyQualifiedName(), v -> new HashSet<>()).add(currentFq);
                         }
                         currentFq = supertype;
                     }
@@ -171,7 +171,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
 
                 JavaType.FullyQualified currentFq = cd.getType();
-                if (currentFq == null || !acc.childrenByParent.containsKey(currentFq)
+                if (currentFq == null || !acc.childrenByParent.containsKey(currentFq.getFullyQualifiedName())
                         // When copyToBaseClassOnly == true then only process the base class that carries the annotation
                         || (copyToBaseClassOnly && !isAnnotatedBaseClass(cd, currentFq, acc))) {
                     return cd;
@@ -180,8 +180,8 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
                 // Collect the distinct values that the (direct) subclasses declare for the attribute.
                 // Keyed by the printed value so that semantically identical values collapse to one entry.
                 Map<String, J.Assignment> childValues = new LinkedHashMap<>();
-                for (JavaType.FullyQualified child : acc.childrenByParent.get(currentFq)) {
-                    Set<J.Annotation> childAnnotations = acc.annotationsByType.get(child);
+                for (JavaType.FullyQualified child : acc.childrenByParent.get(currentFq.getFullyQualifiedName())) {
+                    Set<J.Annotation> childAnnotations = acc.annotationsByType.get(child.getFullyQualifiedName());
                     if (childAnnotations == null) {
                         continue;
                     }
@@ -273,12 +273,19 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
 
     /**
      * Returns {@code true} when {@code fq} is the base class of the inheritance hierarchy for the configured
-     * annotation (i.e. its supertype is not itself a registered parent) and the class actually carries the
+     * annotation (i.e. no ancestor carries the annotation) and the class actually carries the
      * configured annotation.
      */
     private boolean isAnnotatedBaseClass(J.ClassDeclaration cd, JavaType.FullyQualified fq, Accumulator acc) {
-        boolean isBase = fq.getSupertype() == null || !acc.childrenByParent.containsKey(fq.getSupertype());
-        return isBase && cd.getLeadingAnnotations().stream()
+        // A newly attributed framework/mapped superclass is not an entity inheritance root.
+        // Key by FQN: earlier recipes may replace immutable type objects while references retain older instances.
+        Set<String> seen = new HashSet<>();
+        for (JavaType.FullyQualified parent = fq.getSupertype(); parent != null; parent = parent.getSupertype()) {
+            if (!seen.add(parent.getFullyQualifiedName()) || acc.annotationsByType.containsKey(parent.getFullyQualifiedName())) {
+                return false;
+            }
+        }
+        return cd.getLeadingAnnotations().stream()
                 .map(J.Annotation::getType)
                 .map(TypeUtils::asFullyQualified)
                 .filter(Objects::nonNull)
@@ -288,7 +295,7 @@ public class CopyAnnotationAttributeFromSubclassToParentClass extends ScanningRe
 
     @Data
     class Accumulator {
-        final Map<JavaType.FullyQualified, Set<JavaType.FullyQualified>> childrenByParent = new HashMap<>();
-        final Map<JavaType.FullyQualified, Set<J.Annotation>> annotationsByType = new HashMap<>();
+        final Map<String, Set<JavaType.FullyQualified>> childrenByParent = new HashMap<>();
+        final Map<String, Set<J.Annotation>> annotationsByType = new HashMap<>();
     }
 }

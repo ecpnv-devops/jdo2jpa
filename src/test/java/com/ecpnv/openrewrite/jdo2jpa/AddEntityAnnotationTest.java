@@ -61,7 +61,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                                 import javax.jdo.annotations.IdentityType;
                                 import javax.jdo.annotations.PersistenceCapable;
                                 
-                                @PersistenceCapable(identityType = IdentityType.DATASTORE)
+                                @PersistenceCapable(identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
@@ -104,7 +104,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                                 @PersistenceCapable(
                                         schema = "schemaName", 
                                         table = "tableName",
-                                        identityType = IdentityType.DATASTORE)
+                                        identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
@@ -144,7 +144,7 @@ class AddEntityAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 
-                                @javax.jdo.annotations.PersistenceCapable(identityType = IdentityType.DATASTORE)
+                                @javax.jdo.annotations.PersistenceCapable(identityType = javax.jdo.annotations.IdentityType.DATASTORE)
                                 public class SomeEntity {
                                         private int id;
                                         private List<String> listofStrings;
