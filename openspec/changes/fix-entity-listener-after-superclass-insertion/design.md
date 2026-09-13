@@ -238,3 +238,16 @@ A composed spike proves that an earlier recipe edit remains in the internal chan
 Evidence: `JAVA_HOME=/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem` with its bin directory prepended to PATH; `mvn -Dtest=SuperclassAttributionSpikeTest,UnresolvedHierarchyErrorContractSpikeTest test` exited 0 with 9 tests, 0 failures, 0 errors, and 0 skips.
 Tasks 1.1 through 1.4 now satisfy the gated source, dependency, module-boundary, and error-propagation criteria.
 The exact APIs, commands, and outcomes are recorded in this section and the preceding spike sections, so task 1.5 passes and feature implementation may proceed.
+
+## Implementation Pause: Production Module Classpath Handoff
+
+Tasks 3.1 through 3.3 are complete: the generic recipe retains its three-argument constructor, adds the optional five-argument JSON form, validates condition modes, and structurally matches all required enum reference forms.
+Legacy and structured YAML loading, descriptor exposure, invalid configurations, and direct Java construction are covered.
+The standard YAML remains on its legacy regex condition, so task 3.4 is intentionally incomplete and no broader datastore classes become eligible before superclass attribution is repaired.
+
+The spikes prove full dependency metadata when explicit application artifact paths are supplied, but the standard production recipe currently receives neither those paths nor a Maven project marker from which it can obtain them directly.
+`JavaSourceSet` retains FQNs rather than artifact paths, and the plugin JVM classpath is not an acceptable application-classpath substitute.
+Implementation therefore pauses before task 4.1 rather than introducing an undocumented production option, relying on a global system property, or activating structural matching with unresolved superclass attribution.
+A reviewed design decision must choose and test either a Maven-aware resolver that obtains current-module artifact paths or an explicit supported runner-to-recipe classpath handoff.
+
+Evidence: `mvn -Dtest=ExtendWithClassForAnnotationConditionallyTest test` passes 9 tests with no failures or skips, and `mvn test` passes 235 tests with no failures, no errors, and 2 existing skips under JDK 21.

@@ -14,9 +14,9 @@
 
 ## 3. Make explicit datastore identity matching structural and API-compatible
 
-- [ ] 3.1 Add optional annotationAttributeName and annotationAttributeValue strings, retain the existing three-argument constructor signature/order/behaviour, and provide the extended five-argument JSON creator described in the design.
-- [ ] 3.2 Add direct-construction compatibility tests plus descriptor and YAML loading tests proving original property compatibility and optional new properties, including conflicting and incomplete configurations.
-- [ ] 3.3 Implement structural enum matching with tests for whitespace, comments, line breaks, qualified references, fully qualified references, and static imports while preserving legacy annotationCondition regex behaviour.
+- [x] 3.1 Add optional annotationAttributeName and annotationAttributeValue strings, retain the existing three-argument constructor signature/order/behaviour, and provide the extended five-argument JSON creator described in the design.
+- [x] 3.2 Add direct-construction compatibility tests plus descriptor and YAML loading tests proving original property compatibility and optional new properties, including conflicting and incomplete configurations.
+- [x] 3.3 Implement structural enum matching with tests for whitespace, comments, line breaks, qualified references, fully qualified references, and static imports while preserving legacy annotationCondition regex behaviour.
 - [ ] 3.4 Switch the datastore-identity YAML rule to annotationAttributeName=identityType and annotationAttributeValue=javax.jdo.annotations.IdentityType.DATASTORE and cover APPLICATION and omitted attributes.
 
 ## 4. Preserve and recover superclass attribution
