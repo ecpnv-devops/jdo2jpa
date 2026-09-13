@@ -1,5 +1,12 @@
 # Entity superclass and listener migration
 
+## Completed comparison and open acceptance gates
+
+The candidate6 comparison completed regeneration for 151 modules and clean installation of all 148 JPA reactor modules on both sides, using the recorded symmetric consumer corrections.
+See `entity-listener-comparison-handoff.md` and `entity-listener-evidence/` for the complete reviewed differences and commands.
+The turnover module is repeat-stable with exactly one annotation-defined configured listener per target entity.
+Full-file idempotence remains open for baseline-reproduced cleanup changes in three other affected modules, and runtime rollout acceptance remains consumer-owned and unverified.
+
 ## Generated-source compatibility notice
 
 This change intentionally changes generated Java source even though the existing three-argument `ExtendWithClassForAnnotationConditionally` constructor and legacy regex YAML properties remain available.
@@ -7,6 +14,11 @@ The standard datastore rule now requires an explicitly declared DATASTORE enum v
 Bare `@PersistenceCapable` no longer gains a superclass through the old regex visitor's accidental empty-argument match; review those classes' identity mappings before adopting regenerated output.
 An explicit APPLICATION value or an omitted identityType does not match the structured rule.
 The standalone legacy regex recipe retains its previous matching contract.
+
+The comparison also exposed and corrected nested `EntityScan` placement.
+Only types that themselves declare `ComponentScan` receive the annotation; enclosing interfaces or helpers do not qualify merely because they contain a nested configuration.
+Changes to nested configurations are preserved when an enclosing configuration also changes.
+This intentional configuration correction accounts for four of the ten differing files in the completed comparison.
 
 Concrete JPA entities receive the configured Isis-era listener only if they have neither an explicit entity-level listener declaration nor an effective inherited registration.
 Explicit custom-only and empty declarations are preserved as overrides.

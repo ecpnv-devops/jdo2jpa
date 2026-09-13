@@ -1,5 +1,5 @@
 {
-  "status": "candidate6 verified; fresh round6 A/B comparison running; full acceptance remains open",
+  "status": "round6 regeneration, complete diff review and compilation complete; full-file idempotence and runtime rollout acceptance remain open",
   "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
   "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
   "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
@@ -59,20 +59,39 @@
   "requiredOrdering": "Regenerate, clean-build and install migrated parents before parsing children. Stop on any command failure, reported Maven error or hierarchy error and reject partial output.",
   "orchestration": "run-comparison.py uses baseline and candidate6 with identical orchestration; state files are written atomically",
   "repositorySeedProvenance": "../round3/repository-seed-sha256.jsonl (56,289 JAR/POM checksums of the unchanged common seed)",
+  "round6Completion": {
+    "modulesPerSide": 151,
+    "jpaCleanInstallsPerSide": 148,
+    "executionsPerRewriteProfilePerSide": 134,
+    "latestFailedStagesPerSide": 0,
+    "preservedRejectedAttemptsPerSide": 7,
+    "changedJavaFiles": 10,
+    "changedModules": 7,
+    "differenceClassification": {"missingListenerInsertions": 2, "entityScanScopeCorrections": 4, "unusedImportsOrImportGrouping": 4},
+    "otherOutputDifferences": 0,
+    "turnover": "Both targets clean-installed on both sides. Candidate has one annotation-defined effective OrmEntityListener per entity and the entire candidate turnover module is repeat-stable. Excluded maintained orchestration source is unchanged.",
+    "idempotence": "All seven affected modules were checked. Four candidate modules are fully stable; three have four repeat deltas, all exactly reproduced on the baseline. No candidate listener changes occur on repeat. Task 6.6 remains open.",
+    "evidenceDirectory": "docs/entity-listener-evidence",
+    "handoff": "docs/entity-listener-comparison-handoff.md",
+    "sourceInventories": "source-inventories.json",
+    "installedParentProvenance": "installed-parent-artifacts.json",
+    "consumerInputPatch": "docs/entity-listener-evidence/consumer-input-adjustments.patch",
+    "inputAmendments": "docs/entity-listener-evidence/input-amendments.json"
+  },
   "round6Corrections": {
     "consumerPomCommit": "74709138e1",
     "readOnly": "Activate the existing EclipseLink provider recipe before general conversion and add datanucleus-api-jdo:6.0.1 to rewrite-only input dependencies. Baseline capex diagnostic passes all three rewrites and clean JPA compilation.",
     "entityScan": "Candidate6 matches ComponentScan only on the current type and preserves nested edits via updateCursor. Both new regressions failed before the fix and pass with normal type validation and three cycles.",
     "consumerDiagnostics": "../round5/candidate6-consumer-diagnostics.json",
     "diagnosticResult": "Candidate6 financial and capex pass all three rewrites and clean JPA compilation. FinancialAccountTransactionAdvisor has EntityScan only on AutoConfigurer; capex imports EclipseLink ReadOnly.",
-    "limitation": "Diagnostics used prior installed parents; complete candidate6 comparison is still required.",
+    "limitation": "These earlier diagnostics used prior installed parents and were not comparison acceptance; see round6Completion for the completed regeneration evidence.",
     "inputProvenance": "input-provenance.json"
   },
   "round5Outcome": {
     "completedModulesPerSide": 56,
     "status": "blocked; partial output rejected",
     "consumerBlocker": "Both sides retain org.datanucleus.api.jdo.annotations.ReadOnly on IncomingInvoiceItemSynopsis and fail capex JPA compilation. Do not add DataNucleus to the JPA compilation classpath to mask an unconverted annotation.",
-    "candidateSpecificDifference": "FinancialAccountTransactionAdvisor gains EntityScan on nested NOOP and AutoConfigurer classes. This was an unresolved round5 configuration difference; candidate6 corrects declaration scope and nested edit preservation, with full comparison still pending.",
+    "candidateSpecificDifference": "FinancialAccountTransactionAdvisor gains EntityScan on nested NOOP and AutoConfigurer classes. This was an unresolved round5 configuration difference; candidate6 corrects declaration scope and nested edit preservation, verified in the completed round6 comparison.",
     "otherCompletedModuleDifferences": "Two unused-import removals and two import-group blank lines; no superclass/listener differences in the 56-module completed prefix.",
     "repeatChecks": {
       "baseline": "../round5/baseline-repeat-results.json",
@@ -99,10 +118,9 @@
     "limitation": "Retry of the failing phase over copied rejected task sources and prior parent artifacts; not full regeneration or compilation acceptance"
   },
   "nextComparisonRequirements": [
-    "Complete the fresh round6 comparison with candidate6 and the symmetric ReadOnly input corrections.",
-    "Inventory every EntityScan difference against the new declared-ComponentScan-only contract, along with all listener and superclass differences.",
-    "Any resumed failed module must first be restored to its recorded input; do not reuse partial output as fresh regeneration.",
-    "Retain the recorded final-listener setting, JDO input API, PDF.js dependency adjustment and clean parent-first JPA builds."
+    "Resolve or explicitly revise acceptance of the baseline-reproduced full-file idempotence exceptions; do not label them stable.",
+    "Any new candidate requires its own immutable artifact and appropriate comparison verification; preserve the completed candidate6 evidence.",
+    "Obtain consumer-owned non-production runtime evidence separately before rollout acceptance."
   ],
   "liveState": ["baseline-migration-state.json", "candidate-migration-state.json"],
   "preflight": {
@@ -121,15 +139,15 @@
     "Candidate2 was superseded after a new composed regression exposed stale scan snapshots; candidate3 includes the refresh-cycle fix and both source-order regressions. Earlier trial outputs are not candidate3 acceptance."
   ],
   "remainingGates": [
-    "Complete pinned parent-first regeneration",
-    "Complete generated-tree diff and affected-class inventory",
-    "Post-migration affected-module compilation and candidate-specific regression assessment",
-    "Actual per-module idempotence and effective-listener duplication review"
+    "Task 6.6: full-file repeat stability exceptions in capex, communications and document, all reproduced on baseline",
+    "Task 7.3: consumer-owned non-production lifecycle callback evidence"
   ],
   "consumerHandoff": {
     "runtimeOwner": "Estatio application maintainer with an approved non-production runtime",
     "requiredEvidence": "Applicable persist/update/remove callbacks execute exactly once for both turnover entities, with tester, inputs, observation method and counts recorded.",
     "maintainedSourceOwner": "Estatio application maintainer; separately fix and verify excluded BackgroundCommandsOrchestration.",
-    "runtimeStatus": "Not performed; rollout acceptance remains open."
+    "runtimeStatus": "Not performed; rollout acceptance remains open.",
+    "runtimeHandoff": "docs/entity-listener-runtime-handoff.md",
+    "comparisonHandoff": "docs/entity-listener-comparison-handoff.md"
   }
 }

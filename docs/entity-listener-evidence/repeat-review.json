@@ -1,0 +1,891 @@
+{
+  "scope": "Seven affected modules in the completed prefix; not complete-tree idempotence. Full snapshots and logs remain in the comparison workspace.",
+  "sides": {
+    "baseline": [
+      {
+        "module": "estatio-incoming/capex",
+        "stable": false,
+        "changedPaths": [
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/invoice/IncomingInvoiceItemRepository.java",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/order/PurchaseOrderRepository.java",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/DefaultsForSupplierAdvisor.java",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/IncomingInvoiceCodaDocHeadAdvisor.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-incoming_capex-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-incoming_capex-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-incoming_capex-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/invoice/IncomingInvoiceItemRepository.java": "--- \n+++ \n@@ -3,5 +3,4 @@\n import java.math.BigDecimal;\n import java.math.BigInteger;\n-import java.util.Collection;\n import java.util.Collections;\n import java.util.List;\n",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/order/PurchaseOrderRepository.java": "--- \n+++ \n@@ -46,5 +46,4 @@\n \n import static org.estatio.base.prod.dom.query.QueryDslUtil.or;\n-import static org.estatio.base.prod.dom.query.QueryDslUtil.search;\n import static org.estatio.base.prod.dom.query.QueryDslUtilAbstract.searchAndReplace;\n \n",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/DefaultsForSupplierAdvisor.java": "--- \n+++ \n@@ -20,4 +20,5 @@\n     Optional<Tax> taxMaybe(Party supplier);\n \n+    @EntityScan({\"org.estatio.module.capex.dom.invoice\", \"org.estatio.module.capex.dom.invoice.approval\", \"org.estatio.module.capex.dom.invoice.ppr\", \"org.estatio.module.capex.dom.order.buyer\", \"org.estatio.module.capex.dom.suppliercontract\", \"org.estatio.module.capex.dom.order.paperclips\", \"org.estatio.module.capex.dom.orderinvoice\", \"org.estatio.module.capex.dom.codamapping\", \"org.estatio.module.capex.dom.order.approval\", \"org.estatio.module.capex.dom.order\", \"org.estatio.module.capex.dom.order.attribute\", \"org.estatio.module.capex.dom.invoice.audit\", \"org.estatio.module.capex.dom.project.reporting.orchestration\"})\n     public static class NOOP implements DefaultsForSupplierAdvisor {\n         @Override\n",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/IncomingInvoiceCodaDocHeadAdvisor.java": "--- \n+++ \n@@ -15,4 +15,5 @@\n     String codaDocHeadTuple(final IncomingInvoice incomingInvoice);\n \n+    @EntityScan({\"org.estatio.module.capex.dom.invoice\", \"org.estatio.module.capex.dom.invoice.approval\", \"org.estatio.module.capex.dom.invoice.ppr\", \"org.estatio.module.capex.dom.order.buyer\", \"org.estatio.module.capex.dom.suppliercontract\", \"org.estatio.module.capex.dom.order.paperclips\", \"org.estatio.module.capex.dom.orderinvoice\", \"org.estatio.module.capex.dom.codamapping\", \"org.estatio.module.capex.dom.order.approval\", \"org.estatio.module.capex.dom.order\", \"org.estatio.module.capex.dom.order.attribute\", \"org.estatio.module.capex.dom.invoice.audit\", \"org.estatio.module.capex.dom.project.reporting.orchestration\"})\n     public static class NOOP implements IncomingInvoiceCodaDocHeadAdvisor {\n \n"
+        }
+      },
+      {
+        "module": "estatio-mallcomm/mallcommturnover",
+        "stable": false,
+        "changedPaths": [
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rollup/GrossAmountPreviousYearService.java",
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRun.java",
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRunOrchItem.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-mallcomm_mallcommturnover-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-mallcomm_mallcommturnover-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-mallcomm_mallcommturnover-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rollup/GrossAmountPreviousYearService.java": "--- \n+++ \n@@ -32,4 +32,5 @@\n     Optional<BigDecimal> sumGrossAmount(LocalDate lastYearMonthStartDate, Unit unit, String brandName);\n \n+    @EntityScan({\"org.estatio.module.mallcommturnover.dom.failures\", \"org.estatio.module.mallcommturnover.dom.provenance\", \"org.estatio.module.mallcommturnover.dom.aggregated\", \"org.estatio.module.mallcommturnover.dom.review\", \"org.estatio.module.mallcommturnover.dom.rolluprun\"})\n     class NOOP implements GrossAmountPreviousYearService {\n \n",
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRun.java": "--- \n+++ \n@@ -22,4 +22,5 @@\n import javax.persistence.Column;\n import javax.persistence.Entity;\n+import javax.persistence.EntityListeners;\n import javax.persistence.EnumType;\n import javax.persistence.Enumerated;\n@@ -68,4 +69,5 @@\n \n import org.estatio.base.prod.dom.EntityAbstract;\n+import org.estatio.base.prod.integration.OrmEntityListener;\n import org.estatio.integration.orchestration.dom.BackgroundCommandsOrchestration;\n import org.estatio.integration.orchestration.dom.CommandInfo;\n@@ -109,4 +111,5 @@\n )\n @Entity\n+@EntityListeners(OrmEntityListener.class)\n @XmlJavaTypeAdapter(PersistentEntityAdapter.class)\n @Table(schema = TurnoverRollupRun.SCHEMA, name = TurnoverRollupRun.TABLE, uniqueConstraints = {\n",
+          "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRunOrchItem.java": "--- \n+++ \n@@ -8,4 +8,5 @@\n import javax.persistence.Column;\n import javax.persistence.Entity;\n+import javax.persistence.EntityListeners;\n import javax.persistence.FetchType;\n import javax.persistence.JoinColumn;\n@@ -37,4 +38,5 @@\n \n import org.estatio.base.prod.dom.EntityAbstract;\n+import org.estatio.base.prod.integration.OrmEntityListener;\n import org.estatio.integration.orchestration.dom.BackgroundCommandsOrchestration;\n import org.estatio.module.mallcommorchestrations.dom.campaignresults.MallcommCampaignResultsFetchOrchestration;\n@@ -67,4 +69,5 @@\n )\n @Entity\n+@EntityListeners(OrmEntityListener.class)\n @XmlJavaTypeAdapter(PersistentEntityAdapter.class)\n @Table(schema = TurnoverRollupRunOrchItem.SCHEMA, name = TurnoverRollupRunOrchItem.TABLE, uniqueConstraints = {\n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/asset",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/asset/src/main/java/org/estatio/module/asset/dom/tax/PropertyTaxForUnit.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_asset-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_asset-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_asset-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/asset/src/main/java/org/estatio/module/asset/dom/tax/PropertyTaxForUnit.java": "--- \n+++ \n@@ -38,5 +38,4 @@\n import lombok.NoArgsConstructor;\n import lombok.Setter;\n-import lombok.experimental.UtilityClass;\n \n \n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/communications",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/dom/communications/dom/commchannels/CommunicationChannelOwnerLinkForDemoObjectWithNotes.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_communications-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_communications-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_communications-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/dom/communications/dom/commchannels/CommunicationChannelOwnerLinkForDemoObjectWithNotes.java": "--- \n+++ \n@@ -3,5 +3,4 @@\n import javax.inject.Named;\n import javax.persistence.CascadeType;\n-import javax.persistence.DiscriminatorColumn;\n import javax.persistence.DiscriminatorValue;\n import javax.persistence.Entity;\n@@ -37,5 +36,4 @@\n @Table(schema = \"exampleDomCommunications\")\n @DiscriminatorValue(CommunicationChannelOwnerLinkForDemoObjectWithNotes.DISCRIMINATOR)\n-@DiscriminatorColumn(name = \"discriminator\", length = 255)\n @Named(CommunicationChannelOwnerLinkForDemoObjectWithNotes.LOGICAL_TYPE_NAMED)\n @DomainObject(nature = Nature.ENTITY, aliased = {CommunicationChannelOwnerLinkForDemoObjectWithNotes.LOGICAL_TYPE_NAMED, \"exampleDomCommunications.CommunicationChannelOwnerLinkForDemoObjectWithNotes\"})\n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/docfragment",
+        "stable": true,
+        "changedPaths": [],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_docfragment-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_docfragment-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_docfragment-rewrite_local.log"
+          }
+        ],
+        "diffs": {}
+      },
+      {
+        "module": "estatio-shared-kernel/document",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/document/src/main/java/org/incode/module/document/dom/impl/paperclips/Paperclip.java",
+          "estatio-shared-kernel/document/src/test/java/org/incode/module/document/dom/impl/docs/DocumentTemplateForTesting.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_document-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_document-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_document-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/document/src/main/java/org/incode/module/document/dom/impl/paperclips/Paperclip.java": "--- \n+++ \n@@ -15,5 +15,4 @@\n import javax.persistence.Column;\n import javax.persistence.DiscriminatorColumn;\n-import javax.persistence.DiscriminatorValue;\n import javax.persistence.Entity;\n import javax.persistence.FetchType;\n",
+          "estatio-shared-kernel/document/src/test/java/org/incode/module/document/dom/impl/docs/DocumentTemplateForTesting.java": "--- \n+++ \n@@ -4,5 +4,4 @@\n \n import javax.inject.Named;\n-import javax.persistence.DiscriminatorColumn;\n import javax.persistence.DiscriminatorValue;\n import javax.persistence.Entity;\n@@ -31,5 +30,4 @@\n @Table(schema = DocumentTemplateForTesting.SCHEMA)\n @DiscriminatorValue(DocumentTemplateForTesting.DISCRIMINATOR)\n-@DiscriminatorColumn(name = \"discriminator\", length = 255)\n @Named(DocumentTemplateForTesting.LOGICAL_TYPE_NAMED)\n @DomainObject(nature = Nature.ENTITY, aliased = {DocumentTemplateForTesting.LOGICAL_TYPE_NAMED, \"org.incode.module.document.dom.impl.docs.DocumentTemplateForTesting\"})\n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/financial",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/financial/src/main/java/org/estatio/module/financial/dom/FinancialAccountTransactionAdvisor.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_financial-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_financial-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+              "-Djdo2jpa.version=1.2.4-f04-baseline",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-baseline-estatio-shared-kernel_financial-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/financial/src/main/java/org/estatio/module/financial/dom/FinancialAccountTransactionAdvisor.java": "--- \n+++ \n@@ -14,4 +14,5 @@\n     boolean hasSucessfullyCompletedOrchestration(FinancialAccountTransaction financialAccountTransaction);\n \n+    @EntityScan({\"org.estatio.module.financial.dom\", \"org.estatio.module.financial.dom.bankaccount.verification\", \"org.estatio.module.financial.dom.paperclips\"})\n     public static class NOOP implements FinancialAccountTransactionAdvisor {\n \n"
+        }
+      }
+    ],
+    "candidate": [
+      {
+        "module": "estatio-incoming/capex",
+        "stable": false,
+        "changedPaths": [
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/invoice/IncomingInvoiceItemRepository.java",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/order/PurchaseOrderRepository.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-incoming_capex-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-incoming_capex-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-incoming/capex",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-incoming_capex-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/invoice/IncomingInvoiceItemRepository.java": "--- \n+++ \n@@ -3,5 +3,4 @@\n import java.math.BigDecimal;\n import java.math.BigInteger;\n-import java.util.Collection;\n import java.util.Collections;\n import java.util.List;\n",
+          "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/order/PurchaseOrderRepository.java": "--- \n+++ \n@@ -46,5 +46,4 @@\n \n import static org.estatio.base.prod.dom.query.QueryDslUtil.or;\n-import static org.estatio.base.prod.dom.query.QueryDslUtil.search;\n import static org.estatio.base.prod.dom.query.QueryDslUtilAbstract.searchAndReplace;\n \n"
+        }
+      },
+      {
+        "module": "estatio-mallcomm/mallcommturnover",
+        "stable": true,
+        "changedPaths": [],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-mallcomm_mallcommturnover-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-mallcomm_mallcommturnover-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-mallcomm/mallcommturnover",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-mallcomm_mallcommturnover-rewrite_local.log"
+          }
+        ],
+        "diffs": {}
+      },
+      {
+        "module": "estatio-shared-kernel/asset",
+        "stable": true,
+        "changedPaths": [],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_asset-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_asset-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/asset",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_asset-rewrite_local.log"
+          }
+        ],
+        "diffs": {}
+      },
+      {
+        "module": "estatio-shared-kernel/communications",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/dom/communications/dom/commchannels/CommunicationChannelOwnerLinkForDemoObjectWithNotes.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_communications-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_communications-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/communications",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_communications-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/dom/communications/dom/commchannels/CommunicationChannelOwnerLinkForDemoObjectWithNotes.java": "--- \n+++ \n@@ -3,5 +3,4 @@\n import javax.inject.Named;\n import javax.persistence.CascadeType;\n-import javax.persistence.DiscriminatorColumn;\n import javax.persistence.DiscriminatorValue;\n import javax.persistence.Entity;\n@@ -37,5 +36,4 @@\n @Table(schema = \"exampleDomCommunications\")\n @DiscriminatorValue(CommunicationChannelOwnerLinkForDemoObjectWithNotes.DISCRIMINATOR)\n-@DiscriminatorColumn(name = \"discriminator\", length = 255)\n @Named(CommunicationChannelOwnerLinkForDemoObjectWithNotes.LOGICAL_TYPE_NAMED)\n @DomainObject(nature = Nature.ENTITY, aliased = {CommunicationChannelOwnerLinkForDemoObjectWithNotes.LOGICAL_TYPE_NAMED, \"exampleDomCommunications.CommunicationChannelOwnerLinkForDemoObjectWithNotes\"})\n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/docfragment",
+        "stable": true,
+        "changedPaths": [],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_docfragment-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_docfragment-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/docfragment",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_docfragment-rewrite_local.log"
+          }
+        ],
+        "diffs": {}
+      },
+      {
+        "module": "estatio-shared-kernel/document",
+        "stable": false,
+        "changedPaths": [
+          "estatio-shared-kernel/document/src/test/java/org/incode/module/document/dom/impl/docs/DocumentTemplateForTesting.java"
+        ],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_document-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_document-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/document",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_document-rewrite_local.log"
+          }
+        ],
+        "diffs": {
+          "estatio-shared-kernel/document/src/test/java/org/incode/module/document/dom/impl/docs/DocumentTemplateForTesting.java": "--- \n+++ \n@@ -4,5 +4,4 @@\n \n import javax.inject.Named;\n-import javax.persistence.DiscriminatorColumn;\n import javax.persistence.DiscriminatorValue;\n import javax.persistence.Entity;\n@@ -31,5 +30,4 @@\n @Table(schema = DocumentTemplateForTesting.SCHEMA)\n @DiscriminatorValue(DocumentTemplateForTesting.DISCRIMINATOR)\n-@DiscriminatorColumn(name = \"discriminator\", length = 255)\n @Named(DocumentTemplateForTesting.LOGICAL_TYPE_NAMED)\n @DomainObject(nature = Nature.ENTITY, aliased = {DocumentTemplateForTesting.LOGICAL_TYPE_NAMED, \"org.incode.module.document.dom.impl.docs.DocumentTemplateForTesting\"})\n"
+        }
+      },
+      {
+        "module": "estatio-shared-kernel/financial",
+        "stable": true,
+        "changedPaths": [],
+        "stages": [
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_financial-rewrite.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite_post",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_financial-rewrite_post.log"
+          },
+          {
+            "command": [
+              "mvn",
+              "-o",
+              "-Dmaven.repo.local=/private/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+              "-Djdo2jpa.version=1.2.4-f04-candidate6",
+              "-pl",
+              "estatio-shared-kernel/financial",
+              "-Prewrite_local",
+              "-Ddisable_dn",
+              "-DskipTests",
+              "rewrite:runNoFork"
+            ],
+            "exit": 0,
+            "errors": [],
+            "log": "/private/tmp/f04-acceptance-401d6c4/round6/repeat-candidate-estatio-shared-kernel_financial-rewrite_local.log"
+          }
+        ],
+        "diffs": {}
+      }
+    ]
+  },
+  "candidateChangesReproducedOnBaseline": {
+    "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/invoice/IncomingInvoiceItemRepository.java": true,
+    "estatio-incoming/capex/src/main/java/org/estatio/module/capex/dom/order/PurchaseOrderRepository.java": true,
+    "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/dom/communications/dom/commchannels/CommunicationChannelOwnerLinkForDemoObjectWithNotes.java": true,
+    "estatio-shared-kernel/document/src/test/java/org/incode/module/document/dom/impl/docs/DocumentTemplateForTesting.java": true
+  }
+}

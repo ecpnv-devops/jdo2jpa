@@ -1,0 +1,9 @@
+[
+  "estatio-incoming/capex",
+  "estatio-mallcomm/mallcommturnover",
+  "estatio-shared-kernel/asset",
+  "estatio-shared-kernel/communications",
+  "estatio-shared-kernel/docfragment",
+  "estatio-shared-kernel/document",
+  "estatio-shared-kernel/financial"
+]

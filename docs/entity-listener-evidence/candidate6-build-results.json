@@ -1,0 +1,36 @@
+{
+  "sourceCommit": "f91f8e780a20925436963b27492fe5b04969f943",
+  "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-candidate6",
+  "stages": [
+    {
+      "command": [
+        "mvn",
+        "-o",
+        "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round5/repositories/candidate",
+        "clean",
+        "verify"
+      ],
+      "exit": 0,
+      "log": "/tmp/f04-acceptance-401d6c4/round5/candidate6-recipe-verify.log"
+    },
+    {
+      "command": [
+        "mvn",
+        "-o",
+        "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round5/repositories/candidate",
+        "install:install-file",
+        "-Dfile=/tmp/f04-acceptance-401d6c4/round5/recipe-candidate6/target/jdo2jpa-1.2.4-f04-candidate6.jar",
+        "-DpomFile=pom.xml"
+      ],
+      "exit": 0,
+      "log": "/tmp/f04-acceptance-401d6c4/round5/candidate6-recipe-install.log"
+    }
+  ],
+  "summary": {
+    "tests": 257,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "sha256": "8b8ab10efc148c63b8e0032ea371fd8f0cf852943f857b06d25633012f5a90ac"
+}

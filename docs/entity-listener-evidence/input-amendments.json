@@ -1,0 +1,173 @@
+{
+  "inputCommit": "4dd98637d572240ff99cb8c998590074c27c839d",
+  "pipelineCommit": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
+  "patchSha256": "9e3221c26ad7bec8d1903711d699e497f1d9465d766a2e138c19b086871c1818",
+  "patchAppliesToCleanPin": true,
+  "patchIdenticalOnBothSides": true,
+  "amendments": {
+    "fastnet-calendar-input-adjustment.json": {
+      "module": "estatio-outgoing/fastnet",
+      "reason": "FastnetImportProlongationService needs Calendarable through the lease entity public hierarchy; this API is absent from both selected JPA classpaths despite the parent module compiling.",
+      "records": [
+        {
+          "side": "baseline",
+          "pomSha256": "abb4fc6adaaf356c4820c226c222f7586920e3d65f52589c489d9e62d81d660a"
+        },
+        {
+          "side": "candidate",
+          "pomSha256": "abb4fc6adaaf356c4820c226c222f7586920e3d65f52589c489d9e62d81d660a"
+        }
+      ],
+      "originalEvidence": "rejected-before-fastnet-calendar"
+    },
+    "fixture-version-input-adjustment.json": {
+      "fixture": "estatio-outgoing/contracttolease-tests",
+      "consumer": "estatio-outgoing/datawarehouse",
+      "reason": "Installed test fixture POM relied on profile-specific version management unavailable when consumed by rewrite. Explicit 1.7.1 preserves the resolved JPA version.",
+      "records": [
+        {
+          "side": "baseline",
+          "pomSha256": "b8f21cfdf0f4f7e87c2229fe6b26989cd445b4b277fe236ec77507e468b574a8"
+        },
+        {
+          "side": "candidate",
+          "pomSha256": "b8f21cfdf0f4f7e87c2229fe6b26989cd445b4b277fe236ec77507e468b574a8"
+        }
+      ],
+      "originalEvidence": "rejected-before-fixture-version",
+      "artifactHashing": "Install-time artifact hashes retained before replacing the previously installed fixture."
+    },
+    "fullcalendar-input-adjustment.json": {
+      "module": "estatio-outgoing/lease",
+      "reason": "Both sides cannot access Calendarable while compiling BreakOption; declare the existing framework API directly in the consumer JPA profile.",
+      "records": [
+        {
+          "side": "baseline",
+          "sha256": "c8c53ee6b85003a2071d1b00b9f07ed46f0081836917c9802f6092b783a997e6"
+        },
+        {
+          "side": "candidate",
+          "sha256": "c8c53ee6b85003a2071d1b00b9f07ed46f0081836917c9802f6092b783a997e6"
+        }
+      ],
+      "rejectedEvidence": "rejected-before-fullcalendar"
+    },
+    "pdfjs-expanded-input-adjustment.json": {
+      "reason": "Explicit JPA API dependency for remaining direct PDF.js users without a declared PDF.js dependency; applied before processing affected modules.",
+      "modules": [
+        {
+          "side": "baseline",
+          "module": "estatio-treso2/treso2incomingorchestrations",
+          "beforeSha256": "dd35d276dae987035f1ba05905b9261fcfb4b81d6c65c2f878d001a190688901",
+          "afterSha256": "c930edc4cd10ced6e83dc742b277a03a079ad7fc253c419685fa75af2214d119"
+        },
+        {
+          "side": "baseline",
+          "module": "estatio-outgoing/invoiceforlease",
+          "beforeSha256": "b475645d0a6cdbd9a2324216e6f08af0285727920663a018e16bdae8d72b45eb",
+          "afterSha256": "845883f0480560713a1945a06b4e4aa88dbcafe29676840a2ef9f94a2ba6e63e"
+        },
+        {
+          "side": "baseline",
+          "module": "estatio-outgoing/leasecontract",
+          "beforeSha256": "aa19d6b7a3013a0857ea7a3f6d7a21d8bcfba185c6bbd6e731c4dc62996e9e87",
+          "afterSha256": "e15a3bdbe57ebfe6cfb24ccafee2e369e1cc9f2174c85297fbe759777a4ee078"
+        },
+        {
+          "side": "baseline",
+          "module": "estatio-crossdomain/admindashboard",
+          "beforeSha256": "d5940c25ce28cd0d8caffb33e235aa4c1ba5d92dff62f20bafc9270c21589ffa",
+          "afterSha256": "1934464843535f3f1725a4f46db18174c1527cdb1ced8b40fbc27cc8c07d6efa"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-treso2/treso2incomingorchestrations",
+          "beforeSha256": "dd35d276dae987035f1ba05905b9261fcfb4b81d6c65c2f878d001a190688901",
+          "afterSha256": "c930edc4cd10ced6e83dc742b277a03a079ad7fc253c419685fa75af2214d119"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-outgoing/invoiceforlease",
+          "beforeSha256": "b475645d0a6cdbd9a2324216e6f08af0285727920663a018e16bdae8d72b45eb",
+          "afterSha256": "845883f0480560713a1945a06b4e4aa88dbcafe29676840a2ef9f94a2ba6e63e"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-outgoing/leasecontract",
+          "beforeSha256": "aa19d6b7a3013a0857ea7a3f6d7a21d8bcfba185c6bbd6e731c4dc62996e9e87",
+          "afterSha256": "e15a3bdbe57ebfe6cfb24ccafee2e369e1cc9f2174c85297fbe759777a4ee078"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-crossdomain/admindashboard",
+          "beforeSha256": "d5940c25ce28cd0d8caffb33e235aa4c1ba5d92dff62f20bafc9270c21589ffa",
+          "afterSha256": "1934464843535f3f1725a4f46db18174c1527cdb1ced8b40fbc27cc8c07d6efa"
+        }
+      ],
+      "originalFailurePreserved": "rejected-before-pdfjs"
+    },
+    "report-fixtures-input-adjustment.json": {
+      "producers": [
+        "estatio-outgoing/fastnet-tests",
+        "estatio-shared-kernel/asset-tests"
+      ],
+      "consumer": "estatio-report",
+      "reason": "The other two unconditional unversioned P6Spy declarations invalidate installed fixture POMs; explicit 1.7.1 matches both resolved JPA classpaths.",
+      "records": [
+        {
+          "side": "baseline",
+          "module": "estatio-outgoing/fastnet-tests",
+          "pomSha256": "d6b22439fff3626bddab41320c9eac4cb3de05bb21d8ffcb2bf6ff86b27f2785"
+        },
+        {
+          "side": "baseline",
+          "module": "estatio-shared-kernel/asset-tests",
+          "pomSha256": "e83941babc44c6441a3c91f20e46bfb762ef7ad2f65a3cc969fea3bc80e578e4"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-outgoing/fastnet-tests",
+          "pomSha256": "d6b22439fff3626bddab41320c9eac4cb3de05bb21d8ffcb2bf6ff86b27f2785"
+        },
+        {
+          "side": "candidate",
+          "module": "estatio-shared-kernel/asset-tests",
+          "pomSha256": "e83941babc44c6441a3c91f20e46bfb762ef7ad2f65a3cc969fea3bc80e578e4"
+        }
+      ],
+      "originalEvidence": "rejected-before-report-fixtures"
+    },
+    "spring-web-input-adjustment.json": {
+      "module": "estatio-outgoing/invoiceforlease",
+      "reason": "RenderioClientService uses HttpHeaders.CONTENT_DISPOSITION; spring-web is missing from both JPA classpaths. Version 5.3.31 matches resolved spring-core/context.",
+      "records": [
+        {
+          "side": "baseline",
+          "sha256": "a2884b4d2905b1e076a83b3f333bca5d6d0eb5d885b13a08790359c2bf14e1a3"
+        },
+        {
+          "side": "candidate",
+          "sha256": "a2884b4d2905b1e076a83b3f333bca5d6d0eb5d885b13a08790359c2bf14e1a3"
+        }
+      ],
+      "rejectedEvidence": "rejected-before-spring-web"
+    },
+    "webapp-packaging-input-adjustment.json": {
+      "producer": "estatio-webapp",
+      "consumer": "estatio-webapp-tests",
+      "reason": "The pinned v2 profile sets packaging to jar; retain that actual packaging as a literal so dependency-model reading does not encounter a recursive undefined packaging expression.",
+      "records": [
+        {
+          "side": "baseline",
+          "pomSha256": "9e04bc4c8c3e3023b1c0960878e1349cbf8102e4b4219f20e1203918ebcb04b0"
+        },
+        {
+          "side": "candidate",
+          "pomSha256": "9e04bc4c8c3e3023b1c0960878e1349cbf8102e4b4219f20e1203918ebcb04b0"
+        }
+      ],
+      "originalEvidence": "rejected-before-webapp-packaging"
+    }
+  },
+  "patchFormat": "git diff with diff.suppressBlankEmpty=true; checked with git apply --cached --check"
+}

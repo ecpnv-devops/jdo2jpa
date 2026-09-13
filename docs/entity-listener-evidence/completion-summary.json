@@ -1,0 +1,26 @@
+{
+  "baseline": {
+    "status": "regeneration and parent-first installation complete; diff review still required",
+    "completedModules": 151,
+    "latestStageCounts": {
+      "jpa-install": 148,
+      "rewrite": 134,
+      "rewrite_post": 134,
+      "rewrite_local": 134
+    },
+    "latestFailedStages": 0,
+    "rejectedHistoricalStages": 7
+  },
+  "candidate": {
+    "status": "regeneration and parent-first installation complete; diff review still required",
+    "completedModules": 151,
+    "latestStageCounts": {
+      "jpa-install": 148,
+      "rewrite": 134,
+      "rewrite_post": 134,
+      "rewrite_local": 134
+    },
+    "latestFailedStages": 0,
+    "rejectedHistoricalStages": 7
+  }
+}

@@ -1,0 +1,403 @@
+{
+  "scope": "Repository mapping files only; runtime-selected dependency mappings and dynamic metadata are not verified.",
+  "sides": {
+    "baseline": [
+      {
+        "path": "estatio-webapp/src/main/resources/META-INF/orm-jpa-overrides.xml",
+        "listenerOrMetadataOverrides": [
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "path": "estatio-webapp/src/main/resources/META-INF/orm-jpa-overrides.xml",
+        "listenerOrMetadataOverrides": [
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          },
+          {
+            "tag": "exclude-default-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listeners",
+            "attributes": {}
+          },
+          {
+            "tag": "entity-listener",
+            "attributes": {
+              "class": "org.estatio.base.prod.integration.OrmEntityListener"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "owningClasses": {
+    "baseline": [
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.audittrail.jpa.dom.AuditTrailEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.commandlog.jpa.dom.CommandLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.executionlog.jpa.dom.ExecutionLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.executionoutbox.jpa.dom.ExecutionOutboxEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.sessionlog.jpa.dom.SessionLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.permission.dom.ApplicationPermission",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.role.dom.ApplicationRole",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.user.dom.ApplicationUser",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.commandlog.jpa.dom.CommandReplayResultMapping",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.audittrail.jpa.dom.AuditTrailEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.commandlog.jpa.dom.CommandLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.executionlog.jpa.dom.ExecutionLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.executionoutbox.jpa.dom.ExecutionOutboxEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.sessionlog.jpa.dom.SessionLogEntry",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.permission.dom.ApplicationPermission",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.role.dom.ApplicationRole",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.secman.jpa.user.dom.ApplicationUser",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      },
+      {
+        "type": "entity",
+        "class": "org.apache.isis.extensions.commandlog.jpa.dom.CommandReplayResultMapping",
+        "listeners": [
+          "org.estatio.base.prod.integration.OrmEntityListener"
+        ]
+      }
+    ]
+  }
+}

@@ -2,7 +2,31 @@
 
 These are explicit consumer/harness adjustments, not transformations performed by the recipe library.
 They are applied identically to the disposable baseline and candidate inputs.
-The original pinned checkout remains unchanged.
+The input commit remains pinned; every checkout adjustment is recorded separately.
+The maintained Estatio `ReadOnly` configuration correction is committed as `74709138e1`; the additional comparison-only dependency amendments below still require consumer adoption.
+
+## Reproducible input patch
+
+`entity-listener-evidence/consumer-input-adjustments.patch` captures the symmetric consumer POM corrections against clean Estatio input `4dd98637d572240ff99cb8c998590074c27c839d`.
+Apply it only to that clean pinned input, not blindly to an already modified checkout.
+The patch is checked against the pinned Git tree, and its bytes must match both comparison sides.
+The final patch includes all recorded round6 amendments and was rechecked against both completed trees.
+
+## Additional baseline-reproduced dependency gaps
+
+| Consumer | Missing dependency / correction |
+| --- | --- |
+| `bankmandate`, `treso2incomingorchestrations`, `invoiceforlease`, `leasecontract`, `admindashboard` | Explicit PDF.js API in the JPA profile |
+| `lease`, `fastnet` | Explicit FullCalendar API in the JPA profile; Fastnet needs it through the lease entity hierarchy |
+| `invoiceforlease` | `org.springframework:spring-web:5.3.31` for the used `HttpHeaders.CONTENT_DISPOSITION` constant |
+| `contracttolease-tests`, `fastnet-tests`, `asset-tests` | Explicit `p6spy-spring-boot-starter:1.7.1`, preserving the resolved JPA version while making installed fixture POMs consumable outside their producers' profiles |
+| `estatio-webapp` | Literal `jar` packaging, matching the pinned v2 build and removing the profile-dependent recursive `${packaging}` expression from the published POM |
+
+The extension API versions match the pinned Isis runtime version recorded in the PDF.js example below.
+A parent module compiling successfully does not prove its published profile-dependent POM exposes every API needed by a consumer.
+Each failure was retained on both sides, affected sources were restored before regeneration, and amendments were applied symmetrically.
+The producer metadata corrections required rebuilding and reinstalling the affected producers before reprocessing `datawarehouse`, `webapp-tests`, or `report`.
+No failed check was suppressed.
 
 ## Listener identity
 

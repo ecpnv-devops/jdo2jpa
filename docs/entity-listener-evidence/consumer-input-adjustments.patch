@@ -1,0 +1,286 @@
+diff --git a/estatio-crossdomain/admindashboard/pom.xml b/estatio-crossdomain/admindashboard/pom.xml
+index b346406066..e03bdda2bb 100644
+--- a/estatio-crossdomain/admindashboard/pom.xml
++++ b/estatio-crossdomain/admindashboard/pom.xml
+@@ -357,6 +357,12 @@
+             </activation>
+
+             <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-pdfjs-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++
+                 <dependency>
+                     <groupId>javax.servlet</groupId>
+                     <artifactId>javax.servlet-api</artifactId>
+diff --git a/estatio-outgoing/contracttolease-tests/pom.xml b/estatio-outgoing/contracttolease-tests/pom.xml
+index 2ec81eee45..64f068fa18 100644
+--- a/estatio-outgoing/contracttolease-tests/pom.xml
++++ b/estatio-outgoing/contracttolease-tests/pom.xml
+@@ -34,6 +34,7 @@
+         <dependency>
+             <groupId>com.github.gavlyukovskiy</groupId>
+             <artifactId>p6spy-spring-boot-starter</artifactId>
++            <version>1.7.1</version>
+             <scope>test</scope>
+         </dependency>
+
+diff --git a/estatio-outgoing/fastnet-tests/pom.xml b/estatio-outgoing/fastnet-tests/pom.xml
+index 89084f8a51..f4b755424b 100644
+--- a/estatio-outgoing/fastnet-tests/pom.xml
++++ b/estatio-outgoing/fastnet-tests/pom.xml
+@@ -126,6 +126,7 @@
+         <dependency>
+             <groupId>com.github.gavlyukovskiy</groupId>
+             <artifactId>p6spy-spring-boot-starter</artifactId>
++            <version>1.7.1</version>
+             <scope>test</scope>
+         </dependency>
+
+diff --git a/estatio-outgoing/fastnet/pom.xml b/estatio-outgoing/fastnet/pom.xml
+index 97168131e7..9d8074f2fe 100644
+--- a/estatio-outgoing/fastnet/pom.xml
++++ b/estatio-outgoing/fastnet/pom.xml
+@@ -97,6 +97,16 @@
+     </dependencies>
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-fullcalendar-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-outgoing/invoiceforlease/pom.xml b/estatio-outgoing/invoiceforlease/pom.xml
+index 0571cb87f6..71cff31646 100644
+--- a/estatio-outgoing/invoiceforlease/pom.xml
++++ b/estatio-outgoing/invoiceforlease/pom.xml
+@@ -53,6 +53,21 @@
+     </dependencies>
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.springframework</groupId>
++                    <artifactId>spring-web</artifactId>
++                    <version>5.3.31</version>
++                </dependency>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-pdfjs-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-outgoing/lease/pom.xml b/estatio-outgoing/lease/pom.xml
+index a0f086bb05..921dec8ffc 100644
+--- a/estatio-outgoing/lease/pom.xml
++++ b/estatio-outgoing/lease/pom.xml
+@@ -210,6 +210,17 @@
+
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-fullcalendar-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
++
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-outgoing/leasecontract/pom.xml b/estatio-outgoing/leasecontract/pom.xml
+index 686dcd8cb6..2f7bace9aa 100644
+--- a/estatio-outgoing/leasecontract/pom.xml
++++ b/estatio-outgoing/leasecontract/pom.xml
+@@ -199,6 +199,16 @@
+
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-pdfjs-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-shared-kernel/asset-tests/pom.xml b/estatio-shared-kernel/asset-tests/pom.xml
+index 55864c9864..b7795925de 100644
+--- a/estatio-shared-kernel/asset-tests/pom.xml
++++ b/estatio-shared-kernel/asset-tests/pom.xml
+@@ -85,6 +85,7 @@
+         <dependency>
+             <groupId>com.github.gavlyukovskiy</groupId>
+             <artifactId>p6spy-spring-boot-starter</artifactId>
++            <version>1.7.1</version>
+             <scope>test</scope>
+         </dependency>
+
+@@ -183,6 +184,7 @@
+                 <dependency>
+                     <groupId>com.github.gavlyukovskiy</groupId>
+                     <artifactId>p6spy-spring-boot-starter</artifactId>
++            <version>1.7.1</version>
+                     <scope>test</scope>
+                 </dependency>
+
+diff --git a/estatio-shared-kernel/bankmandate/pom.xml b/estatio-shared-kernel/bankmandate/pom.xml
+index 315e8e4ca1..184bbf290c 100644
+--- a/estatio-shared-kernel/bankmandate/pom.xml
++++ b/estatio-shared-kernel/bankmandate/pom.xml
+@@ -71,6 +71,16 @@
+     </dependencies>
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-pdfjs-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-treso2/treso2incomingorchestrations/pom.xml b/estatio-treso2/treso2incomingorchestrations/pom.xml
+index a1f386e811..5904d842d1 100644
+--- a/estatio-treso2/treso2incomingorchestrations/pom.xml
++++ b/estatio-treso2/treso2incomingorchestrations/pom.xml
+@@ -69,6 +69,16 @@
+     </dependencies>
+
+     <profiles>
++        <profile>
++            <id>jpa</id>
++            <dependencies>
++                <dependency>
++                    <groupId>org.apache.isis.extensions</groupId>
++                    <artifactId>isis-extensions-pdfjs-applib</artifactId>
++                    <version>2.2.0.20260826-1810.maintenance-branch.a08bda89</version>
++                </dependency>
++            </dependencies>
++        </profile>
+
+         <profile>
+             <id>java11</id>
+diff --git a/estatio-webapp/pom.xml b/estatio-webapp/pom.xml
+index 4f620989e5..364e7e3a44 100644
+--- a/estatio-webapp/pom.xml
++++ b/estatio-webapp/pom.xml
+@@ -11,7 +11,7 @@
+     </parent>
+
+     <artifactId>estatio-app-webapp</artifactId>
+-    <packaging>${packaging}</packaging>
++    <packaging>jar</packaging>
+
+     <name>apps/estatio/estatio : webapp</name>
+     <description>
+diff --git a/pom.xml b/pom.xml
+index 404cc79bc3..5d7d292475 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -412,6 +412,7 @@
+
+         <javax.mail.version>1.5.2</javax.mail.version>
+         <jdo2jpa.version>1.2.2-SNAPSHOT</jdo2jpa.version>
++        <jdo2jpa.entityListenerClass>org.estatio.base.prod.integration.OrmEntityListener</jdo2jpa.entityListenerClass>
+
+         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+         <jacoco.version>0.8.9</jacoco.version>
+@@ -2189,6 +2190,19 @@
+                     <url>https://maven.pkg.github.com/ecpnv-devops/jdo2jpa</url>
+                 </repository>
+             </repositories>
++            <!-- Migration input API: retain JDO annotation attribution after parent artifacts become JPA. -->
++            <dependencies>
++                <dependency>
++                    <groupId>javax.jdo</groupId>
++                    <artifactId>jdo-api</artifactId>
++                    <version>3.2.1</version>
++                </dependency>
++                <dependency>
++                    <groupId>org.datanucleus</groupId>
++                    <artifactId>datanucleus-api-jdo</artifactId>
++                    <version>6.0.1</version>
++                </dependency>
++            </dependencies>
+             <build>
+                 <plugins>
+                     <plugin>
+@@ -2203,6 +2217,7 @@
+                             </exclusions>
+                             <exportDatatables>true</exportDatatables>
+                             <activeRecipes>
++                                <recipe>com.ecpnv.openrewrite.jdo2jpa.v2x.eclipselink</recipe>
+                                 <recipe>com.ecpnv.openrewrite.jdo2jpa.v2x</recipe>
+                                 <recipe>com.ecpnv.openrewrite.jdo2jpa.v2x.causeway</recipe>
+                             </activeRecipes>
+@@ -2244,6 +2259,19 @@
+                     <url>https://maven.pkg.github.com/ecpnv-devops/jdo2jpa</url>
+                 </repository>
+             </repositories>
++            <!-- Migration input API: retain JDO annotation attribution after parent artifacts become JPA. -->
++            <dependencies>
++                <dependency>
++                    <groupId>javax.jdo</groupId>
++                    <artifactId>jdo-api</artifactId>
++                    <version>3.2.1</version>
++                </dependency>
++                <dependency>
++                    <groupId>org.datanucleus</groupId>
++                    <artifactId>datanucleus-api-jdo</artifactId>
++                    <version>6.0.1</version>
++                </dependency>
++            </dependencies>
+             <build>
+                 <plugins>
+                     <plugin>
+@@ -2299,6 +2327,19 @@
+                     <url>https://maven.pkg.github.com/ecpnv-devops/jdo2jpa</url>
+                 </repository>
+             </repositories>
++            <!-- Migration input API: retain JDO annotation attribution after parent artifacts become JPA. -->
++            <dependencies>
++                <dependency>
++                    <groupId>javax.jdo</groupId>
++                    <artifactId>jdo-api</artifactId>
++                    <version>3.2.1</version>
++                </dependency>
++                <dependency>
++                    <groupId>org.datanucleus</groupId>
++                    <artifactId>datanucleus-api-jdo</artifactId>
++                    <version>6.0.1</version>
++                </dependency>
++            </dependencies>
+             <build>
+                 <plugins>
+                     <plugin>

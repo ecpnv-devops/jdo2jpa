@@ -1,0 +1,1327 @@
+{
+  "complete": true,
+  "completedCommonModules": 151,
+  "scope": "Completed-module differences only. Compiled annotation metadata, not runtime or XML/default-listener acceptance.",
+  "changes": [
+    {
+      "path": "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/DefaultsForSupplierAdvisor.java",
+      "module": "estatio-incoming/capex",
+      "baselineSha256": "b8d5923a4627ffd2ce630aa177e5bc0399e774531d77d4b2e2687633c07c93e5",
+      "candidateSha256": "ca37d750130a62dd6326fb110eafbb151019ec453b2644279afbfcd21b3550ab",
+      "classification": "declared ComponentScan scope correction",
+      "types": [
+        {
+          "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP$AutoConfigurer",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": true
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.DefaultsForSupplierAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-incoming/capex/src/main/java/org/estatio/module/capex/spi/IncomingInvoiceCodaDocHeadAdvisor.java",
+      "module": "estatio-incoming/capex",
+      "baselineSha256": "78faaff896b149bd8bdf3da40b12dc35115657ae149d46007ba263196654cc7c",
+      "candidateSha256": "fe004c5c6d5846ba2f95ff75330c2502dc30ce6f86b3bda86dd1999369500157",
+      "classification": "declared ComponentScan scope correction",
+      "types": [
+        {
+          "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP$AutoConfigurer",
+          "baseline": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": true
+          },
+          "candidate": {
+            "class": "org.estatio.module.capex.spi.IncomingInvoiceCodaDocHeadAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rollup/GrossAmountPreviousYearService.java",
+      "module": "estatio-mallcomm/mallcommturnover",
+      "baselineSha256": "7b0f5c8f4a284310afeb04a0f94ed5f0c442cca4074b3530e3c0a3617f22244a",
+      "candidateSha256": "e86fd738a7aa7bde52b17cf3e817f0cf873d162e973aa1e9193422de6b2b60eb",
+      "classification": "declared ComponentScan scope correction",
+      "types": [
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP$AutoConfigurer",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": true
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rollup.GrossAmountPreviousYearService$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRun.java",
+      "module": "estatio-mallcomm/mallcommturnover",
+      "baselineSha256": "82f7d34e6bfb3351dca5874c7757f93dfebc17468d59c7590bcf0fe7a522f848",
+      "candidateSha256": "ebc1e88abe4783083263b3e37ca2f599761b32bda8c209b5699563e9168f4416",
+      "classification": "Reviewed intended missing OrmEntityListener insertion; same EntityAbstract superclass, no other semantic source change.",
+      "types": [
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$OrchestrationSubscriber",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$OrchestrationSubscriber",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$OrchestrationSubscriber",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RedirectFetchRollupAndRunResultToSiteTurnoverForMonth",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RedirectFetchRollupAndRunResultToSiteTurnoverForMonth",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RedirectFetchRollupAndRunResultToSiteTurnoverForMonth",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RunType",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RunType",
+            "superclass": "java.lang.Enum",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$RunType",
+            "superclass": "java.lang.Enum",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$State",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$State",
+            "superclass": "java.lang.Enum",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$State",
+            "superclass": "java.lang.Enum",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$TurnoverRollupRunBuilder",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$TurnoverRollupRunBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRun$TurnoverRollupRunBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ],
+      "reviewEvidence": "f04-target-results.json; compiled annotation metadata shows one configured listener and no inherited duplicate."
+    },
+    {
+      "path": "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRunOrchItem.java",
+      "module": "estatio-mallcomm/mallcommturnover",
+      "baselineSha256": "093d94f9a9b42c80a51f6dad3745101208d88c42323a815f6499c4fef2748f7e",
+      "candidateSha256": "b54ee4fe299d5d37c13d9038dfb1a0e45ef62efc71370b659bc83e8b22889efe",
+      "classification": "Reviewed intended missing OrmEntityListener insertion; same EntityAbstract superclass, no other semantic source change.",
+      "types": [
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem$TurnoverRollupRunOrchItemBuilder",
+          "baseline": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem$TurnoverRollupRunOrchItemBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.mallcommturnover.dom.rolluprun.TurnoverRollupRunOrchItem$TurnoverRollupRunOrchItemBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ],
+      "reviewEvidence": "f04-target-results.json; compiled annotation metadata shows one configured listener and no inherited duplicate."
+    },
+    {
+      "path": "estatio-shared-kernel/asset/src/main/java/org/estatio/module/asset/dom/tax/PropertyTaxForUnit.java",
+      "module": "estatio-shared-kernel/asset",
+      "baselineSha256": "b4d598f87bc63dad672a44a2b43f8de6d4db9abfcd502b105c35445dde32b47c",
+      "candidateSha256": "171844083874907799bec2bdb7a58493deaf3006da24aed2018ea16e47989b32",
+      "classification": "unused imports/import-group whitespace",
+      "types": [
+        {
+          "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit",
+          "baseline": {
+            "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit$PropertyTaxForUnitBuilder",
+          "baseline": {
+            "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit$PropertyTaxForUnitBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.asset.dom.tax.PropertyTaxForUnit$PropertyTaxForUnitBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-shared-kernel/communications/src/test/java/org/incode/module/communications/integtests/demo/dom/demowithnotes/DemoObjectWithNotes.java",
+      "module": "estatio-shared-kernel/communications",
+      "baselineSha256": "b47745e93ef2e4cb44143565aa2f474bf336e2fe38815c4c808d51a8e415778b",
+      "candidateSha256": "8ab71c7f14bd1ce1b4c854408cce1423c02cb96c744fdd0695d3c8518b18a92b",
+      "classification": "unused imports/import-group whitespace",
+      "types": [
+        {
+          "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes",
+          "baseline": {
+            "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes$DemoObjectWithNotesBuilder",
+          "baseline": {
+            "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes$DemoObjectWithNotesBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.communications.integtests.demo.dom.demowithnotes.DemoObjectWithNotes$DemoObjectWithNotesBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-shared-kernel/docfragment/src/main/java/org/incode/module/docfragment/dom/impl/DocFragment.java",
+      "module": "estatio-shared-kernel/docfragment",
+      "baselineSha256": "85291e11036e00b852a552f8ca7b3824bc7576e6c4f9a5aae8d4bc690249281b",
+      "candidateSha256": "f89219649457a9a097547504bcd109dcfc590bf138e2e1a07f18fb773e06dfdf",
+      "classification": "unused imports/import-group whitespace",
+      "types": [
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "annotationDefinedEffectiveListeners": [
+              "org.estatio.base.prod.integration.OrmEntityListener"
+            ],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$AtPath$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$DocFragmentBuilder",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$DocFragmentBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$DocFragmentBuilder",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$Name$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$ObjectType$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$TemplateText$DomainEvent",
+            "superclass": "org.incode.module.docfragment.dom.impl.DocFragment$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText$TextDomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText$TextDomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$changeTemplateText$TextDomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete$DomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.docfragment.dom.impl.DocFragment$delete$DomainEvent",
+            "superclass": "org.incode.module.docfragment.EstatioSharedKernelDocFragmentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-shared-kernel/document/src/main/java/org/incode/module/document/dom/impl/paperclips/Paperclip.java",
+      "module": "estatio-shared-kernel/document",
+      "baselineSha256": "80b6ec527aa6d7781c0556af4ee51aa0a2e0d10e74e4b310018450c5aad0a7a8",
+      "candidateSha256": "f8c41c5883776b539eaaec6281bf039ff3bc6b188e08c5adca90ff3cf358d367",
+      "classification": "unused imports/import-group whitespace",
+      "types": [
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip",
+            "superclass": "org.estatio.base.prod.dom.EntityAbstract",
+            "entity": true,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$ActionDomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$ActionDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$ActionDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$ActionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$AttachedToStr",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$AttachedToStr",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$AttachedToStr",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$CollectionDomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$CollectionDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$CollectionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$CollectionDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$CollectionDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$Document$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentDate$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$DocumentState$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "superclass": "org.incode.module.document.IncodeDocumentModule$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName$DomainEvent",
+          "baseline": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.incode.module.document.dom.impl.paperclips.Paperclip$RoleName$DomainEvent",
+            "superclass": "org.incode.module.document.dom.impl.paperclips.Paperclip$PropertyDomainEvent",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "estatio-shared-kernel/financial/src/main/java/org/estatio/module/financial/dom/FinancialAccountTransactionAdvisor.java",
+      "module": "estatio-shared-kernel/financial",
+      "baselineSha256": "8fbb177b7ec2cec05b123b82096980aff071a259c9d33b128e2c171c8255d80e",
+      "candidateSha256": "c778cbb26e6a7fe133de2590c15e263f23dafc606016c60389249cd999d11587",
+      "classification": "declared ComponentScan scope correction",
+      "types": [
+        {
+          "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor",
+          "baseline": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor",
+            "superclass": null,
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP",
+          "baseline": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          },
+          "candidate": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": false
+          }
+        },
+        {
+          "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP$AutoConfigurer",
+          "baseline": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": false,
+            "declaresComponentScan": true
+          },
+          "candidate": {
+            "class": "org.estatio.module.financial.dom.FinancialAccountTransactionAdvisor$NOOP$AutoConfigurer",
+            "superclass": "java.lang.Object",
+            "entity": false,
+            "mappedSuperclass": false,
+            "declaredListeners": [],
+            "annotationDefinedEffectiveListeners": [],
+            "declaresEntityScan": true,
+            "declaresComponentScan": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "module": "estatio-mallcomm/mallcommturnover",
+  "sides": {
+    "baseline": {
+      "completed": true,
+      "stages": [
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+            "-Djdo2jpa.version=1.2.4-f04-baseline",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/baseline-migration-logs/estatio-mallcomm_mallcommturnover-rewrite.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite_post",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+            "-Djdo2jpa.version=1.2.4-f04-baseline",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite_post",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/baseline-migration-logs/estatio-mallcomm_mallcommturnover-rewrite_post.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite_local",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+            "-Djdo2jpa.version=1.2.4-f04-baseline",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite_local",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/baseline-migration-logs/estatio-mallcomm_mallcommturnover-rewrite_local.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "jpa-install",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
+            "-Djdo2jpa.version=1.2.4-f04-baseline",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Pjpa,jpa-apt,!jdo,!jdo-apt",
+            "clean",
+            "install"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/baseline-migration-logs/estatio-mallcomm_mallcommturnover-jpa-install.log",
+          "errors": []
+        }
+      ]
+    },
+    "candidate": {
+      "completed": true,
+      "stages": [
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+            "-Djdo2jpa.version=1.2.4-f04-candidate6",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/candidate-migration-logs/estatio-mallcomm_mallcommturnover-rewrite.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite_post",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+            "-Djdo2jpa.version=1.2.4-f04-candidate6",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite_post",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/candidate-migration-logs/estatio-mallcomm_mallcommturnover-rewrite_post.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "rewrite_local",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+            "-Djdo2jpa.version=1.2.4-f04-candidate6",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Prewrite_local",
+            "rewrite:runNoFork"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/candidate-migration-logs/estatio-mallcomm_mallcommturnover-rewrite_local.log",
+          "errors": []
+        },
+        {
+          "module": "estatio-mallcomm/mallcommturnover",
+          "stage": "jpa-install",
+          "command": [
+            "mvn",
+            "-o",
+            "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+            "-Djdo2jpa.version=1.2.4-f04-candidate6",
+            "-pl",
+            "estatio-mallcomm/mallcommturnover",
+            "-Ddisable_dn",
+            "-DskipTests",
+            "-Pjpa,jpa-apt,!jdo,!jdo-apt",
+            "clean",
+            "install"
+          ],
+          "exit": 0,
+          "hierarchyError": false,
+          "log": "/tmp/f04-acceptance-401d6c4/round6/candidate-migration-logs/estatio-mallcomm_mallcommturnover-jpa-install.log",
+          "errors": []
+        }
+      ]
+    }
+  },
+  "sources": {
+    "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRun.java": {
+      "baselineSha256": "82f7d34e6bfb3351dca5874c7757f93dfebc17468d59c7590bcf0fe7a522f848",
+      "candidateSha256": "ebc1e88abe4783083263b3e37ca2f599761b32bda8c209b5699563e9168f4416",
+      "diff": "--- \n+++ \n@@ -22,4 +22,5 @@\n import javax.persistence.Column;\n import javax.persistence.Entity;\n+import javax.persistence.EntityListeners;\n import javax.persistence.EnumType;\n import javax.persistence.Enumerated;\n@@ -68,4 +69,5 @@\n \n import org.estatio.base.prod.dom.EntityAbstract;\n+import org.estatio.base.prod.integration.OrmEntityListener;\n import org.estatio.integration.orchestration.dom.BackgroundCommandsOrchestration;\n import org.estatio.integration.orchestration.dom.CommandInfo;\n@@ -97,5 +99,4 @@\n  */\n \n-\n @NoArgsConstructor\n @Named(TurnoverRollupRun.LOGICAL_TYPE_NAMED)\n@@ -109,4 +110,5 @@\n )\n @Entity\n+@EntityListeners(OrmEntityListener.class)\n @XmlJavaTypeAdapter(PersistentEntityAdapter.class)\n @Table(schema = TurnoverRollupRun.SCHEMA, name = TurnoverRollupRun.TABLE, uniqueConstraints = {\n"
+    },
+    "estatio-mallcomm/mallcommturnover/src/main/java/org/estatio/module/mallcommturnover/dom/rolluprun/TurnoverRollupRunOrchItem.java": {
+      "baselineSha256": "093d94f9a9b42c80a51f6dad3745101208d88c42323a815f6499c4fef2748f7e",
+      "candidateSha256": "b54ee4fe299d5d37c13d9038dfb1a0e45ef62efc71370b659bc83e8b22889efe",
+      "diff": "--- \n+++ \n@@ -8,4 +8,5 @@\n import javax.persistence.Column;\n import javax.persistence.Entity;\n+import javax.persistence.EntityListeners;\n import javax.persistence.FetchType;\n import javax.persistence.JoinColumn;\n@@ -37,4 +38,5 @@\n \n import org.estatio.base.prod.dom.EntityAbstract;\n+import org.estatio.base.prod.integration.OrmEntityListener;\n import org.estatio.integration.orchestration.dom.BackgroundCommandsOrchestration;\n import org.estatio.module.mallcommorchestrations.dom.campaignresults.MallcommCampaignResultsFetchOrchestration;\n@@ -55,5 +57,4 @@\n  */\n \n-\n @NoArgsConstructor\n @Named(TurnoverRollupRunOrchItem.LOGICAL_TYPE_NAMED)\n@@ -67,4 +68,5 @@\n )\n @Entity\n+@EntityListeners(OrmEntityListener.class)\n @XmlJavaTypeAdapter(PersistentEntityAdapter.class)\n @Table(schema = TurnoverRollupRunOrchItem.SCHEMA, name = TurnoverRollupRunOrchItem.TABLE, uniqueConstraints = {\n"
+    }
+  },
+  "maintainedSource": {
+    "path": "estatio-integration/orchestration/src/main/java-jpa/org/estatio/integration/orchestration/dom/BackgroundCommandsOrchestration.java",
+    "inputSha256": "3190884e4663aa2713fbfeefeef57da0f260af801ce0694f66f8ba5829829600",
+    "unchanged": {
+      "baseline": true,
+      "candidate": true
+    }
+  }
+}
