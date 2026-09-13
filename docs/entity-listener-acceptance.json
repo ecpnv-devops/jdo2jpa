@@ -1,14 +1,14 @@
 {
-  "status": "round5 blocked after 56 completed modules on both sides; candidate-specific EntityScan output requires investigation",
+  "status": "candidate6 verified; fresh round6 A/B comparison running; full acceptance remains open",
   "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
   "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
   "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
-  "workspace": "/tmp/f04-acceptance-401d6c4/round5",
+  "workspace": "/tmp/f04-acceptance-401d6c4/round6",
   "baseline": {
     "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-baseline",
     "sourceCommit": "b2faf2ce08a25036af17396e6b3bf1be508a0cc2",
     "jarSha256": "6175abf861b847d022385bf6245cabc91998fb30af5ba13bc759f8b8cc061dd4",
-    "localRepository": "/tmp/f04-acceptance-401d6c4/round5/repositories/baseline",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round6/repositories/baseline",
     "verifyExit": 0,
     "tests": 221,
     "failures": 0,
@@ -17,24 +17,24 @@
     "verifyLog": "../baseline-recipe-verify.log"
   },
   "candidate": {
-    "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-candidate5",
-    "sourceCommit": "08264e27bc001dbc9d11a5d6244cbf749aa3f115",
-    "jarSha256": "e37974aa34937d259934c9af8dd527e7eaa442234d7356b03df72320f82b119a",
-    "localRepository": "/tmp/f04-acceptance-401d6c4/round5/repositories/candidate",
+    "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-candidate6",
+    "sourceCommit": "f91f8e780a20925436963b27492fe5b04969f943",
+    "jarSha256": "8b8ab10efc148c63b8e0032ea371fd8f0cf852943f857b06d25633012f5a90ac",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
     "verifyExit": 0,
-    "tests": 255,
+    "tests": 257,
     "failures": 0,
     "errors": 0,
     "existingSkips": 2,
-    "verifyLog": "../round3/candidate5-recipe-verify.log",
-    "buildRecord": "../round3/candidate5-build-results.json"
+    "verifyLog": "../round5/candidate6-recipe-verify.log",
+    "buildRecord": "../round5/candidate6-build-results.json"
   },
   "artifactBuildAdjustment": "Replace only the project version 1.2.4-SNAPSHOT with the unique comparison version before building; implementation sources remain pinned to sourceCommit.",
   "verifyCommands": {
     "baseline": "mvn -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/repositories/baseline clean verify",
-    "candidate": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round3/repositories/candidate clean verify"
+    "candidate": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round5/repositories/candidate clean verify"
   },
-  "candidateInstallCommand": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round3/repositories/candidate install:install-file -Dfile=/tmp/f04-acceptance-401d6c4/round3/recipe-candidate5/target/jdo2jpa-1.2.4-f04-candidate5.jar -DpomFile=pom.xml",
+  "candidateInstallCommand": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round5/repositories/candidate install:install-file -Dfile=/tmp/f04-acceptance-401d6c4/round5/recipe-candidate6/target/jdo2jpa-1.2.4-f04-candidate6.jar -DpomFile=pom.xml",
   "environment": {
     "javaHome": "/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem",
     "jdk": "Eclipse Temurin 21.0.10",
@@ -53,21 +53,30 @@
     "Use the JPA reactor for installation and the original JDO reactor scope for rewriting; do not compile inactive JDO-only modules as JPA or rewrite inactive JPA-only modules through the JDO profiles.",
     "No JPA markers exist in either starting input.",
     "Both root POMs set jdo2jpa.entityListenerClass=org.estatio.base.prod.integration.OrmEntityListener before round5; candidate Maven logs confirm the effective option.",
-    "Both bankmandate POMs explicitly declare the PDF.js API in their JPA profile before that module is processed; the baseline-proven consumer correction is recorded in pdfjs-input-adjustment.json."
-
+    "Both bankmandate POMs explicitly declare the PDF.js API in their JPA profile before that module is processed; the baseline-proven consumer correction is recorded in ../round5/pdfjs-input-adjustment.json.",
+    "Round6 activates the EclipseLink provider recipe before general conversion and retains datanucleus-api-jdo:6.0.1 in all rewrite-only profiles on both sides."
   ],
   "requiredOrdering": "Regenerate, clean-build and install migrated parents before parsing children. Stop on any command failure, reported Maven error or hierarchy error and reject partial output.",
-  "orchestration": "run-comparison.py uses baseline and candidate5 with identical orchestration; state files are written atomically",
+  "orchestration": "run-comparison.py uses baseline and candidate6 with identical orchestration; state files are written atomically",
   "repositorySeedProvenance": "../round3/repository-seed-sha256.jsonl (56,289 JAR/POM checksums of the unchanged common seed)",
+  "round6Corrections": {
+    "consumerPomCommit": "74709138e1",
+    "readOnly": "Activate the existing EclipseLink provider recipe before general conversion and add datanucleus-api-jdo:6.0.1 to rewrite-only input dependencies. Baseline capex diagnostic passes all three rewrites and clean JPA compilation.",
+    "entityScan": "Candidate6 matches ComponentScan only on the current type and preserves nested edits via updateCursor. Both new regressions failed before the fix and pass with normal type validation and three cycles.",
+    "consumerDiagnostics": "../round5/candidate6-consumer-diagnostics.json",
+    "diagnosticResult": "Candidate6 financial and capex pass all three rewrites and clean JPA compilation. FinancialAccountTransactionAdvisor has EntityScan only on AutoConfigurer; capex imports EclipseLink ReadOnly.",
+    "limitation": "Diagnostics used prior installed parents; complete candidate6 comparison is still required.",
+    "inputProvenance": "input-provenance.json"
+  },
   "round5Outcome": {
     "completedModulesPerSide": 56,
     "status": "blocked; partial output rejected",
     "consumerBlocker": "Both sides retain org.datanucleus.api.jdo.annotations.ReadOnly on IncomingInvoiceItemSynopsis and fail capex JPA compilation. Do not add DataNucleus to the JPA compilation classpath to mask an unconverted annotation.",
-    "candidateSpecificDifference": "FinancialAccountTransactionAdvisor gains EntityScan on nested NOOP and AutoConfigurer classes. This is beyond the intended listener/superclass change and remains an acceptance blocker pending investigation.",
+    "candidateSpecificDifference": "FinancialAccountTransactionAdvisor gains EntityScan on nested NOOP and AutoConfigurer classes. This was an unresolved round5 configuration difference; candidate6 corrects declaration scope and nested edit preservation, with full comparison still pending.",
     "otherCompletedModuleDifferences": "Two unused-import removals and two import-group blank lines; no superclass/listener differences in the 56-module completed prefix.",
     "repeatChecks": {
-      "baseline": "baseline-repeat-results.json",
-      "candidate": "candidate-repeat-results.json",
+      "baseline": "../round5/baseline-repeat-results.json",
+      "candidate": "../round5/candidate-repeat-results.json",
       "result": "Both remove DiscriminatorColumn from the same two test subclasses on repeat. Baseline also removes the unused Paperclip import. No listener changes occurred in these checks; full-tree idempotence is not established."
     },
     "resolvedPriorBlockers": "Task hierarchy and bankmandate compilation passed on both sides; bankmandate requires the recorded symmetric PDF.js consumer dependency adjustment.",
@@ -90,8 +99,8 @@
     "limitation": "Retry of the failing phase over copied rejected task sources and prior parent artifacts; not full regeneration or compilation acceptance"
   },
   "nextComparisonRequirements": [
-    "Investigate candidate-specific nested EntityScan additions before accepting or extending the candidate comparison.",
-    "Diagnose the shared capex ReadOnly migration failure without hiding it behind DataNucleus compile dependencies.",
+    "Complete the fresh round6 comparison with candidate6 and the symmetric ReadOnly input corrections.",
+    "Inventory every EntityScan difference against the new declared-ComponentScan-only contract, along with all listener and superclass differences.",
     "Any resumed failed module must first be restored to its recorded input; do not reuse partial output as fresh regeneration.",
     "Retain the recorded final-listener setting, JDO input API, PDF.js dependency adjustment and clean parent-first JPA builds."
   ],
@@ -103,7 +112,7 @@
     "goal": "compile",
     "baselineExit": 0,
     "candidateExit": 0,
-    "note": "Fresh round5 baseline and candidate5 JDO-input preflights passed, with both recipe JAR checksums verified. These are not post-migration JPA acceptance."
+    "note": "Fresh round6 baseline and candidate6 JDO-input preflights passed. Recipe JAR checksums and identical input POM hashes/pins verified in input-provenance.json. These are not post-migration JPA acceptance."
   },
   "priorTrials": [
     "../model-parsing-trial: cancelled both sides after obsolete repository retries with skipMavenParsing=false; exit 143 and partial output rejected.",
