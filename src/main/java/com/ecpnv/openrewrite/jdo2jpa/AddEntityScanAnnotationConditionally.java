@@ -17,6 +17,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
@@ -39,6 +40,7 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
     private static final String COMPONENT_SCAN_CLASS_NAME = "ComponentScan";
     private static final String COMPONENT_SCAN_FULL_CLASS = "org.springframework.context.annotation." + COMPONENT_SCAN_CLASS_NAME;
     private static final String COMPONENT_SCAN_ANNOTATION = "@" + COMPONENT_SCAN_FULL_CLASS;
+    private static final AnnotationMatcher COMPONENT_SCAN_MATCHER = new AnnotationMatcher(COMPONENT_SCAN_ANNOTATION);
     private static final String ENTITY_SCAN_CLASS_NAME = "EntityScan";
     private static final String ENTITY_SCAN_FULL_CLASS = "org.springframework.boot.autoconfigure.domain." + ENTITY_SCAN_CLASS_NAME;
     private static final String ENTITY_SCAN_FULL_ANNOTATION = "@" + ENTITY_SCAN_FULL_CLASS;
@@ -88,10 +90,10 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 if (CollectionUtils.isNotEmpty(packageNames)) {
                     final List<J.Annotation> annotations = cd.getLeadingAnnotations();
-                    final Set<J.Annotation> componentScanAnnotations = FindAnnotations.find(cd, COMPONENT_SCAN_ANNOTATION);
+                    final boolean declaresComponentScan = annotations.stream().anyMatch(COMPONENT_SCAN_MATCHER::matches);
 
                     J.Annotation entityScanAnnotation = getEntityScanAnnotation(annotations);
-                    if (CollectionUtils.isNotEmpty(componentScanAnnotations)) {
+                    if (declaresComponentScan) {
                         if (entityScanAnnotation == null) {
                             final String packages = packageNames.stream()
                                     .map(name -> "\"%s\"".formatted(name))
@@ -102,7 +104,7 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                                     .javaParser(JavaParserFactory.create(ctx))
                                     .imports(ENTITY_SCAN_FULL_CLASS)
                                     .build()
-                                    .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                                    .apply(updateCursor(cd), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                         } else if (entityScanAnnotation != null
                                 && CollectionUtils.isNotEmpty(entityScanAnnotation.getArguments())
                                 && entityScanAnnotation.getArguments().getFirst() instanceof J.NewArray newArray &&
@@ -127,7 +129,7 @@ public class AddEntityScanAnnotationConditionally extends ScanningRecipe<Set<Str
                                     .javaParser(JavaParserFactory.create(ctx))
                                     .imports(ENTITY_SCAN_FULL_CLASS)
                                     .build()
-                                    .apply(getCursor(), cd.getCoordinates().replaceAnnotations());
+                                    .apply(updateCursor(cd), cd.getCoordinates().replaceAnnotations());
 
                             J.Annotation newEntityScanAnnotation = getEntityScanAnnotation(dummyCd.getLeadingAnnotations());
                             replaceAnnotation(annotations, entityScanAnnotation, newEntityScanAnnotation);

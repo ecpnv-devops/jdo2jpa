@@ -16,6 +16,18 @@ The old baseline ignores the new property and retains its existing listener-repl
 Candidate5 directly uses the final listener identity, so inherited registrations remain recognisable on subsequent passes.
 Round5 Maven logs confirm the property resolves to the intended FQN.
 
+## EclipseLink read-only mappings
+
+Activate `com.ecpnv.openrewrite.jdo2jpa.v2x.eclipselink` before `com.ecpnv.openrewrite.jdo2jpa.v2x` in the first rewrite profile.
+The existing provider recipe converts DataNucleus `ReadOnly` to `org.eclipse.persistence.annotations.ReadOnly`; the general recipe does not select that provider-specific conversion automatically.
+Retain `org.datanucleus:datanucleus-api-jdo:6.0.1` alongside `javax.jdo:jdo-api:3.2.1` in all three rewrite-only profiles so the old annotation remains attributable after parent artifacts become JPA.
+Neither input dependency belongs in the JPA compilation profile.
+
+Activating the provider recipe alone left the annotation unchanged in the baseline capex diagnostic.
+With both activation and input attribution corrected, all three rewrite passes and clean JPA compilation passed, and the generated import was `org.eclipse.persistence.annotations.ReadOnly`.
+Evidence: round5 `readonly-activation-diagnostic.json` and `readonly-input-api-diagnostic.json`.
+These diagnostics do not replace a fresh full comparison with identical corrected inputs.
+
 ## Input attribution and clean builds
 
 Retain `javax.jdo:jdo-api:3.2.1` explicitly in each rewrite profile while parent artifacts are progressively installed as JPA.

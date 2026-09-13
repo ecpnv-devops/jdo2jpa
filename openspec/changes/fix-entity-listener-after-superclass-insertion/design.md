@@ -1,3 +1,18 @@
+## Acceptance-discovered companion corrections
+
+Round5 exposed an existing nested-class bug in `AddEntityScanAnnotationConditionally` whose extra-cycle effects differ between baseline and candidate.
+Restrict eligibility to `@ComponentScan` declared on the current type, rather than recursively searching its nested declarations.
+Apply templates with `updateCursor(cd)` after visiting children, preserving their edits when an enclosing configuration also changes.
+Two regressions require convergence in one changing cycle, with normal type validation and three total test cycles.
+The justified consumer difference is that only the actual nested component-scan configuration receives `@EntityScan`; its enclosing interface and unannotated helper do not.
+This companion correction is necessary to close the unrelated generated-configuration difference, not a change to listener inheritance policy.
+
+The shared capex compilation blocker requires activating the existing EclipseLink-specific recipe before general entity conversion and retaining both JDO annotation APIs in rewrite-only profiles.
+The desired provider mapping is `org.datanucleus.api.jdo.annotations.ReadOnly` to `org.eclipse.persistence.annotations.ReadOnly`.
+Activating the provider recipe alone was insufficient without DataNucleus input annotation attribution.
+A restored baseline capex diagnostic passed all three rewrite phases and clean JPA compilation after both corrections, without DataNucleus added to the JPA compilation profile.
+Fresh comparison inputs must receive these consumer adjustments symmetrically; earlier round5 outputs do not establish acceptance of the revised configuration or library.
+
 ## Context
 
 The main migration adds an entity superclass before running `com.ecpnv.openrewrite.jdo2jpa.v2x.causeway`.

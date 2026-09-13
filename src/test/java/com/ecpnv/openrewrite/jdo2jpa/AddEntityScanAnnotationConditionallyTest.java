@@ -8,6 +8,60 @@ import static org.openrewrite.java.Assertions.java;
 
 class AddEntityScanAnnotationConditionallyTest extends BaseRewriteTest {
 
+    @Test
+    void nestedConfigurationDoesNotAnnotateEnclosingTypes() {
+        nestedConfiguration(false);
+    }
+
+    @Test
+    void preservesNestedChangesWhenEnclosingConfigurationAlsoChanges() {
+        nestedConfiguration(true);
+    }
+
+    private void nestedConfiguration(boolean outerComponentScan) {
+        String outerAnnotation = outerComponentScan ? "@ComponentScan\n" : "";
+        String outerResult = outerComponentScan ? "@ComponentScan\n@EntityScan({\"example\"})\n" : "";
+        rewriteRun(
+                spec -> spec.parser(PARSER)
+                        .recipes(new AddEntityScanAnnotationConditionally(),
+                                new ShortenFullyQualifiedTypeReferences())
+                        .cycles(3).expectedCyclesThatMakeChanges(1),
+                java("""
+                        package example;
+
+                        import javax.persistence.Entity;
+                        import org.springframework.context.annotation.ComponentScan;
+
+                        @Entity
+                        class SomeEntity {}
+
+                        %sclass Outer {
+                            static class Middle {
+                                @ComponentScan
+                                static class Configuration {}
+                            }
+                        }
+                        """.formatted(outerAnnotation), """
+                        package example;
+
+                        import javax.persistence.Entity;
+
+                        import org.springframework.boot.autoconfigure.domain.EntityScan;
+                        import org.springframework.context.annotation.ComponentScan;
+
+                        @Entity
+                        class SomeEntity {}
+
+                        %sclass Outer {
+                            static class Middle {
+                                @ComponentScan
+                                @EntityScan({"example"})
+                                static class Configuration {}
+                            }
+                        }
+                        """.formatted(outerResult)));
+    }
+
     @DocumentExample
     @Test
     void happyPath() {

@@ -1,5 +1,23 @@
 ## ADDED Requirements
 
+### Requirement: Refresh cycles preserve nested configuration scope
+
+The composed migration SHALL add `EntityScan` only to types that themselves declare `ComponentScan`, not enclosing types that merely contain such a declaration.
+Visiting an enclosing configuration SHALL preserve edits already made to its nested configurations.
+
+#### Scenario: Nested configuration inside unannotated helper types
+
+- **WHEN** only a nested configuration declares `ComponentScan`
+- **THEN** only that configuration receives `EntityScan`
+- **AND** its enclosing interface or helper classes remain unannotated
+- **AND** subsequent cycles make no further configuration changes
+
+#### Scenario: Enclosing and nested configurations both qualify
+
+- **WHEN** an enclosing type and its nested configuration both declare `ComponentScan`
+- **THEN** both receive `EntityScan` in the first changing cycle
+- **AND** the enclosing edit does not discard the nested edit
+
 ### Requirement: Concrete migrated entities receive missing framework listener integration
 
 The Causeway migration SHALL add its configured entity listener to a concrete entity that has neither an explicit entity-level listener declaration nor an effective inherited registration of that configured listener.
