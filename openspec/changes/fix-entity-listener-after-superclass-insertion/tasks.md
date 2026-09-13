@@ -37,14 +37,14 @@
 
 ## 6. Verify the candidate artifact and pinned Estatio A/B regeneration
 
-- [ ] 6.1 Run focused tests and distributable YAML loading checks, then an unskipped final mvn clean verify against the exact candidate source revision; retain full commands, JDK/Maven versions, profiles, exit status, test summary, and logs.
-- [ ] 6.2 Before regeneration, populate an acceptance manifest with resolved baseline/candidate coordinates, distinct immutable artifact versions, source commits, SHA-256 checksums, and environment; use the pre-change recipe as baseline and the verified implementation as candidate without overwriting one SNAPSHOT coordinate.
+- [x] 6.1 Run focused tests and distributable YAML loading checks, then an unskipped final mvn clean verify against the exact candidate source revision; retain full commands, JDK/Maven versions, profiles, exit status, test summary, and logs.
+- [x] 6.2 Before regeneration, populate an acceptance manifest with resolved baseline/candidate coordinates, distinct immutable artifact versions, source commits, SHA-256 checksums, and environment; use the pre-change recipe as baseline and the verified implementation as candidate without overwriting one SNAPSHOT coordinate.
 - [ ] 6.3 Prepare two isolated clean Estatio inputs pinned to prod 4dd98637d572240ff99cb8c998590074c27c839d with separate dependency repositories and identical non-recipe inputs, recipes, profiles, exclusions, and parent-first orchestration; record adjustments and block acceptance if migrated-parent dependency ordering cannot be satisfied.
 - [ ] 6.4 Run all configured regeneration passes for baseline and candidate and retain commands, exit statuses, logs, complete generated-tree inventories, and parent artifact provenance; use JPA 907c723889d3306352c2e50cfbbae3df6406d949 only for reconciliation, never as an A/B starting input or oracle.
 - [ ] 6.5 Compare the complete output trees and inventory every changed class by module, old/new superclass, declared/effective listeners, and justification; resolve every difference beyond intended superclass/listener changes and necessary imports, including mappings, resources, and configuration.
 - [ ] 6.6 Confirm both turnover entities receive the intended integration, excluded BackgroundCommandsOrchestration is unchanged, and actual per-module output is repeat-run stable without redundant effective listener registrations.
 - [ ] 6.7 Compile directly affected modules and required reactor dependencies for baseline and candidate where the baseline supports it, including representative Mallcomm integration and estatio-mallcomm/mallcommturnover; record exact commands, selected modules, profiles, and results.
-- [ ] 6.8 Record unrelated regeneration/build failures with evidence and baseline reproduction where possible; do not bypass failing checks or substitute narrower builds as passes, but treat baseline-reproduced consumer blockers as non-blocking handoffs and candidate-specific regressions as library acceptance failures.
+- [x] 6.8 Record unrelated regeneration/build failures with evidence and baseline reproduction where possible; do not bypass failing checks or substitute narrower builds as passes, but treat baseline-reproduced consumer blockers as non-blocking handoffs and candidate-specific regressions as library acceptance failures.
 
 ## 7. Release notes and consumer rollout handoff
 

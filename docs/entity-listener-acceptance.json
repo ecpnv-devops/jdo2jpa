@@ -1,0 +1,109 @@
+{
+  "status": "candidate5 verified; round3 rejected and full candidate5 acceptance pending",
+  "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
+  "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
+  "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
+  "workspace": "/tmp/f04-acceptance-401d6c4/round3",
+  "baseline": {
+    "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-baseline",
+    "sourceCommit": "b2faf2ce08a25036af17396e6b3bf1be508a0cc2",
+    "jarSha256": "6175abf861b847d022385bf6245cabc91998fb30af5ba13bc759f8b8cc061dd4",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round3/repositories/baseline",
+    "verifyExit": 0,
+    "tests": 221,
+    "failures": 0,
+    "errors": 0,
+    "existingSkips": 2,
+    "verifyLog": "../baseline-recipe-verify.log"
+  },
+  "candidate": {
+    "coordinates": "com.ecpnv.openrewrite:jdo2jpa:1.2.4-f04-candidate5",
+    "sourceCommit": "08264e27bc001dbc9d11a5d6244cbf749aa3f115",
+    "jarSha256": "e37974aa34937d259934c9af8dd527e7eaa442234d7356b03df72320f82b119a",
+    "localRepository": "/tmp/f04-acceptance-401d6c4/round3/repositories/candidate",
+    "verifyExit": 0,
+    "tests": 255,
+    "failures": 0,
+    "errors": 0,
+    "existingSkips": 2,
+    "verifyLog": "candidate5-recipe-verify.log",
+    "buildRecord": "candidate5-build-results.json"
+  },
+  "artifactBuildAdjustment": "Replace only the project version 1.2.4-SNAPSHOT with the unique comparison version before building; implementation sources remain pinned to sourceCommit.",
+  "verifyCommands": {
+    "baseline": "mvn -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/repositories/baseline clean verify",
+    "candidate": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round3/repositories/candidate clean verify"
+  },
+  "candidateInstallCommand": "mvn -o -Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round3/repositories/candidate install:install-file -Dfile=/tmp/f04-acceptance-401d6c4/round3/recipe-candidate5/target/jdo2jpa-1.2.4-f04-candidate5.jar -DpomFile=pom.xml",
+  "environment": {
+    "javaHome": "/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem",
+    "jdk": "Eclipse Temurin 21.0.10",
+    "maven": "3.9.13",
+    "os": "macOS 26.6.2 aarch64",
+    "migrationMavenOpts": "-Xmx6g -Xss4m"
+  },
+  "symmetricInputAdjustments": [
+    "Fresh detached Estatio worktrees at the same pinned revision, with the same pinned pipeline-resource contents.",
+    "Original skipMavenParsing=true settings retained in all three rewrite profiles.",
+    "javax.jdo:jdo-api:3.2.1 explicitly added to rewrite, rewrite_post and rewrite_local from the beginning of round3; JPA compilation does not activate these profiles.",
+    "Both local repositories copied copy-on-write from the same seed: /tmp/f04-acceptance-401d6c4/repositories/baseline after the preliminary baseline codaproxy clean installation. That seed includes preliminary migrated artifacts, so parent-first rebuilding remains mandatory.",
+    "Both custom local-repository roots contain repository.xml for OpenRewrite's artifact-coordinate index.",
+    "Select the immutable side-specific recipe using -Djdo2jpa.version; application version coordinates remain unchanged.",
+    "Use clean install for each JPA module to remove stale JDO-generated QueryDSL sources.",
+    "Use the JPA reactor for installation and the original JDO reactor scope for rewriting; do not compile inactive JDO-only modules as JPA or rewrite inactive JPA-only modules through the JDO profiles.",
+    "No JPA markers exist in either starting input."
+  ],
+  "requiredOrdering": "Regenerate, clean-build and install migrated parents before parsing children. Stop on any command failure, reported Maven error or hierarchy error and reject partial output.",
+  "orchestration": "run-comparison.py still describes rejected candidate3; do not use its outputs as candidate5 acceptance",
+  "repositorySeedProvenance": "repository-seed-sha256.jsonl (56,289 JAR/POM checksums)",
+  "round3Outcome": {
+    "baselineCompletedModules": 53,
+    "baselineFailure": "estatio-shared-kernel/bankmandate JPA compilation: missing org.apache.isis.extensions.pdfjs.applib annotations/config APIs",
+    "baselineLog": "baseline-migration-logs/estatio-shared-kernel_bankmandate-jpa-install.log",
+    "candidateCompletedModules": 36,
+    "candidateFailure": "task local rewrite logged a hierarchy error despite Maven exit zero; guard rejected output",
+    "candidateRegression": "DocumentTemplateForTesting received a redundant listener across the main/test boundary",
+    "acceptance": false
+  },
+  "candidate5Diagnostic": {
+    "record": "candidate5-task-diagnostic.json",
+    "exit": 0,
+    "hierarchyError": false,
+    "result": "StateTransitionAbstract now extends EntityAbstract with its generic bounds preserved",
+    "limitation": "Retry of the failing phase over copied rejected task sources and prior parent artifacts; not full regeneration or compilation acceptance"
+  },
+  "nextComparisonRequirements": [
+    "Create fresh pinned inputs and compare candidate5 against the immutable baseline, not candidate3 output.",
+    "Set the Maven project property jdo2jpa.entityListenerClass=org.estatio.base.prod.integration.OrmEntityListener identically before recipe loading on both sides; the baseline ignores the new option.",
+    "Retain the JDO input API and clean parent-first JPA builds.",
+    "Resolve or explicitly hand off the baseline PDF.js dependency blocker; never substitute the task diagnostic for whole-application acceptance."
+  ],
+  "liveState": ["baseline-migration-state.json", "candidate-migration-state.json"],
+  "preflight": {
+    "results": "estatio-preflight-results.json",
+    "module": "estatio-mallcomm/mallcommturnover",
+    "reactorDependencies": "-am",
+    "goal": "compile",
+    "baselineExit": 0,
+    "candidateExit": 0,
+    "note": "These preflights used the baseline and candidate3, not candidate5. They are not post-migration JPA acceptance."
+  },
+  "priorTrials": [
+    "../model-parsing-trial: cancelled both sides after obsolete repository retries with skipMavenParsing=false; exit 143 and partial output rejected.",
+    "../pre-api-classpath-trial: identical settings failures caused by loss of JDO input attribution after parent installation; adding the explicit rewrite-profile API resolved both.",
+    "../baseline-codaproxy-clean-install.log: stale generated QEntityAbstract sources shadowed correctly installed JPA classes; clean install passed on the baseline.",
+    "Candidate2 was superseded after a new composed regression exposed stale scan snapshots; candidate3 includes the refresh-cycle fix and both source-order regressions. Earlier trial outputs are not candidate3 acceptance."
+  ],
+  "remainingGates": [
+    "Complete pinned parent-first regeneration",
+    "Complete generated-tree diff and affected-class inventory",
+    "Post-migration affected-module compilation and candidate-specific regression assessment",
+    "Actual per-module idempotence and effective-listener duplication review"
+  ],
+  "consumerHandoff": {
+    "runtimeOwner": "Estatio application maintainer with an approved non-production runtime",
+    "requiredEvidence": "Applicable persist/update/remove callbacks execute exactly once for both turnover entities, with tester, inputs, observation method and counts recorded.",
+    "maintainedSourceOwner": "Estatio application maintainer; separately fix and verify excluded BackgroundCommandsOrchestration.",
+    "runtimeStatus": "Not performed; rollout acceptance remains open."
+  }
+}
