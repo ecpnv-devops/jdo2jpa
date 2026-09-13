@@ -178,3 +178,19 @@ Product-scope and failure-policy decisions are fixed above.
 The exact attribution APIs and runner error propagation remain a gated engineering experiment, not permission to begin the remaining implementation speculatively.
 The spike must replace this uncertainty with recorded passing evidence or trigger a design revision.
 Exact baseline/candidate artifact versions and implementation commits must be resolved in the acceptance manifest once those artifacts exist; none are claimed to have been built or validated by this proposal.
+
+## Gated Spike Outcome
+
+The attribution spike ran against OpenRewrite 8.47.3 under JDK 21 with `mvn -Dtest=SuperclassAttributionSpikeTest test`.
+For a source-defined application parent, a scanning recipe obtained the source `JavaType.FullyQualified`, applied the extends template, assigned that type to the inserted `J.Identifier` with `withType`, and updated the child `JavaType.Class` with `withSupertype`.
+The resulting extends expression and class-level supertype agreed, and the next test callback observed the parent's real abstract flag and `Deprecated` annotation with normal type validation enabled.
+Task 1.1 therefore passed.
+
+The dependency-defined spike built an application dependency JAR outside the template-global resource classpath and exposed it through `JavaSourceSet.build`.
+OpenRewrite resolved the dependency FQN, but `JavaSourceSet.getClasspath()` supplied a type with no abstract flag and no annotation metadata.
+The exact task 1.2 assertion failed with `flags and annotations for example.DependencyParent: []`.
+The failing dependency scenario remains as a disabled regression in `SuperclassAttributionSpikeTest` so a revised mechanism can enable and satisfy it.
+
+Because dependency-defined modifier and listener metadata is required by tasks 1.2 and 1.3, the gated spike has failed and sections 2 through 6 remain blocked.
+Implementation must not proceed by fabricating abstractness, accepting shallow dependency types, or adding the dependency to the template-global resource classpath.
+A reviewed design revision must identify a supported source of full dependency class metadata or narrow the cross-module contract before feature implementation resumes.
