@@ -33,7 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EntityHierarchyMigrationTest extends BaseRewriteTest {
     private static final String LISTENER = "org.apache.isis.persistence.jpa.applib.integration.IsisEntityListener";
     private static final Recipe LISTENERS = new AddCausewayEntityListener(LISTENER);
-    @TempDir Path temporary;
+    @TempDir
+    Path temporary;
 
     @Test
     void combinedConfiguredMigrationRepairsBothTurnoverShapesAndIsStable() {
@@ -119,7 +120,9 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
         Path repository = temporary.resolve("repository");
         installParent(repository, "1", "@Deprecated public abstract class Parent {}");
         installParent(repository, "2", "public class Parent {}");
-        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> { throw new AssertionError(e); });
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> {
+            throw new AssertionError(e);
+        });
         MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
         SourceFile pom1 = pom(ctx, "one", "1");
         SourceFile pom2 = pom(ctx, "two", "2");
@@ -145,7 +148,9 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
         Path repository = temporary.resolve("repository");
         installParent(repository, "1", "@Deprecated public abstract class EntityAbstract {}",
                 "org.estatio.base.prod.dom.EntityAbstract");
-        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> { throw new AssertionError(e); });
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> {
+            throw new AssertionError(e);
+        });
         MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
         SourceFile pom = pom(ctx, "child", "1");
         SourceFile child = parse("""
@@ -166,7 +171,9 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
         installParent(repository, "1", "@javax.persistence.EntityListeners(Thread.class) public abstract class Parent {}");
         installParent(repository, "2", "@javax.persistence.EntityListeners(Object.class) public abstract class Parent {}");
         installParent(repository, "3", "public abstract class Parent {}");
-        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> { throw new AssertionError(e); });
+        InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> {
+            throw new AssertionError(e);
+        });
         MavenExecutionContextView.view(ctx).setMavenSettings(new MavenSettings(repository.toString(), null, null, null, null));
         Recipe sequence = sequence(new ExtendWithClassForClass("example.Child", "example.Parent"),
                 new AddCausewayEntityListener("java.lang.Thread"));
@@ -209,11 +216,21 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     void productionErrorPropagatesAndDoesNotRollBackEarlierRecipeOutput() {
         List<SourceFile> sources = parse("package example; @javax.persistence.Entity class Child extends missing.Parent {}");
         Recipe earlier = new Recipe() {
-            @Override public String getDisplayName() { return "Earlier edit"; }
-            @Override public String getDescription() { return "Prove the failure does not claim transactional rollback."; }
-            @Override public org.openrewrite.TreeVisitor<?, org.openrewrite.ExecutionContext> getVisitor() {
+            @Override
+            public String getDisplayName() {
+                return "Earlier edit";
+            }
+
+            @Override
+            public String getDescription() {
+                return "Prove the failure does not claim transactional rollback.";
+            }
+
+            @Override
+            public org.openrewrite.TreeVisitor<?, org.openrewrite.ExecutionContext> getVisitor() {
                 return new org.openrewrite.java.JavaIsoVisitor<org.openrewrite.ExecutionContext>() {
-                    @Override public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, org.openrewrite.ExecutionContext ctx) {
+                    @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, org.openrewrite.ExecutionContext ctx) {
                         return org.openrewrite.marker.SearchResult.found(cd, "earlier edit");
                     }
                 };
@@ -225,15 +242,28 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
         assertThat(run.getChangeset().getAllResults()).singleElement().satisfies(r ->
                 assertThat(r.getAfter().printAll()).contains("earlier edit").doesNotContain("@EntityListeners"));
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> LISTENERS.run(new InMemoryLargeSourceSet(sources),
-                new InMemoryExecutionContext(e -> { throw new IllegalStateException("rejected", e); })))
+                new InMemoryExecutionContext(e -> {
+                    throw new IllegalStateException("rejected", e);
+                })))
                 .isInstanceOf(IllegalStateException.class).hasRootCauseInstanceOf(UnresolvedEntityHierarchyException.class);
     }
 
     private Recipe sequence(Recipe... recipes) {
         return new Recipe() {
-            @Override public String getDisplayName() { return "Test entity composition"; }
-            @Override public String getDescription() { return "Compose actual production superclass and listener recipes."; }
-            @Override public List<Recipe> getRecipeList() { return List.of(recipes); }
+            @Override
+            public String getDisplayName() {
+                return "Test entity composition";
+            }
+
+            @Override
+            public String getDescription() {
+                return "Compose actual production superclass and listener recipes.";
+            }
+
+            @Override
+            public List<Recipe> getRecipeList() {
+                return List.of(recipes);
+            }
         };
     }
 
@@ -293,7 +323,9 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     private List<SourceFile> parse(String... sources) {
-        return PARSER.clone().build().parse(new InMemoryExecutionContext(e -> { throw new AssertionError(e); }), sources).toList();
+        return PARSER.clone().build().parse(new InMemoryExecutionContext(e -> {
+            throw new AssertionError(e);
+        }), sources).toList();
     }
 
     private List<SourceFile> run(Recipe recipe, List<SourceFile> sources) {
@@ -307,7 +339,9 @@ class EntityHierarchyMigrationTest extends BaseRewriteTest {
     }
 
     private void assertStable(Recipe recipe, List<SourceFile> output) {
-        var run = recipe.run(new InMemoryLargeSourceSet(output), new InMemoryExecutionContext(e -> { throw new AssertionError(e); }));
+        var run = recipe.run(new InMemoryLargeSourceSet(output), new InMemoryExecutionContext(e -> {
+            throw new AssertionError(e);
+        }));
         assertThat(run.getChangeset().size()).isZero();
     }
 

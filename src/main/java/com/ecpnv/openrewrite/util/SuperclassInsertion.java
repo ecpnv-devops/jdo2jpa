@@ -9,7 +9,8 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 public final class SuperclassInsertion {
-    private SuperclassInsertion() {}
+    private SuperclassInsertion() {
+    }
 
     public static J.ClassDeclaration insert(J.ClassDeclaration cd, Cursor cursor, String name,
                                             String recipe, EntityTypeResolver resolver, ExecutionContext ctx) {

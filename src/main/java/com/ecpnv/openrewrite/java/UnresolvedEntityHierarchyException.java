@@ -17,8 +17,19 @@ public final class UnresolvedEntityHierarchyException extends RuntimeException {
         this.remediation = "Supply the current module's resolved application dependency classpath and install migrated parents first.";
     }
 
-    public String getEntityName() { return entityName; }
-    public String getParentName() { return parentName; }
-    public String getRecipeName() { return recipeName; }
-    public String getRemediation() { return remediation; }
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public String getParentName() {
+        return parentName;
+    }
+
+    public String getRecipeName() {
+        return recipeName;
+    }
+
+    public String getRemediation() {
+        return remediation;
+    }
 }
