@@ -69,8 +69,8 @@ Use the release helper script to keep the steps parameterized and easy to rerun:
 1. Prepare the release version on `main`:
 
    ```bash
-   CURR=1.2.4
-   NEXT=1.2.5
+   CURR=1.2.5
+   NEXT=1.2.6
    ./scripts/release.sh prepare $CURR
    ```
 
