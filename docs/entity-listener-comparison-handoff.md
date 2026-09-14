@@ -8,6 +8,13 @@ The restored source and POM match candidate6's source revision; a fresh clean ve
 All 34 tasks are accounted for, including the explicitly descoped runtime check.
 No extra cleanup pass, new comparison candidate, or runtime callback execution is required for this change.
 
+## Archive record
+
+The change is complete and archived; all 34 tasks are accounted for, including the runtime descope.
+Planning artifacts and synced specifications are retained in Git commit `3ab04a8`, then removed from the working tree under the repository's history-only policy.
+The historical change path is `openspec/changes/archive/2026-09-14-fix-entity-listener-after-superclass-insertion/`.
+The accepted source restoration is recorded in commit `73229cb`.
+
 ## Outcome
 
 The baseline/candidate6 comparison completed across all 151 modules in the union of the pinned reactors.

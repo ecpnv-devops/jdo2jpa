@@ -159,6 +159,13 @@
     "Candidate2 was superseded after a new composed regression exposed stale scan snapshots; candidate3 includes the refresh-cycle fix and both source-order regressions. Earlier trial outputs are not candidate3 acceptance."
   ],
   "remainingGates": [],
+  "archive": {
+    "status": "Complete; planning artifacts retained in Git history only",
+    "archiveAndSpecSyncCommit": "3ab04a8",
+    "historicalPath": "openspec/changes/archive/2026-09-14-fix-entity-listener-after-superclass-insertion",
+    "tasksAccountedFor": 34,
+    "sourceRestorationCommit": "73229cb"
+  },
   "consumerHandoff": {
     "runtimeOwner": "Not required for this change; runtime verification descoped by user",
     "requiredEvidence": "Intended listener presence on both turnover entities without redundant annotation-defined inherited registrations; verified for candidate6 under task 6.6.",
