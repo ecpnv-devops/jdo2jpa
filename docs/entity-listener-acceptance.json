@@ -59,6 +59,16 @@
   "requiredOrdering": "Regenerate, clean-build and install migrated parents before parsing children. Stop on any command failure, reported Maven error or hierarchy error and reject partial output.",
   "orchestration": "run-comparison.py uses baseline and candidate6 with identical orchestration; state files are written atomically",
   "repositorySeedProvenance": "../round3/repository-seed-sha256.jsonl (56,289 JAR/POM checksums of the unchanged common seed)",
+  "postRound6FollowUp": {
+    "status": "Library-only inherited-annotation correction verified; no new immutable candidate or consumer acceptance yet",
+    "tests": 260,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "verificationLog": "/tmp/f04-idempotence-verify.log",
+    "diagnosis": "docs/entity-listener-idempotence-follow-up.md",
+    "remaining": "Approve and validate cleanup after JPA annotation processing to address QueryDSL-dependent import drift; pin and validate the next candidate; obtain approved runtime prerequisites for task 7.3"
+  },
   "round6Completion": {
     "modulesPerSide": 151,
     "jpaCleanInstallsPerSide": 148,
@@ -139,6 +149,7 @@
     "Candidate2 was superseded after a new composed regression exposed stale scan snapshots; candidate3 includes the refresh-cycle fix and both source-order regressions. Earlier trial outputs are not candidate3 acceptance."
   ],
   "remainingGates": [
+    "Tasks 6.2-6.5, 6.7 and 7.2 reopened for the post-round6 source correction: new immutable candidate, fresh consumer comparison, compilation and handoff; candidate6 evidence is not acceptance of the follow-up",
     "Task 6.6: full-file repeat stability exceptions in capex, communications and document, all reproduced on baseline",
     "Task 7.3: consumer-owned non-production lifecycle callback evidence"
   ],

@@ -1,0 +1,30 @@
+[
+  {
+    "profile": "rewrite",
+    "exit": 0,
+    "errors": [],
+    "changed": [],
+    "log": "/tmp/f04-capex-fresh-0-rewrite.log"
+  },
+  {
+    "profile": "rewrite_post",
+    "exit": 0,
+    "errors": [],
+    "changed": [],
+    "log": "/tmp/f04-capex-fresh-1-rewrite_post.log"
+  },
+  {
+    "profile": "rewrite_local",
+    "exit": 0,
+    "errors": [],
+    "changed": [],
+    "log": "/tmp/f04-capex-fresh-2-rewrite_local.log"
+  },
+  {
+    "profile": "rewrite_local",
+    "exit": 0,
+    "errors": [],
+    "changed": [],
+    "log": "/tmp/f04-capex-fresh-3-rewrite_local.log"
+  }
+]

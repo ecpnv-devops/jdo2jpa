@@ -1,0 +1,22 @@
+{
+  "exit": 0,
+  "command": [
+    "mvn",
+    "-o",
+    "-Dmaven.repo.local=/tmp/f04-acceptance-401d6c4/round6/repositories/candidate",
+    "-Djdo2jpa.version=1.2.4-f04-candidate6",
+    "-pl",
+    "estatio-incoming/capex",
+    "-Prewrite_local",
+    "-Ddisable_dn",
+    "-DskipTests",
+    "rewrite:runNoFork"
+  ],
+  "changed": [
+    "IncomingInvoiceItemRepository.java",
+    "PurchaseOrderRepository.java"
+  ],
+  "errors": [],
+  "onlyInputDifference": "Copied 17 genuine generated QueryDSL Java sources; no target/classes or test classes supplied",
+  "log": "/tmp/f04-capex-generated-sources-only.log"
+}

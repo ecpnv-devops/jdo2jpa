@@ -13,6 +13,20 @@ Activating the provider recipe alone was insufficient without DataNucleus input 
 A restored baseline capex diagnostic passed all three rewrite phases and clean JPA compilation after both corrections, without DataNucleus added to the JPA compilation profile.
 Fresh comparison inputs must receive these consumer adjustments symmetrically; earlier round5 outputs do not establish acceptance of the revised configuration or library.
 
+## Follow-up for remaining repeat stability
+
+The round6 discriminator drift is consistent with a newly reproduced stale-parent-annotation defect in `RemoveInheritedAnnotations`.
+Use the existing module/source-set-scoped source index, refresh it after preceding transformations, and prefer actual source parent annotations over stale attributed annotations.
+Retain dependency type metadata when the parent has no source declaration and preserve the public visitor constructor/removal hook.
+Parent-first and child-first composed regressions converge in two changing cycles, with a stable third cycle and normal type validation.
+This follow-up still requires a separately pinned candidate and consumer validation; candidate6 evidence does not cover it.
+
+The two remaining capex import changes affect source files unchanged from the original pin.
+A controlled probe shows that supplying the genuine generated QueryDSL sources is sufficient to enable removal of these imports; compiled classes are not required.
+Do not bypass the unused-import recipe's missing-types safety check or disguise the differences through source-input cleanup.
+Cleanup after JPA annotation processing, followed by compilation and repeat validation, is proposed as a processing-sequence change requiring approval, explicit documentation, and symmetric fresh verification.
+See `docs/entity-listener-idempotence-follow-up.md` for the verification results and unresolved runtime prerequisites.
+
 ## Context
 
 The main migration adds an entity superclass before running `com.ecpnv.openrewrite.jdo2jpa.v2x.causeway`.

@@ -20,13 +20,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.ecpnv.openrewrite.util.EntityTypeResolver;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
@@ -54,7 +55,7 @@ import lombok.EqualsAndHashCode;
  * @author Patrick Deenen @ Open Circle Solutions
  */
 @EqualsAndHashCode(callSuper = false)
-public class RemoveInheritedAnnotations extends Recipe {
+public class RemoveInheritedAnnotations extends ScanningRecipe<EntityTypeResolver> {
 
     @Option(displayName = "Set of annotations to match",
             description = "Only annotations that match this set will be removed.",
@@ -79,16 +80,70 @@ public class RemoveInheritedAnnotations extends Recipe {
 
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new RemoveAnnotationVisitor(nonInheritedAnnotationTypes);
+    public EntityTypeResolver getInitialValue(ExecutionContext ctx) {
+        return new EntityTypeResolver();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(EntityTypeResolver resolver) {
+        return resolver.scanner();
+    }
+
+    @Override
+    public boolean causesAnotherCycle() {
+        return true;
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(EntityTypeResolver resolver) {
+        return new RemoveAnnotationVisitor(nonInheritedAnnotationTypes, resolver) {
+            @Override
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+                if (ctx.getCycle() == 1 && cd.getExtends() != null
+                        && cd.getLeadingAnnotations().stream().anyMatch(a ->
+                        nonInheritedAnnotationTypes.stream().anyMatch(n -> TypeUtils.isOfClassType(a.getType(), n)))) {
+                    // Scanners precede edits: refresh before consulting ancestors changed by earlier recipes.
+                    ctx.getCycleDetails().getMadeChangesInThisCycle().add(RemoveInheritedAnnotations.this);
+                    return superWithoutRemoval(cd, ctx);
+                }
+                return super.visitClassDeclaration(cd, ctx);
+            }
+        };
     }
 
     public static class RemoveAnnotationVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         Set<String> nonInheritedAnnotationTypes;
+        private final EntityTypeResolver resolver;
 
         public RemoveAnnotationVisitor(Set<String> nonInheritedAnnotationTypes) {
+            this(nonInheritedAnnotationTypes, null);
+        }
+
+        private RemoveAnnotationVisitor(Set<String> nonInheritedAnnotationTypes, EntityTypeResolver resolver) {
             this.nonInheritedAnnotationTypes = nonInheritedAnnotationTypes;
+            this.resolver = resolver;
+        }
+
+        protected J.ClassDeclaration superWithoutRemoval(J.ClassDeclaration cd, ExecutionContext ctx) {
+            return super.visitClassDeclaration(cd, ctx);
+        }
+
+        private Set<String> annotationNames(JavaType.FullyQualified parent) {
+            Set<String> names = new HashSet<>();
+            J.ClassDeclaration source = resolver == null ? null : resolver.declaration(
+                    getCursor().firstEnclosingOrThrow(J.CompilationUnit.class), parent.getFullyQualifiedName());
+            if (source != null) {
+                for (J.Annotation annotation : source.getLeadingAnnotations()) {
+                    JavaType.FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
+                    if (type != null) {
+                        names.add(type.getFullyQualifiedName());
+                    }
+                }
+            } else {
+                parent.getAnnotations().forEach(a -> names.add(a.getFullyQualifiedName()));
+            }
+            return names;
         }
 
         @Override
@@ -119,10 +174,10 @@ public class RemoveInheritedAnnotations extends Recipe {
                     // Is there any parent type
                     .filter(ca -> parentTypes.stream()
                             // That has candidate annotations
-                            .map(JavaType.FullyQualified::getAnnotations)
-                            .flatMap(List::stream)
+                            .map(this::annotationNames)
+                            .flatMap(Set::stream)
                             // Matching annotations in the current class?
-                            .anyMatch(pa -> ca.getAnnotationType().getType().toString().equals(pa.getFullyQualifiedName())))
+                            .anyMatch(pa -> ca.getAnnotationType().getType().toString().equals(pa)))
                     .filter(atr -> processAnnotationBeforeRemoval(finalCd, atr, ctx))
                     .toList();
 
