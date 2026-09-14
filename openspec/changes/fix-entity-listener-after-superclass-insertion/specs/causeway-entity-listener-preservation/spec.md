@@ -149,7 +149,8 @@ The acceptance/consumer runner SHALL collect these errors, exit nonzero, and rej
 
 ### Requirement: Listener migration is idempotent and verified in composition
 
-Successful listener migration SHALL produce no additional changes on a subsequent run.
+Successful listener migration SHALL produce no additional changes on a subsequent run of the focused superclass/listener regression fixtures.
+This focused recipe contract SHALL NOT impose full-output repeat-run idempotence on the one-shot consumer CI workflow.
 Combined-recipe tests SHALL retain normal type-attribution validation for successful transformations.
 
 #### Scenario: Re-running a converted turnover-shaped fixture
@@ -163,7 +164,7 @@ Combined-recipe tests SHALL retain normal type-attribution validation for succes
 Acceptance SHALL include baseline/candidate regeneration from the identical Estatio prod commit `4dd98637d572240ff99cb8c998590074c27c839d`, using isolated dependency repositories and identical non-recipe inputs and orchestration.
 JPA `907c723889d3306352c2e50cfbbae3df6406d949` SHALL be used only for reconciliation, not as a regeneration input or correctness oracle.
 Evidence SHALL identify exact distinct baseline/candidate artifact versions, coordinates, commits, checksums, environment, commands, logs, dependency provenance, and outcomes.
-All generated differences SHALL be inventoried and justified as intended superclass/listener changes or necessary imports before acceptance.
+All generated differences SHALL be inventoried and justified as intended superclass/listener changes, declared-ComponentScan configuration-scope corrections, or necessary import cleanup/grouping before acceptance.
 Directly affected modules and representative Mallcomm integration SHALL be compiled wherever the baseline supports it, and the exact candidate recipe revision SHALL pass an unskipped final `mvn clean verify`.
 Candidate-specific compilation regressions SHALL block library acceptance.
 Unrelated failures reproduced by the baseline SHALL be recorded without bypassing checks or being reported as passes, but SHALL remain non-blocking consumer handoffs rather than recipe metadata failures.

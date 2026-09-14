@@ -1,6 +1,13 @@
 # Idempotence follow-up: tasks 6.6 and 7.3
 
-## Discriminator annotation drift
+## Disposition: reverted and deferred
+
+The user chose to retain the fully validated candidate6 implementation rather than pursue repeat-run idempotence.
+The cleanup code and added tests from 5f0acf2 are reverted; the investigation below is historical, not part of the accepted source.
+All source files and the POM again match candidate6's source revision, and a fresh clean verification reports 257 tests, zero failures/errors, and two existing skips.
+See `entity-listener-evidence/candidate6-restored-verification.json`.
+
+## Historical discriminator annotation drift
 
 A focused composed test reproduces a stale-parent-annotation defect in `RemoveInheritedAnnotations`.
 The sequence adds `DiscriminatorColumn` to a source parent and then attempts to remove the redundant annotation from its child.
@@ -21,7 +28,7 @@ This is library verification only, not acceptance of a new immutable candidate.
 Candidate6 and its completed round6 comparison remain unchanged reference evidence.
 Task 6.6 is now complete for candidate6 under the user-confirmed one-shot CI requirement; full-output idempotence is not an acceptance gate.
 Any replacement candidate incorporating 5f0acf2 still requires independent validation; candidate6 acceptance does not cover changed code.
-Tasks 6.2–6.5, 6.7, and 7.2 are reopened for that validation rather than transferring candidate6 results to changed code.
+Tasks 6.2–6.5, 6.7, and 7.2 are restored as completed against candidate6 now that the follow-up code is reverted; no results are transferred to changed code.
 
 ## Remaining import drift
 

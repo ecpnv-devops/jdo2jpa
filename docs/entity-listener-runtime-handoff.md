@@ -19,7 +19,8 @@ JAR SHA-256: `8b8ab10efc148c63b8e0032ea371fd8f0cf852943f857b06d25633012f5a90ac`.
 Evidence: `entity-listener-evidence/f04-target-results.json` and `entity-listener-evidence/affected-class-inventory.json`.
 The artifact is locally installed, not remotely published by this workflow.
 Acceptance of candidate6 does not extend to later cleanup commit `5f0acf2` or another unvalidated artifact.
-Other artifact and consumer-validation gates remain separate; see `entity-listener-acceptance.json`.
+The later cleanup code is reverted and deferred, restoring the accepted candidate6 source.
+No artifact or consumer-validation gates remain for this change; see `entity-listener-acceptance.json`.
 
 ## Separate maintained-source repair
 

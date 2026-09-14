@@ -23,11 +23,11 @@ The user has descoped runtime execution and callback-count verification: listene
 
 ## Historical repeat-stability investigation
 
-The round6 discriminator drift is consistent with a newly reproduced stale-parent-annotation defect in `RemoveInheritedAnnotations`.
-Use the existing module/source-set-scoped source index, refresh it after preceding transformations, and prefer actual source parent annotations over stale attributed annotations.
-Retain dependency type metadata when the parent has no source declaration and preserve the public visitor constructor/removal hook.
-Parent-first and child-first composed regressions converge in two changing cycles, with a stable third cycle and normal type validation.
-This follow-up still requires a separately pinned candidate and consumer validation; candidate6 evidence does not cover it.
+The round6 discriminator drift prompted the source-aware inherited-annotation cleanup experiment in commit 5f0acf2.
+That experiment and its added tests are reverted and deferred by user agreement, rather than incorporated into this change.
+The accepted source and POM match candidate6's source revision f91f8e780a20925436963b27492fe5b04969f943.
+A fresh clean verification reports 257 tests, zero failures/errors, and two existing skips; the completed round6 comparison remains applicable.
+Historical investigation evidence is retained, but any future revival of the cleanup requires separate validation.
 
 The two remaining capex import changes affect source files unchanged from the original pin.
 A controlled probe shows that supplying the genuine generated QueryDSL sources is sufficient to enable removal of these imports; compiled classes are not required.

@@ -1,5 +1,13 @@
 # Entity listener comparison handoff
 
+## Final disposition
+
+Candidate6 is the accepted implementation under the clarified one-shot CI and listener-presence requirements.
+The later cleanup code and added tests from 5f0acf2 are reverted and deferred.
+The restored source and POM match candidate6's source revision; a fresh clean verification reports 257 tests, zero failures/errors, and two existing skips.
+All 34 tasks are accounted for, including the explicitly descoped runtime check.
+No extra cleanup pass, new comparison candidate, or runtime callback execution is required for this change.
+
 ## Outcome
 
 The baseline/candidate6 comparison completed across all 151 modules in the union of the pinned reactors.

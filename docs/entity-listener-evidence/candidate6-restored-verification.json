@@ -1,0 +1,22 @@
+{
+  "sourcePin": "f91f8e780a20925436963b27492fe5b04969f943",
+  "sourceAndPomMatchBeforeBuild": true,
+  "sourceAndPomMatchAfterBuild": true,
+  "command": [
+    "mvn",
+    "-o",
+    "clean",
+    "verify"
+  ],
+  "javaHome": "/Users/danhaywood/.sdkman/candidates/java/21.0.10-tem",
+  "mavenOpts": "-Xmx6g -Xss4m",
+  "exit": 0,
+  "testSummary": {
+    "tests": 257,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "log": "/tmp/f04-candidate6-restored-verify.log",
+  "logSha256": "49c8b972feeb0f8efbabf39618be8f29e2b99cb471237bdc445760cc791666e0"
+}
