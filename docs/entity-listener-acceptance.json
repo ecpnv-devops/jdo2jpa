@@ -1,5 +1,5 @@
 {
-  "status": "candidate6 task 6.6 complete under one-shot CI acceptance; runtime rollout acceptance and validation of later code remain separate",
+  "status": "candidate6 task 6.6 complete under one-shot CI acceptance; task 7.3 runtime verification descoped by user; validation of later code remains separate",
   "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
   "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
   "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
@@ -67,7 +67,7 @@
     "skipped": 2,
     "verificationLog": "/tmp/f04-idempotence-verify.log",
     "diagnosis": "docs/entity-listener-idempotence-follow-up.md",
-    "remaining": "No cleanup phase is required merely for idempotence. Defer or independently validate cleanup commit 5f0acf2 without inheriting candidate6 acceptance; obtain approved runtime prerequisites for task 7.3"
+    "remaining": "No cleanup phase is required merely for idempotence. Defer or independently validate cleanup commit 5f0acf2 without inheriting candidate6 acceptance; task 7.3 imposes no runtime prerequisite"
   },
   "round6Completion": {
     "modulesPerSide": 151,
@@ -130,7 +130,7 @@
   "nextComparisonRequirements": [
     "CI rewrites once from clean prod input; repeat-run differences are diagnostic and must not be relabelled as stable, but are not acceptance blockers.",
     "Any new candidate requires its own immutable artifact and appropriate comparison verification; preserve the completed candidate6 evidence.",
-    "Obtain consumer-owned non-production runtime evidence separately before rollout acceptance."
+    "Runtime lifecycle execution and callback-count verification are out of scope; retain listener-presence evidence without claiming observed runtime behaviour."
   ],
   "liveState": ["baseline-migration-state.json", "candidate-migration-state.json"],
   "preflight": {
@@ -149,14 +149,13 @@
     "Candidate2 was superseded after a new composed regression exposed stale scan snapshots; candidate3 includes the refresh-cycle fix and both source-order regressions. Earlier trial outputs are not candidate3 acceptance."
   ],
   "remainingGates": [
-    "Tasks 6.2-6.5, 6.7 and 7.2 reopened for the post-round6 source correction: new immutable candidate, fresh consumer comparison, compilation and handoff; candidate6 evidence is not acceptance of the follow-up",
-    "Task 7.3: consumer-owned non-production lifecycle callback evidence"
+    "Tasks 6.2-6.5, 6.7 and 7.2 reopened for the post-round6 source correction: new immutable candidate, fresh consumer comparison, compilation and handoff; candidate6 evidence is not acceptance of the follow-up"
   ],
   "consumerHandoff": {
-    "runtimeOwner": "Estatio application maintainer with an approved non-production runtime",
-    "requiredEvidence": "Applicable persist/update/remove callbacks execute exactly once for both turnover entities, with tester, inputs, observation method and counts recorded.",
+    "runtimeOwner": "Not required for this change; runtime verification descoped by user",
+    "requiredEvidence": "Intended listener presence on both turnover entities without redundant annotation-defined inherited registrations; verified for candidate6 under task 6.6.",
     "maintainedSourceOwner": "Estatio application maintainer; separately fix and verify excluded BackgroundCommandsOrchestration.",
-    "runtimeStatus": "Not performed; rollout acceptance remains open.",
+    "runtimeStatus": "Descoped by user; not performed and not claimed as passed; no acceptance or rollout gate imposed by this change.",
     "runtimeHandoff": "docs/entity-listener-runtime-handoff.md",
     "comparisonHandoff": "docs/entity-listener-comparison-handoff.md"
   }

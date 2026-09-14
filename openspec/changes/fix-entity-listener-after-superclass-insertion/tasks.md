@@ -59,5 +59,5 @@ The following artifact and consumer-validation gates are reopened for the inheri
 
 - [x] 7.1 Write breaking generated-source release notes covering expanded formatting-independent superclass eligibility, newly inserted listeners, preserved constructor/YAML compatibility, explicit custom/empty listener overrides, parent-first dependencies, and typed-error/partial-output handling.
 - [ ] 7.2 Hand off the exact candidate artifact, pinned inputs, acceptance manifest, affected-class inventory, build evidence, and reproducible F04/Mallcomm commands to the Estatio consumer; identify a separate owner for the maintained BackgroundCommandsOrchestration fix and its verification.
-- [ ] 7.3 Consumer-owned, non-blocking: obtain non-production runtime evidence for applicable persist/update/remove callbacks on both turnover entities, recording inputs, observation method, expected/actual exactly-once counts, tester, and result with no inherited duplication.
-- [x] 7.4 Consumer-owned, non-blocking: keep rollout acceptance open if runtime access or other external blockers prevent verification, without blocking completion or archival of the recipe change.
+- [x] 7.3 Descoped by user: runtime persist/update/remove and callback-count verification are not required; listener presence and absence of redundant annotation-defined registrations are verified for candidate6 under 6.6.
+- [x] 7.4 Record runtime checks as out of scope and not performed, not as passed; missing runtime evidence is not an acceptance or rollout gate imposed by this change.

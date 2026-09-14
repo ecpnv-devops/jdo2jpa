@@ -22,11 +22,11 @@ Both sides successfully clean-installed `estatio-mallcomm/mallcommturnover` afte
 Candidate6's entire turnover module is unchanged by a repeat of all three rewrite passes.
 The maintained, excluded `BackgroundCommandsOrchestration.java` is byte-identical to the pinned input on both sides.
 Repository XML review found listener overrides for nine framework entities, not for the turnover entities or their `EntityAbstract` superclass.
-Runtime-selected dependency mappings and dynamic metadata still require consumer verification.
+Runtime-selected dependency mappings and dynamic metadata were not verified; runtime verification is out of scope for this change.
 
 ## Remaining gates
 
-**Do not claim full-file idempotence or runtime rollout acceptance.**
+**Do not claim full-file idempotence or observed runtime callback behaviour.**
 All seven affected modules were checked on both sides in isolated generated-output snapshots.
 Candidate6 is fully repeat-stable in four modules, including turnover and financial.
 Its repeat changes in the other three modules exactly reproduce on the baseline:
@@ -40,9 +40,9 @@ The baseline additionally adds the missing turnover listeners and more nested `E
 Task 6.6 is complete for candidate6 under the user-confirmed one-shot CI workflow from clean prod input.
 Full-file repeat stability is not required; these exceptions remain diagnostic findings, not claims of idempotence.
 The later cleanup commit 5f0acf2 is not covered by candidate6's acceptance.
-Task 7.3 remains consumer-owned and pending.
-See `entity-listener-runtime-handoff.md` for the owner role, operation matrix, and separate maintained-source repair.
-Rollout acceptance remains explicitly open without requiring runtime access to complete otherwise accepted library work.
+Task 7.3 is descoped by the user: listener presence is required, runtime lifecycle execution and callback counts are not.
+See `entity-listener-runtime-handoff.md` for the revised scope and separate maintained-source repair.
+Runtime checks were not performed and are not recorded as passed; their absence imposes no acceptance or rollout gate for this change.
 
 ## Artifact and reproduction
 
@@ -75,4 +75,4 @@ mvn -o \
 
 `entity-listener-evidence/` retains the complete reviewed changed-class inventory, completion counts, F04 commands and diffs, repeat-review exceptions, repository XML review, input patch/amendments, and harness source snapshots.
 Full command logs, full-tree hashes, isolated module classpaths, and installed-parent artifact provenance remain in the comparison workspace.
-The Estatio application maintainer owns adopting the consumer POM amendments, assigning a runtime tester, and separately repairing the excluded maintained orchestration entity.
+The Estatio application maintainer owns adopting the consumer POM amendments and separately repairing the excluded maintained orchestration entity.

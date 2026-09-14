@@ -176,23 +176,25 @@ Unrelated failures reproduced by the baseline SHALL be recorded without bypassin
 - **AND** exact commands and results cover every directly affected module plus reactor dependencies and `estatio-mallcomm/mallcommturnover`
 - **AND** maintained/excluded BackgroundCommandsOrchestration remains unchanged by regeneration
 
-### Requirement: Consumer runtime handoff verifies callback behaviour
+### Requirement: Consumer handoff verifies listener presence
 
-Release guidance SHALL identify breaking generated-source changes, the exact candidate artifact, dependency-order requirements, failure/partial-output handling, and reproducible F04/Mallcomm steps.
-Rollout acceptance SHALL require consumer evidence that applicable lifecycle callbacks execute exactly once for both turnover entities in a non-production environment.
-That consumer-owned runtime evidence SHALL NOT block completion or archival of the recipe change.
+Release guidance SHALL identify breaking generated-source changes, the exact candidate artifact, dependency-order requirements, failure/partial-output handling, and reproducible F04/Mallcomm inspection steps.
+Acceptance for this change SHALL require the intended listener registration on both turnover entities without redundant annotation-defined inherited registrations.
+Runtime persist/update/remove execution and callback-count verification are out of scope and SHALL NOT be acceptance or rollout gates imposed by this change.
+Listener-presence evidence SHALL NOT be represented as observed runtime callback behaviour.
 The maintained BackgroundCommandsOrchestration repair SHALL remain separately owned and SHALL NOT be claimed as a recipe outcome.
 
-#### Scenario: Consumer executes the F04 scenario
+#### Scenario: Inspect generated F04 entities
 
-- **WHEN** the consumer runs applicable persist/update/remove operations for both turnover entities with the candidate output
-- **THEN** the recorded scenario, observation method, expected/actual callback counts, tester, and result demonstrate intended callbacks without inherited duplication
+- **WHEN** the generated and compiled candidate entities are inspected
+- **THEN** both turnover entities have the intended listener registration without redundant annotation-defined inherited registrations
+- **AND** the handoff identifies the inspected artifact and evidence
 
-#### Scenario: Consumer runtime validation unavailable
+#### Scenario: Runtime checks are not performed
 
-- **WHEN** an environment or unrelated blocker prevents the callback scenario
-- **THEN** the handoff and rollout acceptance remain explicitly blocked rather than recorded as successful
-- **AND** the recipe change can complete with the unavailable runtime evidence recorded as a non-blocking consumer handoff
+- **WHEN** no lifecycle callback execution or callback-count observation has been performed
+- **THEN** the handoff records those checks as out of scope and not performed, rather than passed
+- **AND** their absence does not block acceptance or archival of this change
 
 ### Requirement: Identified test sources inherit main-source plans
 

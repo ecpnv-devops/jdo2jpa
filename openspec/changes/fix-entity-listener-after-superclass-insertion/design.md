@@ -19,6 +19,7 @@ CI performs the configured rewrite once from a clean prod checkout.
 Full-output repeat-run idempotence is not a consumer acceptance requirement; repeat checks remain useful diagnostics and focused recipe regressions.
 Task 6.6 is complete against candidate6's recorded first-pass listener integration, absence of redundant annotation-defined registrations, unchanged excluded source, reviewed output, and successful JPA compilation.
 This does not establish runtime callback counts or transfer acceptance to cleanup commit 5f0acf2.
+The user has descoped runtime execution and callback-count verification: listener presence is sufficient for this aspect of acceptance.
 
 ## Historical repeat-stability investigation
 
@@ -32,7 +33,7 @@ The two remaining capex import changes affect source files unchanged from the or
 A controlled probe shows that supplying the genuine generated QueryDSL sources is sufficient to enable removal of these imports; compiled classes are not required.
 Do not bypass the unused-import recipe's missing-types safety check or disguise the differences through source-input cleanup.
 The previously proposed cleanup phase after JPA annotation processing is not required merely to achieve idempotence under the clarified one-shot workflow.
-See `docs/entity-listener-idempotence-follow-up.md` for the verification results and unresolved runtime prerequisites.
+See `docs/entity-listener-idempotence-follow-up.md` for the verification results and the recorded runtime descope.
 
 ## Context
 
@@ -207,11 +208,12 @@ Record the full command, JDK/Maven versions, profiles, exit status, test summary
 
 Publish breaking generated-source release notes covering newly eligible compact identity declarations, added superclasses/listeners, constructor/YAML compatibility, custom-listener overrides, the parent-first dependency precondition, and error/partial-output handling.
 Hand off the pinned inputs, exact candidate artifact, output inventory, and reproducible commands to the Estatio consumer.
-Require a non-production F04/Mallcomm run that exercises both turnover entities through applicable persist/update/remove operations and verifies the intended lifecycle callbacks fire exactly once with no inherited duplication.
-Record scenario inputs, callback observation method, expected/actual counts, tester, and result; a missing runtime environment is a rollout blocker, not a passed test.
-The maintained BackgroundCommandsOrchestration listener addition and its runtime verification remain a separately owned downstream fix and must not be attributed to this recipe.
+Require F04/Mallcomm evidence that the intended listener is present on both generated entities without redundant annotation-defined inherited registrations.
+Runtime lifecycle execution and callback counts are out of scope; record them as not performed rather than passed.
+The maintained BackgroundCommandsOrchestration listener repair remains a separately owned downstream fix and must not be attributed to this recipe.
 Library acceptance requires the gated spike, recipe build, regeneration/diff review, and absence of candidate-specific compilation regressions.
-Consumer runtime checks and baseline-reproduced consumer build blockers remain explicit, non-blocking rollout handoffs and do not prevent completion or archival of the recipe change.
+Missing runtime observations impose no acceptance or rollout gate for this change.
+Baseline-reproduced consumer build blockers remain explicit, non-blocking handoffs.
 Rollback is to retain the previous recipe artifact and discard regenerated application changes before deployment; this proposal introduces no database migration.
 
 ## Open Questions

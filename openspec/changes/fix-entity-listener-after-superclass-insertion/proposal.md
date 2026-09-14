@@ -13,7 +13,8 @@ A whitespace-sensitive match of the JDO `identityType` argument makes this failu
 - Match an explicitly declared datastore identity structurally, independent of whitespace, comments, qualification, or static imports, while preserving existing regex-based recipe configurations for other callers.
 - Preserve the public three-argument constructor and existing YAML properties while adding optional `annotationAttributeName` and `annotationAttributeValue` options.
 - Gate implementation on an attribution spike, then add combined-recipe regressions, module-boundary fixtures, compatibility tests, and repeat-run tests based on the two turnover-class shapes.
-- Require pinned same-input Estatio A/B regeneration, affected-class inventory, affected-module compilation, final recipe build evidence, and consumer runtime callback verification before acceptance.
+- Require pinned same-input Estatio A/B regeneration, affected-class inventory, affected-module compilation, final recipe build evidence, and verification of intended listener presence without redundant annotation-defined registrations before acceptance.
+- Runtime lifecycle execution and callback-count verification are explicitly out of scope.
 
 ## Capabilities
 
@@ -42,7 +43,8 @@ Use JPA `907c723889d3306352c2e50cfbbae3df6406d949` only to reconcile historical 
 Record exact baseline/candidate recipe coordinates, unique artifact versions, source commits, artifact checksums, environment, commands, logs, and outcomes.
 Require an explained inventory of all changed classes, only intended superclass/listener changes and necessary imports, compilation of directly affected modules where the baseline supports it, and a successful final `mvn clean verify` for the candidate recipe artifact.
 Candidate-specific build failures block library acceptance, while unrelated failures reproduced by the baseline must be recorded without bypassing checks or being reported as passes and remain a non-blocking consumer handoff.
-Consumer handoff must include the F04/Mallcomm scenario and exactly-once lifecycle callback verification before rollout acceptance; that runtime evidence does not block completion of the recipe change, and the maintained BackgroundCommandsOrchestration fix remains separate.
+Consumer handoff must include F04/Mallcomm listener-presence evidence for the inspected candidate artifact.
+Runtime callback verification is not an acceptance or rollout gate imposed by this change, and the maintained BackgroundCommandsOrchestration fix remains separate.
 
 ## Non-goals
 

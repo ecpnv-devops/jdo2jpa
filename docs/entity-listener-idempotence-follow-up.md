@@ -43,10 +43,10 @@ It has not been added; these findings remain diagnostics.
 Do not bypass the missing-types precondition, fabricate metamodel sources, silently clean comparison inputs, or call the current output stable.
 These repeat-run differences do not block task 6.6 for candidate6.
 
-## Runtime prerequisite
+## Runtime verification descoped
 
-Task 7.3 remains open and consumer-owned.
-No disposable runtime/dataset or startup procedure has been approved for this check.
-The application maintainer must identify the non-production environment, safe fixture data, startup/profile instructions, and tester before lifecycle writes are performed.
-The operation matrix and required callback/downstream observations remain in `entity-listener-runtime-handoff.md`.
+The user has removed task 7.3's runtime lifecycle execution and callback-count requirement.
+Listener presence is the required evidence and was verified for candidate6 under task 6.6.
+No runtime prerequisites or rollout gate are imposed by the descoped task; see `entity-listener-runtime-handoff.md`.
+Runtime checks were not performed and are not claimed as passed.
 No database was started, contacted, or modified by this investigation.

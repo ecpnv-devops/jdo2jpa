@@ -86,4 +86,4 @@ Round5 applies the declaration to both sides before processing that module.
 The Estatio application maintainer owns adopting an appropriate permanent dependency declaration.
 
 Evidence is recorded under `/tmp/f04-acceptance-401d6c4/round3/baseline-bankmandate-explicit-pdfjs.json` and the round5 `pdfjs-input-adjustment.json`.
-A passing diagnostic or corrected dependency declaration does not replace the remaining complete regeneration, comparison, compilation, and runtime evidence.
+A passing diagnostic or corrected dependency declaration does not replace complete regeneration, comparison, compilation, and listener-presence evidence for the selected candidate.

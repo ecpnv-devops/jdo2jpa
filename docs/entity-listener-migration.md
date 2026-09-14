@@ -7,7 +7,7 @@ See `entity-listener-comparison-handoff.md` and `entity-listener-evidence/` for 
 The turnover module is repeat-stable with exactly one annotation-defined configured listener per target entity.
 Task 6.6 is complete for candidate6: CI rewrites once from clean prod input, so full-file repeat idempotence is not required.
 The recorded repeat differences remain diagnostics; acceptance does not extend to later cleanup commit 5f0acf2.
-Runtime rollout acceptance remains consumer-owned and unverified.
+Runtime lifecycle execution and callback-count verification have been descoped by the user; listener-presence evidence is sufficient for this aspect of acceptance.
 
 ## Generated-source compatibility notice
 
@@ -96,7 +96,6 @@ The pinned production-scale comparison uses Estatio prod `4dd98637d572240ff99cb8
 JPA `907c723889d3306352c2e50cfbbae3df6406d949` is reconciliation-only.
 Record artifact coordinates, checksums, source revisions, exact commands, complete generated-tree differences, affected-class inventory, and baseline/candidate build results before acceptance.
 
-Consumer rollout additionally requires a non-production F04/Mallcomm scenario exercising applicable persist/update/remove operations for both turnover entities.
-Record expected and actual callback counts and demonstrate exactly-once integration without inherited duplication.
-The maintained/excluded `BackgroundCommandsOrchestration` source is not repaired by these recipes and requires a separately owned listener fix and runtime verification.
-Missing consumer runtime evidence remains a rollout handoff, not a passing callback test.
+The F04/Mallcomm handoff records intended listener presence on both turnover entities without redundant annotation-defined inherited registrations.
+Runtime callback execution was not observed and is out of scope, rather than a pending gate or a passing test.
+The maintained/excluded `BackgroundCommandsOrchestration` source is not repaired by these recipes and requires a separately owned listener fix.
