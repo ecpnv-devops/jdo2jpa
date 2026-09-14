@@ -37,7 +37,9 @@ Its repeat changes in the other three modules exactly reproduce on the baseline:
 
 No candidate listener changes occur on repeat.
 The baseline additionally adds the missing turnover listeners and more nested `EntityScan` annotations on repeat, without correcting its overly broad enclosing-type scope.
-Task 6.6 remains open because its full-file stability condition is not satisfied; these baseline-reproduced exceptions are recorded, not relabelled as passes.
+Task 6.6 is complete for candidate6 under the user-confirmed one-shot CI workflow from clean prod input.
+Full-file repeat stability is not required; these exceptions remain diagnostic findings, not claims of idempotence.
+The later cleanup commit 5f0acf2 is not covered by candidate6's acceptance.
 Task 7.3 remains consumer-owned and pending.
 See `entity-listener-runtime-handoff.md` for the owner role, operation matrix, and separate maintained-source repair.
 Rollout acceptance remains explicitly open without requiring runtime access to complete otherwise accepted library work.

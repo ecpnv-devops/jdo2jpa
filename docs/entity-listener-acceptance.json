@@ -1,5 +1,5 @@
 {
-  "status": "round6 regeneration, complete diff review and compilation complete; full-file idempotence and runtime rollout acceptance remain open",
+  "status": "candidate6 task 6.6 complete under one-shot CI acceptance; runtime rollout acceptance and validation of later code remain separate",
   "estatioInput": "4dd98637d572240ff99cb8c998590074c27c839d",
   "jpaReconciliationOnly": "907c723889d3306352c2e50cfbbae3df6406d949",
   "pipelineResources": "9def23901fb3309bfc084a6e5cf7fcdbaf884691",
@@ -67,7 +67,7 @@
     "skipped": 2,
     "verificationLog": "/tmp/f04-idempotence-verify.log",
     "diagnosis": "docs/entity-listener-idempotence-follow-up.md",
-    "remaining": "Approve and validate cleanup after JPA annotation processing to address QueryDSL-dependent import drift; pin and validate the next candidate; obtain approved runtime prerequisites for task 7.3"
+    "remaining": "No cleanup phase is required merely for idempotence. Defer or independently validate cleanup commit 5f0acf2 without inheriting candidate6 acceptance; obtain approved runtime prerequisites for task 7.3"
   },
   "round6Completion": {
     "modulesPerSide": 151,
@@ -80,7 +80,7 @@
     "differenceClassification": {"missingListenerInsertions": 2, "entityScanScopeCorrections": 4, "unusedImportsOrImportGrouping": 4},
     "otherOutputDifferences": 0,
     "turnover": "Both targets clean-installed on both sides. Candidate has one annotation-defined effective OrmEntityListener per entity and the entire candidate turnover module is repeat-stable. Excluded maintained orchestration source is unchanged.",
-    "idempotence": "All seven affected modules were checked. Four candidate modules are fully stable; three have four repeat deltas, all exactly reproduced on the baseline. No candidate listener changes occur on repeat. Task 6.6 remains open.",
+    "idempotence": "All seven affected modules were checked. Four candidate modules are fully stable; three have four repeat deltas, all exactly reproduced on the baseline. No candidate listener changes occur on repeat. These are diagnostic results, not blockers: task 6.6 is complete for candidate6 under the user-confirmed one-shot CI requirement.",
     "evidenceDirectory": "docs/entity-listener-evidence",
     "handoff": "docs/entity-listener-comparison-handoff.md",
     "sourceInventories": "source-inventories.json",
@@ -128,7 +128,7 @@
     "limitation": "Retry of the failing phase over copied rejected task sources and prior parent artifacts; not full regeneration or compilation acceptance"
   },
   "nextComparisonRequirements": [
-    "Resolve or explicitly revise acceptance of the baseline-reproduced full-file idempotence exceptions; do not label them stable.",
+    "CI rewrites once from clean prod input; repeat-run differences are diagnostic and must not be relabelled as stable, but are not acceptance blockers.",
     "Any new candidate requires its own immutable artifact and appropriate comparison verification; preserve the completed candidate6 evidence.",
     "Obtain consumer-owned non-production runtime evidence separately before rollout acceptance."
   ],
@@ -150,7 +150,6 @@
   ],
   "remainingGates": [
     "Tasks 6.2-6.5, 6.7 and 7.2 reopened for the post-round6 source correction: new immutable candidate, fresh consumer comparison, compilation and handoff; candidate6 evidence is not acceptance of the follow-up",
-    "Task 6.6: full-file repeat stability exceptions in capex, communications and document, all reproduced on baseline",
     "Task 7.3: consumer-owned non-production lifecycle callback evidence"
   ],
   "consumerHandoff": {

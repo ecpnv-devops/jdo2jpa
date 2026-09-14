@@ -13,7 +13,14 @@ Activating the provider recipe alone was insufficient without DataNucleus input 
 A restored baseline capex diagnostic passed all three rewrite phases and clean JPA compilation after both corrections, without DataNucleus added to the JPA compilation profile.
 Fresh comparison inputs must receive these consumer adjustments symmetrically; earlier round5 outputs do not establish acceptance of the revised configuration or library.
 
-## Follow-up for remaining repeat stability
+## One-shot consumer acceptance
+
+CI performs the configured rewrite once from a clean prod checkout.
+Full-output repeat-run idempotence is not a consumer acceptance requirement; repeat checks remain useful diagnostics and focused recipe regressions.
+Task 6.6 is complete against candidate6's recorded first-pass listener integration, absence of redundant annotation-defined registrations, unchanged excluded source, reviewed output, and successful JPA compilation.
+This does not establish runtime callback counts or transfer acceptance to cleanup commit 5f0acf2.
+
+## Historical repeat-stability investigation
 
 The round6 discriminator drift is consistent with a newly reproduced stale-parent-annotation defect in `RemoveInheritedAnnotations`.
 Use the existing module/source-set-scoped source index, refresh it after preceding transformations, and prefer actual source parent annotations over stale attributed annotations.
@@ -24,7 +31,7 @@ This follow-up still requires a separately pinned candidate and consumer validat
 The two remaining capex import changes affect source files unchanged from the original pin.
 A controlled probe shows that supplying the genuine generated QueryDSL sources is sufficient to enable removal of these imports; compiled classes are not required.
 Do not bypass the unused-import recipe's missing-types safety check or disguise the differences through source-input cleanup.
-Cleanup after JPA annotation processing, followed by compilation and repeat validation, is proposed as a processing-sequence change requiring approval, explicit documentation, and symmetric fresh verification.
+The previously proposed cleanup phase after JPA annotation processing is not required merely to achieve idempotence under the clarified one-shot workflow.
 See `docs/entity-listener-idempotence-follow-up.md` for the verification results and unresolved runtime prerequisites.
 
 ## Context
@@ -194,7 +201,7 @@ Record the full command, JDK/Maven versions, profiles, exit status, test summary
 - Compile directly affected modules plus required reactor dependencies and representative Mallcomm integration, including `estatio-mallcomm/mallcommturnover`, wherever the baseline supports compilation; record exact module selections, commands, profiles, and outcomes for baseline and candidate.
 - Treat a candidate-specific build regression as a library acceptance failure.
 - Record unrelated failures with logs and baseline reproduction where possible; do not skip failing checks or substitute a narrower build as a pass, but keep a baseline-reproduced consumer blocker as a non-blocking handoff rather than a recipe metadata failure.
-- Verify repeat-run stability and absence of redundant effective listener registrations using the actual per-module dependency topology.
+- Verify first-pass integration and absence of redundant effective listener registrations using the actual per-module dependency topology; retain repeat-run checks as diagnostics, not a full-output acceptance gate.
 
 ### Release and consumer handoff
 

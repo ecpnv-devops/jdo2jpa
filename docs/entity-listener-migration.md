@@ -5,7 +5,9 @@
 The candidate6 comparison completed regeneration for 151 modules and clean installation of all 148 JPA reactor modules on both sides, using the recorded symmetric consumer corrections.
 See `entity-listener-comparison-handoff.md` and `entity-listener-evidence/` for the complete reviewed differences and commands.
 The turnover module is repeat-stable with exactly one annotation-defined configured listener per target entity.
-Full-file idempotence remains open for baseline-reproduced cleanup changes in three other affected modules, and runtime rollout acceptance remains consumer-owned and unverified.
+Task 6.6 is complete for candidate6: CI rewrites once from clean prod input, so full-file repeat idempotence is not required.
+The recorded repeat differences remain diagnostics; acceptance does not extend to later cleanup commit 5f0acf2.
+Runtime rollout acceptance remains consumer-owned and unverified.
 
 ## Generated-source compatibility notice
 

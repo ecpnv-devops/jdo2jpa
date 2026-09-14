@@ -19,7 +19,8 @@ Normal successful-case type validation remains enabled.
 The log is `/tmp/f04-idempotence-verify.log`.
 This is library verification only, not acceptance of a new immutable candidate.
 Candidate6 and its completed round6 comparison remain unchanged reference evidence.
-A new candidate must be independently pinned and verified against the consumer before task 6.6 can be completed.
+Task 6.6 is now complete for candidate6 under the user-confirmed one-shot CI requirement; full-output idempotence is not an acceptance gate.
+Any replacement candidate incorporating 5f0acf2 still requires independent validation; candidate6 acceptance does not cover changed code.
 Tasks 6.2–6.5, 6.7, and 7.2 are reopened for that validation rather than transferring candidate6 results to changed code.
 
 ## Remaining import drift
@@ -37,11 +38,10 @@ No safety precondition was disabled, and original round6 evidence was not modifi
 Logs are `/tmp/f04-capex-fresh-{0,1,2,3}-*.log` and `/tmp/f04-capex-generated-sources-only.log`.
 The corresponding JSON records are retained in `docs/entity-listener-evidence/`.
 
-An explicit cleanup stage after JPA annotation processing, followed by compilation and repeat validation, is the proposed consumer-pipeline correction.
-This changes the declared processing sequence and requires approval, documentation, symmetric application, and fresh verification of the next immutable candidate.
-It has not been added or accepted by this follow-up.
+The previously proposed cleanup stage after JPA annotation processing is unnecessary merely to achieve idempotence in the clarified one-shot workflow.
+It has not been added; these findings remain diagnostics.
 Do not bypass the missing-types precondition, fabricate metamodel sources, silently clean comparison inputs, or call the current output stable.
-Task 6.6 remains open.
+These repeat-run differences do not block task 6.6 for candidate6.
 
 ## Runtime prerequisite
 
