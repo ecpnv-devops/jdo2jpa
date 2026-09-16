@@ -44,6 +44,7 @@ class RelationshipCascadeDefaultsTest extends BaseRewriteTest {
                                     private Child child;
 
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     private List<Child> children;
                                 }
                                 """));
@@ -108,10 +109,7 @@ class RelationshipCascadeDefaultsTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 class Child {}
@@ -119,6 +117,7 @@ class RelationshipCascadeDefaultsTest extends BaseRewriteTest {
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.DETACH, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     private List<Child> children;
                                 }
                                 """));

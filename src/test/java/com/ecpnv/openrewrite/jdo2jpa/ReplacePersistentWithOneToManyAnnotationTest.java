@@ -117,10 +117,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.jdo.annotations.Column;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 public class Person {
@@ -130,6 +127,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     private List<Person> persons;
                                 }
                                 """
@@ -163,10 +161,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.jdo.annotations.Column;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 public class Person {
@@ -176,6 +171,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 @Entity
                                 public class SomeEntity {
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     private List<Person> persons;
                                 }
                                 """
@@ -233,6 +229,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     @Deprecated
                                     private List<Person> persons;
                                 }
@@ -267,17 +264,15 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
-                                
+                                import javax.persistence.*;
+
                                 @Entity
                                 public class Person {}
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     private List<Person> persons;
                                 }
                                 """
@@ -311,17 +306,15 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
-                                
+                                import javax.persistence.*;
+
                                 @Entity
                                 public class Person {}
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "person", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     private List<Person> persons;
                                 }
                                 """
@@ -356,17 +349,15 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
-                                
+                                import javax.persistence.*;
+
                                 @Entity
                                 public class Person {}
                                 @Entity
                                 public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "person", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.EAGER)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     private List<Person> persons;
                                 }
                                 """
@@ -511,6 +502,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                 public class SomeEntity {
                                     private int id;
                                     @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
                                     @Deprecated
                                     private List<Person> persons;
                                 }
@@ -520,6 +512,137 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
         );
     }
 
+
+    /**
+     * Validates that a {@code List}-typed relationship with no explicit {@code @Order} annotation gets a default
+     * {@code @OrderColumn} matching DataNucleus' implicit {@code <fieldName>_INTEGER_IDX} index column, so
+     * persisted list order isn't silently lost when migrating to JPA.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyAddsDefaultOrderColumnWhenNoExplicitOrder() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent(mappedBy = "someEntity")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.*;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "persons_INTEGER_IDX")
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Validates that a {@code List}-typed relationship with an explicit {@code @Order} annotation is unaffected by
+     * the default-{@code @OrderColumn} behaviour: only the explicit column name is used, never a duplicate default.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyDoesNotDuplicateOrderColumnWhenExplicitOrderPresent() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.List;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+                                import javax.jdo.annotations.Order;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent(mappedBy = "someEntity")
+                                    @Order(column = "custom_idx")
+                                    private List<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.List;
+                                import javax.persistence.*;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "custom_idx")
+                                    private List<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
+
+    /**
+     * Validates that a {@code Set}-typed relationship never gets a default {@code @OrderColumn}: only {@code List}
+     * relies on DataNucleus' implicit index column, so {@code Set}/{@code SortedSet} must be left untouched.
+     */
+    @DocumentExample
+    @Test
+    void replacePersistentWithOneToManyDoesNotAddOrderColumnForSet() {
+        rewriteRun(
+                //language=java
+                java(
+                        """
+                                import java.util.Set;
+                                import javax.persistence.Entity;
+                                import javax.jdo.annotations.Persistent;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @Persistent(mappedBy = "someEntity")
+                                    private Set<Person> persons;
+                                }
+                                """,
+                        """
+                                import java.util.Set;
+                                import javax.persistence.CascadeType;
+                                import javax.persistence.Entity;
+                                import javax.persistence.FetchType;
+                                import javax.persistence.OneToMany;
+
+                                @Entity
+                                public class Person {}
+                                @Entity
+                                public class SomeEntity {
+                                    private int id;
+                                    @OneToMany(mappedBy = "someEntity", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    private Set<Person> persons;
+                                }
+                                """
+                )
+        );
+    }
 
     @DocumentExample
     @Test

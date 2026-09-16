@@ -1,6 +1,7 @@
 package com.ecpnv.openrewrite.jdo2jpa;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -157,6 +158,12 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
     static boolean hasCollection(J.VariableDeclarations multiVariable) {
         // Should have a Collection
         return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile(Collection.class.getName()));
+    }
+
+    static boolean hasList(J.VariableDeclarations multiVariable) {
+        // Should have a List specifically (e.g. not a Set/SortedSet), since only List relies on
+        // DataNucleus' implicit `<fieldName>_INTEGER_IDX` index column to persist element order.
+        return multiVariable.getType() != null && multiVariable.getType().isAssignableFrom(Pattern.compile(List.class.getName()));
     }
 
     static Optional<J.Annotation> getPersistentAnnotation(J.VariableDeclarations multiVariable) {
@@ -331,6 +338,20 @@ public class ReplacePersistentWithOneToManyAnnotation extends ScanningRecipe<Rep
                     multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
                             ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
                             Constants.Jpa.JOIN_COLUMN_ANNOTATION_FULL, joinColTemplate.toString(), AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null, null)
+                            .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
+                }
+                // Add a default @OrderColumn for List relationships with no explicit @Order annotation,
+                // preserving DataNucleus' implicit `<fieldName>_INTEGER_IDX` index column that JPA has no
+                // implicit equivalent for.
+                if (mappedBy.isPresent() && hasList(multiVariable)
+                        && FindAnnotations.find(multiVariable, Constants.Jdo.ORDER_ANNOTATION_FULL).isEmpty()) {
+                    String fieldName = multiVariable.getVariables().get(0).getSimpleName();
+                    String orderColumnTemplate = "@" + Constants.Jpa.ORDER_COLUMN_ANNOTATION_NAME + "("
+                            + Constants.Jpa.ORDER_COLUMN_ARGUMENT_NAME + " = \"" + fieldName + "_INTEGER_IDX\")\n";
+                    maybeAddImport(Constants.Jpa.ORDER_COLUMN_ANNOTATION_FULL);
+                    multiVariable = (J.VariableDeclarations) new AddAnnotationConditionally(
+                            ".*" + Constants.Jpa.ONE_TO_MANY_ANNOTATION_NAME + ".*", null,
+                            Constants.Jpa.ORDER_COLUMN_ANNOTATION_FULL, orderColumnTemplate, AddAnnotationConditionally.DeclarationType.VAR, null, null, null, null, null)
                             .getVisitor().visit(multiVariable, ctx, getCursor().getParent());
                 }
                 return multiVariable;

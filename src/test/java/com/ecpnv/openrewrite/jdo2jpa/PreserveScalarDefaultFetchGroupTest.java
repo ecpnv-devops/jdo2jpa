@@ -190,6 +190,7 @@ class PreserveScalarDefaultFetchGroupTest extends BaseRewriteTest {
                                         private Person owner;
 
                                         @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                        @OrderColumn(name = "people_INTEGER_IDX")
                                         private List<Person> people;
                                     }
                                     """));

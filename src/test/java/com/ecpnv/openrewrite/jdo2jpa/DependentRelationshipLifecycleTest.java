@@ -40,10 +40,7 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                         """
                                 import java.util.List;
                                 import javax.jdo.annotations.Column;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 class Child {
@@ -53,6 +50,7 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     private List<Child> children;
                                 }
                                 """
@@ -90,6 +88,7 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     @Element(dependent = "true")
                                     @JoinColumn()
                                     private List<Child> children;
@@ -132,11 +131,13 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "contradictory_INTEGER_IDX")
                                     @Element(dependent = "false")
                                     @JoinColumn()
                                     private List<Child> contradictory;
 
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "singularFlagOnCollection_INTEGER_IDX")
                                     private List<Child> singularFlagOnCollection;
                                 }
                                 """
@@ -249,16 +250,14 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 class Child {}
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     private List<Child> children;
                                 }
                                 """
@@ -286,16 +285,14 @@ class DependentRelationshipLifecycleTest extends BaseRewriteTest {
                                 """,
                         """
                                 import java.util.List;
-                                import javax.persistence.CascadeType;
-                                import javax.persistence.Entity;
-                                import javax.persistence.FetchType;
-                                import javax.persistence.OneToMany;
+                                import javax.persistence.*;
 
                                 @Entity
                                 class Child {}
                                 @Entity
                                 class Parent {
                                     @OneToMany(mappedBy = "parent", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, orphanRemoval = true, fetch = FetchType.LAZY)
+                                    @OrderColumn(name = "children_INTEGER_IDX")
                                     private List<Child> children;
                                 }
                                 """

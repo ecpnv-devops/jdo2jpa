@@ -35,6 +35,9 @@ public final class Constants {
         public static final String JOIN_ARGUMENT_COLUMN = "column";
         public static final String NON_PERSISTENT_NAME = "NotPersistent";
         public static final String NON_PERSISTENT_FULL = BASE_PACKAGE + NON_PERSISTENT_NAME;
+        public static final String ORDER_ANNOTATION_NAME = "Order";
+        public static final String ORDER_ANNOTATION_FULL = BASE_PACKAGE + ORDER_ANNOTATION_NAME;
+        public static final String ORDER_ARGUMENT_COLUMN = "column";
         public static final String PERSISTENCE_CAPABLE_ANNOTATION_NAME = "PersistenceCapable";
         public static final String PERSISTENCE_CAPABLE_ANNOTATION_FULL = BASE_PACKAGE + PERSISTENCE_CAPABLE_ANNOTATION_NAME;
         public static final String PERSISTENT_ANNOTATION_NAME = "Persistent";
@@ -72,6 +75,9 @@ public final class Constants {
         public static final String ONE_TO_MANY_ANNOTATION_NAME = "OneToMany";
         public static final String ONE_TO_MANY_ANNOTATION_FULL = BASE_PACKAGE + ONE_TO_MANY_ANNOTATION_NAME;
         public static final String ONE_TO_MANY_ARGUMENT_MAPPED_BY = "mappedBy";
+        public static final String ORDER_COLUMN_ANNOTATION_NAME = "OrderColumn";
+        public static final String ORDER_COLUMN_ANNOTATION_FULL = BASE_PACKAGE + ORDER_COLUMN_ANNOTATION_NAME;
+        public static final String ORDER_COLUMN_ARGUMENT_NAME = "name";
         public static final String MANY_TO_ONE_ANNOTATION_NAME = "ManyToOne";
         public static final String MANY_TO_ONE_ANNOTATION_FULL = BASE_PACKAGE + MANY_TO_ONE_ANNOTATION_NAME;
         public static final String TABLE_ANNOTATION_NAME = "Table";
