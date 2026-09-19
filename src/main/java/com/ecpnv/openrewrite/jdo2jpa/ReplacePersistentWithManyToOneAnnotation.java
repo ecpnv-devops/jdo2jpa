@@ -309,13 +309,14 @@ public class ReplacePersistentWithManyToOneAnnotation extends ScanningRecipe<Rep
                 }
 
                 // JDO single references are lazy by default, whereas JPA references default to EAGER.
-                // The sole fallback is an inferred owning @OneToOne without @Persistent metadata, which
-                // remains eager for the existing EclipseLink deletion workaround. Always express the
-                // resolved strategy explicitly so later stages cannot delegate it to the JPA default.
+                // An inferred owning @OneToOne without @Persistent metadata follows the same lazy
+                // default as any other unannotated reference; explicit defaultFetchGroup metadata
+                // still takes precedence. Always express the resolved strategy explicitly so later
+                // stages cannot delegate it to the JPA default.
                 final boolean eagerFetch = sourceAnnotationIfAny
                         .flatMap(annotation -> RewriteUtils.findArgumentAsBoolean(
                                 annotation, Constants.Jdo.PERSISTENT_ARGUMENT_DEFAULT_FETCH_GROUP))
-                        .orElse(owningSideOfBidirectionalOneToOne && sourceAnnotationIfAny.isEmpty());
+                        .orElse(false);
                 template
                         .append(added.get() ? ", " : "")
                         .append("fetch = FetchType.")

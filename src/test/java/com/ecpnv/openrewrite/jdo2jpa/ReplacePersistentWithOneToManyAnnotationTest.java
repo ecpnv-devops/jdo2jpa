@@ -678,7 +678,7 @@ class ReplacePersistentWithOneToManyAnnotationTest extends BaseRewriteTest {
                                         @Index(name = "Person_entity_IDX", columnList = "someEntity_id"),
                                         @Index(name = "Person_name_IDX", columnList = "someEntity_name")})
                                 public class Person {
-                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+                                    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
                                     @JoinColumn(name = "someEntity_id")
                                     private SomeEntity someEntity;
                                     @Column(name = "someEntity_name")

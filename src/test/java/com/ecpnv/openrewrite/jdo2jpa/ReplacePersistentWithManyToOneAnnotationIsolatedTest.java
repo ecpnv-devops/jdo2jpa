@@ -138,11 +138,11 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
 
     /**
      * An inferred owning side of a bi-directional one-to-one has no explicit JDO fetch metadata.
-     * In that case, express JPA's eager fetch strategy explicitly because EclipseLink cannot safely remove
-     * entities referenced through the inferred lazy one-to-one mapping.
+     * In that case, express JPA's lazy fetch strategy explicitly, following the same
+     * JDO-default-fetch-group truth table as any other unannotated reference.
      */
     @Test
-    void inferredOwningOneToOneGetsExplicitEagerFetch() {
+    void inferredOwningOneToOneGetsExplicitLazyFetch() {
         rewriteRun(
                 //language=java
                 java(
@@ -174,7 +174,7 @@ class ReplacePersistentWithManyToOneAnnotationIsolatedTest extends BaseRewriteTe
                                 }
                                 @Entity
                                 public class Address {
-                                    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+                                    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
                                     private Person person;
                                 }
                                 """
