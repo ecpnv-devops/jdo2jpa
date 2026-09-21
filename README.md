@@ -69,8 +69,8 @@ Use the release helper script to keep the steps parameterized and easy to rerun:
 1. Prepare the release version on `main`:
 
    ```bash
-   CURR=1.2.6
-   NEXT=1.2.7
+   CURR=1.2.7
+   NEXT=1.2.8
    ./scripts/release.sh prepare $CURR
    ```
 
@@ -86,7 +86,13 @@ Use the release helper script to keep the steps parameterized and easy to rerun:
    ./scripts/release.sh publish $CURR
    ```
 
-   Wait for the `Maven Package` workflow to succeed and confirm that `com.ecpnv.openrewrite:jdo2jpa:$CURR` is available in GitHub Packages.
+   Wait for the `Maven Package` workflow to succeed 
+
+   https://github.com/ecpnv-devops/jdo2jpa/actions
+
+   and confirm that `com.ecpnv.openrewrite:jdo2jpa:$CURR` is available in GitHub Packages.
+
+   https://github.com/ecpnv-devops/jdo2jpa/packages/2366665/versions
 
 4. Tag and push the release tag:
 
