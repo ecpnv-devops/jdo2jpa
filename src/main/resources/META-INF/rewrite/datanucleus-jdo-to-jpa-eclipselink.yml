@@ -318,6 +318,27 @@ recipeList:
       operation: ADD
       appendArray: false
       varType: org.joda.time.LocalDate
+  # Read-only columns: DataNucleus' insertable/updateable column extensions become JPA's insertable/updatable
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*key\s*=\s*"insertable"\s*,\s*value\s*=\s*"false"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: insertable
+      attributeValue: false
+      operation: ADD
+      appendArray: false
+  - com.ecpnv.openrewrite.java.AddOrUpdateAnnotationAttribute:
+      matchByRegularExpression: '@Column\((.|\s|\n)*key\s*=\s*"updateable"\s*,\s*value\s*=\s*"false"(.|\s|\n)*\)'
+      annotationType: javax.jdo.annotations.Column
+      attributeName: updatable
+      attributeValue: false
+      operation: ADD
+      appendArray: false
+  # JPA's @Column has no extensions
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: javax.jdo.annotations.Column
+      attributeName: extensions
+  - com.ecpnv.openrewrite.java.MaybeRemoveImport:
+      type: javax.jdo.annotations.Extension
   # Change column type
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.jdo.annotations.Column
